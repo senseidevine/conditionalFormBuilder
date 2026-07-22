@@ -1,0 +1,45 @@
+.rui-tabbar {
+  display: flex;
+  gap: var(--rui-space-s4);
+  border-bottom: 1px solid var(--rui-color-hairline);
+  height: var(--rui-page-tabs-height);
+  align-items: stretch;
+}
+
+.rui-tab {
+  appearance: none;
+  border: none;
+  background: transparent;
+  color: var(--rui-color-mute);
+  padding: 0 var(--rui-space-s12);
+  cursor: pointer;
+  position: relative;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.24px;
+  transition: color var(--rui-dur-1) var(--rui-ease);
+  border-radius: 0;
+  display: inline-flex;
+  align-items: center;
+}
+.rui-tab:hover {
+  color: var(--rui-color-ink);
+}
+.rui-tab--active {
+  color: var(--rui-color-ink);
+}
+.rui-tab--active::after {
+  content: "";
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: -1px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--rui-color-ink);
+}
+.rui-tab:focus-visible {
+  outline: 2px solid var(--rui-color-primary);
+  outline-offset: 2px;
+  border-radius: 6px;
+}

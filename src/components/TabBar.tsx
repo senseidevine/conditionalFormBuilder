@@ -16,10 +16,11 @@ interface Ctx {
 }
 const TabCtx = createContext<Ctx | null>(null);
 
-export interface TabBarProps {
+interface TabBarProps {
   defaultValue?: string;
   value?: string;
   onValueChange?: (v: string) => void;
+  variant?: "navigation" | "underline";
   children: ReactNode;
 }
 
@@ -27,6 +28,7 @@ export function TabBar({
   defaultValue,
   value,
   onValueChange,
+  variant = "navigation",
   children,
 }: TabBarProps) {
   const first = (() => {
@@ -46,7 +48,13 @@ export function TabBar({
         },
       }}
     >
-      <div role="tablist" className="rv-tabbar">
+      <div
+        role="tablist"
+        data-variant={variant}
+        data-behaviour="auto"
+        aria-orientation="horizontal"
+        className="rui-tabbar"
+      >
         {Children.map(children, (c) =>
           isValidElement(c) ? cloneElement(c) : c
         )}
@@ -55,7 +63,7 @@ export function TabBar({
   );
 }
 
-export interface TabBarItemProps {
+interface TabBarItemProps {
   to: string;
   children: ReactNode;
 }
@@ -67,10 +75,11 @@ function TabBarItem({ to, children }: TabBarItemProps) {
     <button
       role="tab"
       aria-selected={active}
-      className={`rv-tab ${active ? "rv-tab--active" : ""}`}
+      className={`rui-tab ${active ? "rui-tab--active" : ""}`}
       onClick={() => ctx?.onChange(to)}
       type="button"
     >
+      <span data-rui="state-layer" className="rui-state-layer" />
       {children}
     </button>
   );

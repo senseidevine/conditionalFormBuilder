@@ -1,0 +1,48 @@
+.rui-avatar {
+  --rui-avatar-glow-alpha: 0.14;
+  display: inline-flex;
+  position: relative;
+  isolation: isolate;
+  border-radius: var(--rui-radius-pill);
+}
+.rui-avatar[data-glow="true"]::before {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border-radius: inherit;
+  background: var(--rui-avatar-glow);
+  opacity: var(--rui-avatar-glow-alpha);
+  z-index: -1;
+}
+.rui-avatar-mask,
+.rui-avatar-inner {
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  position: relative;
+  display: block;
+  overflow: hidden;
+}
+.rui-avatar-bg {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+}
+.rui-avatar-image {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  border-radius: inherit;
+}
+.rui-avatar-text {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--rui-font-display);
+  font-weight: 500;
+  font-size: 13px;
+  letter-spacing: 0.24px;
+}
