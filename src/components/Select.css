@@ -1,10 +1,13 @@
 .select {
   position: relative;
-  display: block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
   flex: 1;
   min-width: 0;
-  height: 60px;
-  padding: 0 40px 0 16px;
+  height: 44px;
+  padding: 0 14px;
   background: rgba(255, 255, 255, 0.14);
   color: var(--fg);
   border-radius: var(--r-control);
@@ -13,63 +16,23 @@
 }
 .select:hover { background: rgba(255, 255, 255, 0.2); }
 
-/* Floating label — Material / Android style, following the design spec.
- * Empty state: label sits centered vertically at 15px.
- * Filled or focused: label pinned to top-left (16px, 7px) at 13px, and
- * the value shows at bottom-left (16px from left, 8px from bottom). */
-.select-label {
-  position: absolute;
-  left: 16px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--fg-mute);
-  font-size: 15px;
-  font-weight: 400;
-  letter-spacing: 0.1px;
-  pointer-events: none;
-  transition:
-    top var(--dur-2) var(--ease),
-    transform var(--dur-2) var(--ease),
-    font-size var(--dur-2) var(--ease),
-    color var(--dur-2) var(--ease);
-}
-
-.select.is-filled .select-label,
-.select:focus-within .select-label {
-  top: 7px;
-  transform: translateY(0);
-  font-size: 13px;
-  font-weight: 500;
-  letter-spacing: 0.24px;
-  color: var(--fg-mute);
-}
-
 .select-value {
-  position: absolute;
-  left: 16px;
-  right: 40px;
-  bottom: 8px;
-  font-size: 17px;
+  font-size: 14px;
   font-weight: 500;
-  color: var(--fg);
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  opacity: 0;
-  transition: opacity var(--dur-1) var(--ease);
+  color: var(--fg);
 }
-.select.is-filled .select-value,
-.select:focus-within .select-value {
-  opacity: 1;
+.select-value.is-placeholder {
+  color: var(--fg-mute);
+  font-weight: 400;
 }
 
 .select-chevron {
-  position: absolute;
-  right: 14px;
-  top: 50%;
-  transform: translateY(-50%);
+  flex: 0 0 auto;
   color: var(--fg-mute);
-  pointer-events: none;
 }
 
 .select-native {
