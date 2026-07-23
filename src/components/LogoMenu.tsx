@@ -7,8 +7,8 @@ import "./LogoMenu.css";
 interface LogoMenuProps {
   showConnectors: boolean;
   onToggleConnectors: (v: boolean) => void;
-  showRootOperator: boolean;
-  onToggleRootOperator: (v: boolean) => void;
+  showLoneBracket: boolean;
+  onToggleLoneBracket: (v: boolean) => void;
 }
 
 type Anchor = { top: number; left: number };
@@ -19,8 +19,8 @@ type Anchor = { top: number; left: number };
 export function LogoMenu({
   showConnectors,
   onToggleConnectors,
-  showRootOperator,
-  onToggleRootOperator,
+  showLoneBracket,
+  onToggleLoneBracket,
 }: LogoMenuProps) {
   const [open, setOpen] = useState(false);
   const [anchor, setAnchor] = useState<Anchor>({ top: 0, left: 0 });
@@ -104,15 +104,16 @@ export function LogoMenu({
 
               <div className="logomenu-row">
                 <div className="logomenu-row-text">
-                  <div className="logomenu-row-title">Root bracket</div>
+                  <div className="logomenu-row-title">Single-section bracket</div>
                   <div className="logomenu-row-desc">
-                    Show the bracket connector on the first level
+                    Show the bracket when a group has only one section.
+                    Groups with two or more always show it.
                   </div>
                 </div>
                 <SegmentedTabs
-                  ariaLabel="Root bracket"
-                  value={showRootOperator ? "on" : "off"}
-                  onChange={(v) => onToggleRootOperator(v === "on")}
+                  ariaLabel="Single-section bracket"
+                  value={showLoneBracket ? "on" : "off"}
+                  onChange={(v) => onToggleLoneBracket(v === "on")}
                   options={[
                     { value: "on", label: "On" },
                     { value: "off", label: "Off" },

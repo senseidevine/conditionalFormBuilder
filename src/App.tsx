@@ -26,7 +26,7 @@ export default function App() {
   const [completed, setCompleted] = useState<string[]>(["general"]);
   const [tree, setTree] = useState<GroupNode>(() => seedRoot());
   const [showConnectors, setShowConnectors] = useState<boolean>(true);
-  const [showRootOperator, setShowRootOperator] = useState<boolean>(true);
+  const [showLoneBracket, setShowLoneBracket] = useState<boolean>(true);
 
   const activeIndex = useMemo(
     () => SECTIONS.findIndex((s) => s.id === activeTab),
@@ -90,8 +90,8 @@ export default function App() {
         completedIds={[]}
         showConnectors={showConnectors}
         onToggleConnectors={setShowConnectors}
-        showRootOperator={showRootOperator}
-        onToggleRootOperator={setShowRootOperator}
+        showLoneBracket={showLoneBracket}
+        onToggleLoneBracket={setShowLoneBracket}
       />
 
       <main className="main">
@@ -124,7 +124,7 @@ export default function App() {
                   depth={1}
                   variant="root"
                   showConnectors={showConnectors}
-                  showRootOperator={showRootOperator}
+                  showLoneBracket={showLoneBracket}
                   onMutate={onMutate}
                 />
               </div>

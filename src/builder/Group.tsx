@@ -23,9 +23,10 @@ interface GroupProps {
   /** Config from the logo menu — when false, the AND/OR bracket and the
    *  "Condition" action pill are hidden across the whole builder. */
   showConnectors: boolean;
-  /** When false, the AND/OR badge is hidden at the root level even when
-   *  there are 2+ children. Nested groups still show their badge. */
-  showRootOperator: boolean;
+  /** When false, the bracket is hidden for groups that have only one
+   *  section (nothing to AND/OR yet). Groups with 2+ sections always
+   *  show the bracket. */
+  showLoneBracket: boolean;
   onMutate: (id: string, mut: Mutation, payload?: unknown) => void;
 }
 
@@ -34,16 +35,16 @@ export function Group({
   depth,
   variant,
   showConnectors,
-  showRootOperator,
+  showLoneBracket,
   onMutate,
 }: GroupProps) {
-  /* The bracket connector renders whenever connectors are enabled and,
-   * at the root level, when the Root operator config is on. The AND / OR
-   * toggle badge additionally requires 2+ children to have anything to
-   * operate on. */
-  const showBracket =
-    showConnectors && (variant !== "root" || showRootOperator);
-  const showToggle = showBracket && group.children.length > 1;
+  /* Rule: 2+ sections always show the bracket. A group of one shows the
+   * bracket only when the Single-section bracket config is on. The
+   * AND / OR badge additionally requires 2+ children to have something
+   * to operate on. */
+  const hasMany = group.children.length > 1;
+  const showBracket = showConnectors && (hasMany || showLoneBracket);
+  const showToggle = showBracket && hasMany;
 
   return (
     <div className={`grp grp--${variant}`} data-depth={depth}>
@@ -86,7 +87,7 @@ export function Group({
                 depth={depth + 1}
                 variant="nested"
                 showConnectors={showConnectors}
-                showRootOperator={showRootOperator}
+                showLoneBracket={showLoneBracket}
                 onMutate={onMutate}
               />
             )

@@ -9,8 +9,8 @@ interface StepRailProps {
   onSelect?: (id: string) => void;
   showConnectors: boolean;
   onToggleConnectors: (v: boolean) => void;
-  showRootOperator: boolean;
-  onToggleRootOperator: (v: boolean) => void;
+  showLoneBracket: boolean;
+  onToggleLoneBracket: (v: boolean) => void;
 }
 
 export function StepRail({
@@ -20,16 +20,16 @@ export function StepRail({
   onSelect,
   showConnectors,
   onToggleConnectors,
-  showRootOperator,
-  onToggleRootOperator,
+  showLoneBracket,
+  onToggleLoneBracket,
 }: StepRailProps) {
   return (
     <aside className="rail" aria-label="Wizard steps">
       <LogoMenu
         showConnectors={showConnectors}
         onToggleConnectors={onToggleConnectors}
-        showRootOperator={showRootOperator}
-        onToggleRootOperator={onToggleRootOperator}
+        showLoneBracket={showLoneBracket}
+        onToggleLoneBracket={onToggleLoneBracket}
       />
       <ul className="rail-list">
         {steps.map((s) => {
