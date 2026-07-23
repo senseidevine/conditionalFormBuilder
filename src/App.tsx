@@ -25,6 +25,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<string>("configuration");
   const [completed, setCompleted] = useState<string[]>(["general"]);
   const [tree, setTree] = useState<GroupNode>(() => seedRoot());
+  const [showConnectors, setShowConnectors] = useState<boolean>(true);
 
   const activeIndex = useMemo(
     () => SECTIONS.findIndex((s) => s.id === activeTab),
@@ -78,7 +79,13 @@ export default function App() {
     <div className="page">
       <div className="page-glow" aria-hidden />
 
-      <StepRail steps={RAIL_STEPS} activeId="s1" completedIds={[]} />
+      <StepRail
+        steps={RAIL_STEPS}
+        activeId="s1"
+        completedIds={[]}
+        showConnectors={showConnectors}
+        onToggleConnectors={setShowConnectors}
+      />
 
       <main className="main">
         <div className="main-inner">
@@ -109,6 +116,7 @@ export default function App() {
                   group={tree}
                   depth={1}
                   variant="root"
+                  showConnectors={showConnectors}
                   onMutate={onMutate}
                 />
               </div>

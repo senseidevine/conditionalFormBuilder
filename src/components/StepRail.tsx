@@ -1,4 +1,5 @@
-import { IconCircle, LogoR } from "./Icons";
+import { IconCircle } from "./Icons";
+import { LogoMenu } from "./LogoMenu";
 import "./StepRail.css";
 
 interface StepRailProps {
@@ -6,14 +7,24 @@ interface StepRailProps {
   activeId: string;
   completedIds: string[];
   onSelect?: (id: string) => void;
+  showConnectors: boolean;
+  onToggleConnectors: (v: boolean) => void;
 }
 
-export function StepRail({ steps, activeId, completedIds, onSelect }: StepRailProps) {
+export function StepRail({
+  steps,
+  activeId,
+  completedIds,
+  onSelect,
+  showConnectors,
+  onToggleConnectors,
+}: StepRailProps) {
   return (
     <aside className="rail" aria-label="Wizard steps">
-      <a href="#" className="rail-logo" aria-label="Home">
-        <LogoR />
-      </a>
+      <LogoMenu
+        showConnectors={showConnectors}
+        onToggleConnectors={onToggleConnectors}
+      />
       <ul className="rail-list">
         {steps.map((s) => {
           const isActive = s.id === activeId;

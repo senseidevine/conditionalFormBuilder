@@ -11,13 +11,6 @@
   flex-shrink: 0;
 }
 
-.rail-logo {
-  display: inline-flex;
-  border-radius: 10px;
-  transition: transform var(--dur-1) var(--ease);
-}
-.rail-logo:hover { transform: translateY(-1px); }
-
 .rail-list {
   list-style: none;
   margin: 0;

@@ -10,6 +10,9 @@ interface GroupProps {
   /** "root" — no outer chrome / bracket; renders like a flat form area.
    *  "nested" — wrapped in a bracket connector with an operator toggle. */
   variant: "root" | "nested";
+  /** Config from the logo menu — when false, the AND/OR bracket and the
+   *  "Condition" action pill are hidden across the whole builder. */
+  showConnectors: boolean;
   onMutate: (
     id: string,
     mut:
@@ -22,11 +25,12 @@ interface GroupProps {
   ) => void;
 }
 
-export function Group({ group, depth, variant, onMutate }: GroupProps) {
+export function Group({ group, depth, variant, showConnectors, onMutate }: GroupProps) {
   /* Toggle only shows when there's actually something to AND/OR — a group
    * with a single child has no operator meaning. Uniform across root and
-   * nested variants. */
-  const showBracket = group.children.length > 1;
+   * nested variants. Also suppressed entirely when the logo-menu toggle
+   * is off. */
+  const showBracket = showConnectors && group.children.length > 1;
 
   return (
     <div className={`grp grp--${variant}`} data-depth={depth}>
@@ -61,18 +65,21 @@ export function Group({ group, depth, variant, onMutate }: GroupProps) {
                 group={child}
                 depth={depth + 1}
                 variant="nested"
+                showConnectors={showConnectors}
                 onMutate={onMutate}
               />
             )
           )}
 
           <div className="grp-actions">
-            <ActionPill
-              icon={<IconReturn />}
-              onClick={() => onMutate(group.id, "addCondition")}
-            >
-              Condition
-            </ActionPill>
+            {showConnectors ? (
+              <ActionPill
+                icon={<IconReturn />}
+                onClick={() => onMutate(group.id, "addCondition")}
+              >
+                Condition
+              </ActionPill>
+            ) : null}
             <ActionPill
               icon={<IconGroup />}
               onClick={() => onMutate(group.id, "addGroup")}

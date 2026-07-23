@@ -1,0 +1,33 @@
+.sw {
+  appearance: none;
+  border: 0;
+  cursor: pointer;
+  width: 34px;
+  height: 20px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.1);
+  position: relative;
+  transition: background var(--dur-1) var(--ease);
+  padding: 0;
+}
+.sw[data-on="true"] {
+  background: var(--success);
+}
+.sw-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 9999px;
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  transition: transform var(--dur-1) var(--ease);
+}
+.sw[data-on="true"] .sw-thumb {
+  transform: translateX(14px);
+}
+.sw:focus-visible {
+  outline: 2px solid var(--accent-focus);
+  outline-offset: 2px;
+}
