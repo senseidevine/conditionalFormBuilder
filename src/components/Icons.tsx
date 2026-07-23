@@ -58,22 +58,54 @@ export const IconGroup = (p: SVGProps<SVGSVGElement>) => (
   </svg>
 );
 
-/** The "R" logotype glyph — inline so we don't fetch anything */
+/** The "R" logotype — the brand's real mark, inline so nothing external
+ *  is fetched. IDs are suffixed with a stable string in case the logo is
+ *  ever rendered more than once on a page. */
 export const LogoR = (p: SVGProps<SVGSVGElement>) => (
   <svg
-    viewBox="0 0 32 32"
-    width={32}
-    height={32}
+    xmlns="http://www.w3.org/2000/svg"
+    width={36}
+    height={36}
+    viewBox="0 0 36 36"
+    fill="none"
     aria-hidden
     {...p}
   >
-    <rect width="32" height="32" rx="8" fill="#ffffff" />
-    <path
-      d="M11.4 24V8h6.15c2.1 0 3.7.53 4.8 1.6 1.12 1.05 1.68 2.44 1.68 4.15
-         0 1.24-.32 2.32-.95 3.24-.6.9-1.46 1.55-2.58 1.94L24.9 24h-3.72l-4.14-4.68h-3.02V24H11.4z
-         m2.62-6.94h3.24c1.1 0 1.95-.28 2.55-.83.6-.55.9-1.31.9-2.28
-         0-.96-.3-1.7-.9-2.24-.6-.55-1.44-.82-2.55-.82H14.02v6.17z"
-      fill="#0a0b0e"
-    />
+    <g clipPath="url(#logo-r-clip-outer)">
+      <g clipPath="url(#logo-r-clip-inner)">
+        <rect
+          width="51.5676"
+          height="51.5676"
+          transform="translate(-7.78369 -7.7832)"
+          fill="white"
+        />
+        <rect
+          width="23.8739"
+          height="23.8739"
+          transform="translate(6.06323 6.06445)"
+          fill="white"
+          fillOpacity="0.01"
+        />
+        <path
+          d="M14.5799 12.7121H10.6887V28.4463H14.5799V12.7121Z"
+          fill="#191C1F"
+        />
+        <path
+          d="M21.0288 19.6607C24.2169 19.5007 26.7825 16.8221 26.7825 13.6118C26.7825 10.273 24.0637 7.55664 20.7216 7.55664H10.6887V10.9169H20.2445C21.757 10.9169 23.0098 12.1051 23.0375 13.5655C23.0513 14.2968 22.7769 14.9869 22.2648 15.5087C21.7524 16.0308 21.0678 16.3184 20.3373 16.3184H16.6148C16.4826 16.3184 16.375 16.4258 16.375 16.558V19.5444C16.375 19.5952 16.3907 19.6438 16.4202 19.6847L22.736 28.4462H27.3593L21.0288 19.6607Z"
+          fill="#191C1F"
+        />
+      </g>
+    </g>
+    <defs>
+      <clipPath id="logo-r-clip-outer">
+        <path
+          d="M0 12C0 5.37258 5.37258 0 12 0H24C30.6274 0 36 5.37258 36 12V24C36 30.6274 30.6274 36 24 36H12C5.37258 36 0 30.6274 0 24V12Z"
+          fill="white"
+        />
+      </clipPath>
+      <clipPath id="logo-r-clip-inner">
+        <rect width="36" height="36" fill="white" />
+      </clipPath>
+    </defs>
   </svg>
 );
