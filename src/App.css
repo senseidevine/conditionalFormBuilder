@@ -93,10 +93,13 @@
 }
 .placeholder p { margin: 0; font-size: 14px; }
 
-/* Wraps the recursive Group builder inside the Configuration step */
+/* Wraps the recursive Group builder inside the Configuration step.
+ * The subtle white lift is what makes the black-15% cards inside read
+ * as darker sections — otherwise they'd blend into the canvas. */
 .form-frame {
+  background: rgba(255, 255, 255, 0.03);
   border-radius: var(--r-card);
-  padding: 4px;
+  padding: 16px;
   display: flex;
   flex-direction: column;
 }

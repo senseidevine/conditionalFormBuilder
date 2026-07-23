@@ -38,10 +38,7 @@ export function makeGroup(operator: Operator = "AND"): GroupNode {
     id: uid(),
     kind: "group",
     operator,
-    /* Seed with two conditions so the operator toggle is meaningful from
-     * the moment the group is created — a group with one child has
-     * nothing to AND/OR. */
-    children: [makeCondition(), makeCondition()],
+    children: [makeCondition()],
   };
 }
 
