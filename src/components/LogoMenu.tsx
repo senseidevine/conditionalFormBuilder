@@ -104,13 +104,13 @@ export function LogoMenu({
 
               <div className="logomenu-row">
                 <div className="logomenu-row-text">
-                  <div className="logomenu-row-title">Root operator</div>
+                  <div className="logomenu-row-title">Root bracket</div>
                   <div className="logomenu-row-desc">
-                    Show the AND / OR badge on the first level
+                    Show the bracket connector on the first level
                   </div>
                 </div>
                 <SegmentedTabs
-                  ariaLabel="Root operator"
+                  ariaLabel="Root bracket"
                   value={showRootOperator ? "on" : "off"}
                   onChange={(v) => onToggleRootOperator(v === "on")}
                   options={[

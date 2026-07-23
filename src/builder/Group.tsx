@@ -37,16 +37,13 @@ export function Group({
   showRootOperator,
   onMutate,
 }: GroupProps) {
-  /* The bracket connector renders whenever connectors are enabled — even
-   * for a single-child group — so the group is visually contained from
-   * the moment it exists. The AND / OR toggle badge, however, only
-   * appears once there are two or more children to operate on, and can
-   * be suppressed at the root level by the Root operator config. */
-  const showBracket = showConnectors;
-  const showToggle =
-    showConnectors &&
-    group.children.length > 1 &&
-    (variant !== "root" || showRootOperator);
+  /* The bracket connector renders whenever connectors are enabled and,
+   * at the root level, when the Root operator config is on. The AND / OR
+   * toggle badge additionally requires 2+ children to have anything to
+   * operate on. */
+  const showBracket =
+    showConnectors && (variant !== "root" || showRootOperator);
+  const showToggle = showBracket && group.children.length > 1;
 
   return (
     <div className={`grp grp--${variant}`} data-depth={depth}>
