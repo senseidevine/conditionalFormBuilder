@@ -45,10 +45,11 @@
   border-right: 0;
   border-top-left-radius: 16px;
   border-bottom-left-radius: 16px;
-  transition: border-color var(--dur-1) var(--ease);
+  transition: border-color 500ms var(--ease);
 }
 /* Hover the bracket connector to brighten the line — the badge and the
- * arms both light up together, since they share the same border. */
+ * arms both light up together, since they share the same border. Slow
+ * 500ms fade so the shift feels gentle, not snap. */
 .grp-bracket:hover::before {
   border-color: rgba(255, 255, 255, 0.4);
 }
