@@ -94,6 +94,12 @@ export function Group({
           )}
 
           <div className="grp-actions">
+            <ActionPill
+              icon={<IconGroup />}
+              onClick={() => onMutate(group.id, "addGroup")}
+            >
+              Section
+            </ActionPill>
             {showConnectors ? (
               <ActionPill
                 icon={<IconReturn />}
@@ -102,12 +108,6 @@ export function Group({
                 Group
               </ActionPill>
             ) : null}
-            <ActionPill
-              icon={<IconGroup />}
-              onClick={() => onMutate(group.id, "addGroup")}
-            >
-              Section
-            </ActionPill>
           </div>
         </div>
       </div>
