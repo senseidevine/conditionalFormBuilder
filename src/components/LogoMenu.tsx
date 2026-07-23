@@ -96,8 +96,8 @@ export function LogoMenu({
                   value={showConnectors ? "on" : "off"}
                   onChange={(v) => onToggleConnectors(v === "on")}
                   options={[
-                    { value: "on", label: "On" },
                     { value: "off", label: "Off" },
+                    { value: "on", label: "On" },
                   ]}
                 />
               </div>
@@ -115,8 +115,8 @@ export function LogoMenu({
                   value={showLoneBracket ? "on" : "off"}
                   onChange={(v) => onToggleLoneBracket(v === "on")}
                   options={[
-                    { value: "on", label: "On" },
                     { value: "off", label: "Off" },
+                    { value: "on", label: "On" },
                   ]}
                 />
               </div>
