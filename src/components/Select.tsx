@@ -9,10 +9,12 @@ interface SelectProps {
 }
 
 export function Select({ value, placeholder, onChange, options = [] }: SelectProps) {
+  const hasValue = Boolean(value);
   return (
-    <label className="select">
-      <span className={`select-value ${value ? "" : "is-placeholder"}`}>
-        {value || placeholder}
+    <label className={`select ${hasValue ? "is-filled" : ""}`}>
+      <span className="select-label">{placeholder}</span>
+      <span className="select-value" aria-hidden={!hasValue}>
+        {value || " "}
       </span>
       <IconChevronDown className="select-chevron" />
       <select
