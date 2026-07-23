@@ -51,10 +51,19 @@ export const IconReturn = (p: SVGProps<SVGSVGElement>) => (
   </svg>
 );
 
-/** Stacked lines — "≡ Group" */
+/** Two stacked filled pills — the Group action icon. */
 export const IconGroup = (p: SVGProps<SVGSVGElement>) => (
-  <svg {...base} {...p}>
-    <path d="M3 5h10M3 8h10M3 11h10" />
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width={16}
+    height={16}
+    viewBox="0 0 10 10"
+    fill="currentColor"
+    aria-hidden
+    {...p}
+  >
+    <path d="M0 0.866666C0 0.388019 0.38802 0 0.866667 0H9.13334C9.61199 0 10 0.38802 10 0.866667V3.33333C10 3.81198 9.61199 4.2 9.13334 4.2H0.866667C0.388021 4.2 0 3.81198 0 3.33333V0.866666Z" />
+    <path d="M0 6.00013C0 5.52148 0.38802 5.13346 0.866667 5.13346H9.13334C9.61199 5.13346 10 5.52148 10 6.00013V8.4668C10 8.94544 9.61199 9.33346 9.13334 9.33346H0.866667C0.388021 9.33346 0 8.94544 0 8.4668V6.00013Z" />
   </svg>
 );
 
