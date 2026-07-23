@@ -117,11 +117,17 @@
   align-items: center;
   gap: 6px;
   transition: color var(--dur-1) var(--ease),
-    background var(--dur-1) var(--ease);
+    background var(--dur-1) var(--ease),
+    transform var(--dur-spring) var(--spring);
 }
 .cblock-add-property:hover {
   color: var(--fg);
   background: rgba(255, 255, 255, 0.04);
+}
+.cblock-add-property:active {
+  transform: scale(0.94);
+  transition: color 60ms linear, background 60ms linear,
+    transform 60ms ease-out;
 }
 .cblock-add-property:focus-visible {
   outline: 2px solid var(--accent-focus);

@@ -19,12 +19,16 @@
   align-items: center;
   justify-content: center;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.28);
-  transition: background var(--dur-1) var(--ease);
+  transition: background var(--dur-1) var(--ease),
+    transform var(--dur-spring) var(--spring);
 }
 .optog:hover { background: #f2f2f4; }
-/* Deliberately no translateY on :active — the badge sits centered on the
- * bracket connector, and any vertical jump reads as jitter. */
-.optog:active { background: #e8e8ea; }
+/* Spring bounce on tap — quick compress, then springs back on release. */
+.optog:active {
+  background: #e8e8ea;
+  transform: scale(0.9);
+  transition: background 60ms linear, transform 60ms ease-out;
+}
 .optog:focus-visible {
   outline: 2px solid var(--accent-focus);
   outline-offset: 2px;

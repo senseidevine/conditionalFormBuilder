@@ -45,6 +45,12 @@
   border-right: 0;
   border-top-left-radius: 16px;
   border-bottom-left-radius: 16px;
+  transition: border-color var(--dur-1) var(--ease);
+}
+/* Hover the bracket connector to brighten the line — the badge and the
+ * arms both light up together, since they share the same border. */
+.grp-bracket:hover::before {
+  border-color: rgba(255, 255, 255, 0.4);
 }
 .grp-bracket .optog {
   position: relative;
@@ -82,10 +88,13 @@
   font-weight: 500;
   cursor: pointer;
   transition: background var(--dur-1) var(--ease),
-    transform 120ms var(--ease);
+    transform var(--dur-spring) var(--spring);
 }
 .apill:hover { background: #30333a; }
-.apill:active { transform: translateY(1px); }
+.apill:active {
+  transform: scale(0.94);
+  transition: background 60ms linear, transform 60ms ease-out;
+}
 .apill:focus-visible {
   outline: 2px solid var(--accent-focus);
   outline-offset: 2px;
