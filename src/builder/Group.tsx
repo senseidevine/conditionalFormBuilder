@@ -96,17 +96,17 @@ export function Group({
           <div className="grp-actions">
             {showConnectors ? (
               <ActionPill
-                icon={<IconReturn />}
+                icon={<IconGroup />}
                 onClick={() => onMutate(group.id, "addCondition")}
               >
-                Group
+                Section
               </ActionPill>
             ) : null}
             <ActionPill
-              icon={<IconGroup />}
+              icon={<IconReturn />}
               onClick={() => onMutate(group.id, "addGroup")}
             >
-              Section
+              Group
             </ActionPill>
           </div>
         </div>
