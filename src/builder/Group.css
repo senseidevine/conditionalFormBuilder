@@ -35,17 +35,17 @@
 .grp-bracket::before {
   content: "";
   position: absolute;
-  /* 20px top + bottom padding, vertical line 5px in from the column's
-   * left edge (moved 20px left from 25); arms extend 24px to the right
-   * with softer 10px corner curves. */
+  /* 20px top + bottom padding, vertical line 9px in from the column's
+   * left edge (moved 4px right from 5); arms extend 18px with 16px
+   * corner curves. */
   top: 20px;
   bottom: 20px;
-  left: 5px;
-  width: 24px;
+  left: 9px;
+  width: 18px;
   border: 1.5px solid rgba(255, 255, 255, 0.16);
   border-right: 0;
-  border-top-left-radius: 10px;
-  border-bottom-left-radius: 10px;
+  border-top-left-radius: 16px;
+  border-bottom-left-radius: 16px;
 }
 .grp-bracket .optog {
   position: relative;
