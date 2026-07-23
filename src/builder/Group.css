@@ -45,12 +45,14 @@
   border-right: 0;
   border-top-left-radius: 16px;
   border-bottom-left-radius: 16px;
-  transition: border-color var(--dur-1) var(--ease);
+  /* Asymmetric hover timing — base state uses 700ms, so the fade-OUT
+   * when the cursor leaves feels gentle. The :hover rule below overrides
+   * to 400ms for a snappier fade-IN when the cursor arrives. */
+  transition: border-color 700ms var(--ease);
 }
-/* Hover the bracket connector to brighten the line — the badge and the
- * arms both light up together, since they share the same border. */
 .grp-bracket:hover::before {
   border-color: rgba(255, 255, 255, 0.4);
+  transition: border-color 400ms var(--ease);
 }
 .grp-bracket .optog {
   position: relative;
