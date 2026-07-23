@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { StepRail } from "./components/StepRail";
 import { TabStrip, type TabItem } from "./components/TabStrip";
 import { IconArrowLeft } from "./components/Icons";
-import { Group } from "./builder/Group";
+import { Group, type Mutation } from "./builder/Group";
 import { T } from "./builder/tree";
 import { seedRoot, type GroupNode } from "./builder/types";
 import "./App.css";
@@ -33,15 +33,10 @@ export default function App() {
   );
   const isLast = activeIndex === SECTIONS.length - 1;
 
-  const onMutate = (
-    id: string,
-    mut:
-      | "toggle"
-      | "removeChild"
-      | "addCondition"
-      | "addGroup"
-      | "setField",
-    payload?: unknown
+  const onMutate: (id: string, mut: Mutation, payload?: unknown) => void = (
+    id,
+    mut,
+    payload
   ) => {
     setTree((r) => {
       switch (mut) {
@@ -53,12 +48,21 @@ export default function App() {
           return T.addCondition(r, id);
         case "addGroup":
           return T.addGroup(r, id, "AND");
-        case "setField": {
+        case "setTitle":
+          return T.setTitle(r, id, payload as string);
+        case "addProperty":
+          return T.addProperty(r, id);
+        case "setPropertyValue": {
           const p = payload as {
-            key: "field" | "cond" | "value" | "title";
+            propertyId: string;
+            key: "field" | "cond" | "value";
             val: string;
           };
-          return T.setField(r, id, p.key, p.val);
+          return T.setPropertyValue(r, id, p.propertyId, p.key, p.val);
+        }
+        case "removeProperty": {
+          const p = payload as { propertyId: string };
+          return T.removeProperty(r, id, p.propertyId);
         }
       }
     });

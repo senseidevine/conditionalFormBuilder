@@ -1,5 +1,5 @@
-import type { ConditionNode, GroupNode, Node, Operator } from "./types";
-import { makeCondition, makeGroup } from "./types";
+import type { GroupNode, Node, Operator, PropertyRow } from "./types";
+import { makeCondition, makeGroup, makeProperty } from "./types";
 
 type Updater = (n: Node) => Node;
 
@@ -19,9 +19,7 @@ function removeById(root: Node, id: string): Node {
   return { ...root, children: kept };
 }
 
-/** Walk the tree and drop any non-root group whose children array is empty.
- *  Called after a removal so a group whose last child was just deleted
- *  disappears too, instead of leaving an empty shell on the canvas. */
+/** Walk the tree and drop any non-root group whose children array is empty. */
 function pruneEmptyGroups(node: Node, isRoot: boolean): Node | null {
   if (node.kind !== "group") return node;
   const kept: Node[] = [];
@@ -55,15 +53,47 @@ export const T = {
         : n
     ) as GroupNode;
   },
-  setField(
+  setTitle(root: GroupNode, id: string, title: string): GroupNode {
+    return update(root, id, (n) =>
+      n.kind === "condition" ? { ...n, title } : n
+    ) as GroupNode;
+  },
+  addProperty(root: GroupNode, conditionId: string): GroupNode {
+    return update(root, conditionId, (n) =>
+      n.kind === "condition"
+        ? { ...n, properties: [...n.properties, makeProperty()] }
+        : n
+    ) as GroupNode;
+  },
+  setPropertyValue(
     root: GroupNode,
-    id: string,
-    key: keyof Pick<ConditionNode, "field" | "cond" | "value" | "title">,
+    conditionId: string,
+    propertyId: string,
+    key: keyof Pick<PropertyRow, "field" | "cond" | "value">,
     val: string
   ): GroupNode {
-    return update(root, id, (n) =>
-      n.kind === "condition" ? { ...n, [key]: val } : n
+    return update(root, conditionId, (n) =>
+      n.kind === "condition"
+        ? {
+            ...n,
+            properties: n.properties.map((p) =>
+              p.id === propertyId ? { ...p, [key]: val } : p
+            ),
+          }
+        : n
     ) as GroupNode;
+  },
+  removeProperty(root: GroupNode, conditionId: string, propertyId: string): GroupNode {
+    return update(root, conditionId, (n) => {
+      if (n.kind !== "condition") return n;
+      /* Never let a condition drop to zero properties — a condition
+       * with no rules would have nothing to configure. */
+      if (n.properties.length <= 1) return n;
+      return {
+        ...n,
+        properties: n.properties.filter((p) => p.id !== propertyId),
+      };
+    }) as GroupNode;
   },
   remove(root: GroupNode, id: string): GroupNode {
     const removed = removeById(root, id) as GroupNode;

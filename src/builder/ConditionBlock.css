@@ -1,10 +1,9 @@
 .cblock {
   /* Literal black at 15% opacity — the surface underneath (form frame or
-   * nested group) supplies the lift so this reads as a darker card
-   * within its container. */
+   * nested group) supplies the lift so this reads as a darker card. */
   background: rgba(0, 0, 0, 0.15);
   border-radius: 14px;
-  padding: 12px 14px 14px;
+  padding: 12px 14px 12px;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -58,4 +57,79 @@
   opacity: 1;
   outline: 2px solid var(--accent-focus);
   outline-offset: 2px;
+}
+
+/* One or more property rows */
+.cblock-props {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cblock-prop {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
+}
+.cblock-prop > .arule {
+  flex: 1;
+}
+
+.cblock-prop-remove {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--fg-mute);
+  font-size: 16px;
+  line-height: 1;
+  width: 24px;
+  height: 44px;
+  border-radius: 8px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity var(--dur-1) var(--ease),
+    background var(--dur-1) var(--ease),
+    color var(--dur-1) var(--ease);
+  align-self: center;
+}
+.cblock-prop:hover .cblock-prop-remove { opacity: 1; }
+.cblock-prop-remove:hover {
+  background: var(--surface-3);
+  color: var(--fg);
+}
+
+/* + Property — muted text link inside the card, aligned to the left */
+.cblock-add-property {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--fg-mute);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.1px;
+  padding: 4px 6px;
+  border-radius: 8px;
+  cursor: pointer;
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: color var(--dur-1) var(--ease),
+    background var(--dur-1) var(--ease);
+}
+.cblock-add-property:hover {
+  color: var(--fg);
+  background: rgba(255, 255, 255, 0.04);
+}
+.cblock-add-property:focus-visible {
+  outline: 2px solid var(--accent-focus);
+  outline-offset: 2px;
+}
+
+.cblock-add-property-plus {
+  font-size: 15px;
+  line-height: 1;
+  color: inherit;
 }

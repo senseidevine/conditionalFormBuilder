@@ -1,13 +1,19 @@
 export type Operator = "AND" | "OR";
 
-export interface ConditionNode {
+export interface PropertyRow {
   id: string;
-  kind: "condition";
-  /** Label above the attribute rule — the "Title" text in the spec sheet. */
-  title: string;
   field: string;
   cond: string;
   value: string;
+}
+
+export interface ConditionNode {
+  id: string;
+  kind: "condition";
+  /** Label above the property list — the "Title" text in the spec sheet. */
+  title: string;
+  /** One or more attribute rules attached to this condition. */
+  properties: PropertyRow[];
 }
 
 export interface GroupNode {
@@ -22,14 +28,16 @@ export type Node = ConditionNode | GroupNode;
 let __id = 0;
 const uid = () => `n${++__id}`;
 
+export function makeProperty(): PropertyRow {
+  return { id: uid(), field: "", cond: "", value: "" };
+}
+
 export function makeCondition(title = "Title"): ConditionNode {
   return {
     id: uid(),
     kind: "condition",
     title,
-    field: "",
-    cond: "",
-    value: "",
+    properties: [makeProperty()],
   };
 }
 

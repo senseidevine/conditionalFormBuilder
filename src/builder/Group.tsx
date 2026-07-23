@@ -4,6 +4,16 @@ import { OperatorToggle } from "./OperatorToggle";
 import { IconGroup, IconReturn } from "../components/Icons";
 import "./Group.css";
 
+export type Mutation =
+  | "toggle"
+  | "removeChild"
+  | "addCondition"
+  | "addGroup"
+  | "setTitle"
+  | "addProperty"
+  | "setPropertyValue"
+  | "removeProperty";
+
 interface GroupProps {
   group: GroupNode;
   depth: number;
@@ -13,23 +23,10 @@ interface GroupProps {
   /** Config from the logo menu — when false, the AND/OR bracket and the
    *  "Condition" action pill are hidden across the whole builder. */
   showConnectors: boolean;
-  onMutate: (
-    id: string,
-    mut:
-      | "toggle"
-      | "removeChild"
-      | "addCondition"
-      | "addGroup"
-      | "setField",
-    payload?: unknown
-  ) => void;
+  onMutate: (id: string, mut: Mutation, payload?: unknown) => void;
 }
 
 export function Group({ group, depth, variant, showConnectors, onMutate }: GroupProps) {
-  /* Toggle only shows when there's actually something to AND/OR — a group
-   * with a single child has no operator meaning. Uniform across root and
-   * nested variants. Also suppressed entirely when the logo-menu toggle
-   * is off. */
   const showBracket = showConnectors && group.children.length > 1;
 
   return (
@@ -50,8 +47,13 @@ export function Group({ group, depth, variant, showConnectors, onMutate }: Group
               <ConditionBlock
                 key={child.id}
                 node={child}
-                onChange={(k, v) =>
-                  onMutate(child.id, "setField", { key: k, val: v })
+                onSetTitle={(v) => onMutate(child.id, "setTitle", v)}
+                onSetProperty={(propertyId, key, val) =>
+                  onMutate(child.id, "setPropertyValue", { propertyId, key, val })
+                }
+                onAddProperty={() => onMutate(child.id, "addProperty")}
+                onRemoveProperty={(propertyId) =>
+                  onMutate(child.id, "removeProperty", { propertyId })
                 }
                 onRemove={
                   group.children.length > 1 || variant !== "root"
