@@ -35,11 +35,11 @@
 .grp-bracket::before {
   content: "";
   position: absolute;
-  /* Top curve aligns with the top of the first section's Title label. */
-  top: 14px;
-  /* Bottom curve wraps down to just past the last action pill. */
-  bottom: 18px;
-  right: 0;
+  /* Exact spec: 20px top + bottom padding, bracket line 25px in from the
+   * column's left edge, 8px wide (so 7px of breathing room on the right). */
+  top: 20px;
+  bottom: 20px;
+  left: 25px;
   width: 8px;
   border: 1.5px solid rgba(255, 255, 255, 0.16);
   border-right: 0;
