@@ -27,17 +27,24 @@ interface GroupProps {
 }
 
 export function Group({ group, depth, variant, showConnectors, onMutate }: GroupProps) {
-  const showBracket = showConnectors && group.children.length > 1;
+  /* The bracket connector renders whenever connectors are enabled — even
+   * for a single-child group — so the group is visually contained from
+   * the moment it exists. The AND / OR toggle badge, however, only
+   * appears once there are two or more children to operate on. */
+  const showBracket = showConnectors;
+  const showToggle = showConnectors && group.children.length > 1;
 
   return (
     <div className={`grp grp--${variant}`} data-depth={depth}>
       <div className="grp-body">
         {showBracket ? (
           <div className="grp-bracket" aria-hidden>
-            <OperatorToggle
-              operator={group.operator}
-              onToggle={() => onMutate(group.id, "toggle")}
-            />
+            {showToggle ? (
+              <OperatorToggle
+                operator={group.operator}
+                onToggle={() => onMutate(group.id, "toggle")}
+              />
+            ) : null}
           </div>
         ) : null}
 
