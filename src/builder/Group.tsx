@@ -23,8 +23,10 @@ interface GroupProps {
 }
 
 export function Group({ group, depth, variant, onMutate }: GroupProps) {
-  const showBracket =
-    variant === "nested" || (variant === "root" && group.children.length > 1);
+  /* Toggle only shows when there's actually something to AND/OR — a group
+   * with a single child has no operator meaning. Uniform across root and
+   * nested variants. */
+  const showBracket = group.children.length > 1;
 
   return (
     <div className={`grp grp--${variant}`} data-depth={depth}>

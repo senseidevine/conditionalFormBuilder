@@ -20,7 +20,9 @@
     transform 120ms var(--ease);
 }
 .optog:hover { background: #f2f2f4; }
-.optog:active { transform: translateY(1px); }
+/* Deliberately no translateY on :active — the badge sits centered on the
+ * bracket connector, and any vertical jump reads as jitter. */
+.optog:active { background: #e8e8ea; }
 .optog:focus-visible {
   outline: 2px solid var(--accent-focus);
   outline-offset: 2px;

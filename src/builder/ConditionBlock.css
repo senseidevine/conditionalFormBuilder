@@ -1,5 +1,8 @@
 .cblock {
-  background: var(--surface-1);
+  /* Black at 15% opacity, over whatever surface the block sits on.
+   * A hairline gives it definition when the parent surface is dark. */
+  background: rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.05);
   border-radius: 14px;
   padding: 12px 14px 14px;
   display: flex;
