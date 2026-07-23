@@ -43,14 +43,18 @@
 }
 
 .rail-step-icon {
-  width: 28px;
-  height: 28px;
+  width: 16px;
+  height: 16px;
   border-radius: 9999px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   color: var(--fg-mute);
   transition: color var(--dur-1) var(--ease);
+}
+.rail-step-icon svg {
+  width: 16px;
+  height: 16px;
 }
 
 .rail-step.is-active .rail-step-icon,
@@ -61,7 +65,7 @@
 .rail-step-label {
   font-size: 11px;
   letter-spacing: 0.4px;
-  font-weight: 500;
+  font-weight: 700;
   text-transform: none;
 }
 
