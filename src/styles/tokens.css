@@ -19,10 +19,12 @@
   --success: #1fc16b;
   --accent-focus: #7c83ff;
 
-  /* Type */
+  /* Type — Inter Variable is bundled via @fontsource-variable/inter and
+   * inlined into the CSS as a data URI, so the app has real Inter
+   * everywhere (dev, prod, and the single-file artifact). */
   --font-sans:
-    "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-    "Helvetica Neue", Arial, sans-serif;
+    "Inter Variable", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, "Helvetica Neue", Arial, sans-serif;
 
   /* Layout */
   --rail-w: 96px;
