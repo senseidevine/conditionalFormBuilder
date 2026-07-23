@@ -22,7 +22,9 @@
 /* Left bracket connector with the AND/OR badge floating in the middle */
 .grp-bracket {
   position: relative;
-  flex: 0 0 40px;
+  /* Wide enough to contain the 46px badge with a bit of breathing room,
+   * so it never overflows and pushes siblings when text changes. */
+  flex: 0 0 52px;
   display: flex;
   align-items: center;
   justify-content: center;

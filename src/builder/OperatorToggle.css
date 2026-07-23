@@ -3,9 +3,12 @@
   border: 0;
   background: #ffffff;
   color: #0a0b0e;
-  min-width: 42px;
+  /* Fixed width — "AND" and "OR" have different natural widths, and a
+   * min-width would let the badge grow on AND and shrink on OR,
+   * jittering the flex layout of neighbours on every click. */
+  width: 46px;
   height: 24px;
-  padding: 0 10px;
+  padding: 0;
   border-radius: 9999px;
   font: inherit;
   font-size: 10.5px;
@@ -16,8 +19,7 @@
   align-items: center;
   justify-content: center;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.28);
-  transition: background var(--dur-1) var(--ease),
-    transform 120ms var(--ease);
+  transition: background var(--dur-1) var(--ease);
 }
 .optog:hover { background: #f2f2f4; }
 /* Deliberately no translateY on :active — the badge sits centered on the
