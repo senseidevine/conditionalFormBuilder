@@ -22,9 +22,8 @@
 /* Left bracket connector with the AND/OR badge floating in the middle */
 .grp-bracket {
   position: relative;
-  /* Wide enough to contain the 46px badge with a bit of breathing room,
-   * so it never overflows and pushes siblings when text changes. */
-  flex: 0 0 52px;
+  /* Comfortably fits the 32px badge with room to spare. */
+  flex: 0 0 44px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -32,9 +31,12 @@
 .grp-bracket::before {
   content: "";
   position: absolute;
-  top: 12px;
-  bottom: 12px;
-  left: 20px;
+  /* Top curve is anchored 20px in so it lines up with the visual centre
+   * of the first condition block's Title text (Title sits at cblock
+   * padding-top 12 + half text height). */
+  top: 20px;
+  bottom: 20px;
+  left: 14px;
   width: 12px;
   border: 1.5px solid rgba(255, 255, 255, 0.16);
   border-right: 0;
