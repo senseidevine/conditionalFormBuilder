@@ -7,6 +7,8 @@ import "./LogoMenu.css";
 interface LogoMenuProps {
   showConnectors: boolean;
   onToggleConnectors: (v: boolean) => void;
+  showRootOperator: boolean;
+  onToggleRootOperator: (v: boolean) => void;
 }
 
 type Anchor = { top: number; left: number };
@@ -14,7 +16,12 @@ type Anchor = { top: number; left: number };
 /** The top-left "R" logo, now a menu trigger. Renders the popover into
  *  document.body via a portal + fixed positioning so it's never clipped
  *  by a parent stacking context. */
-export function LogoMenu({ showConnectors, onToggleConnectors }: LogoMenuProps) {
+export function LogoMenu({
+  showConnectors,
+  onToggleConnectors,
+  showRootOperator,
+  onToggleRootOperator,
+}: LogoMenuProps) {
   const [open, setOpen] = useState(false);
   const [anchor, setAnchor] = useState<Anchor>({ top: 0, left: 0 });
   const btnRef = useRef<HTMLButtonElement>(null);
@@ -88,6 +95,24 @@ export function LogoMenu({ showConnectors, onToggleConnectors }: LogoMenuProps) 
                   ariaLabel="Connectors"
                   value={showConnectors ? "on" : "off"}
                   onChange={(v) => onToggleConnectors(v === "on")}
+                  options={[
+                    { value: "on", label: "On" },
+                    { value: "off", label: "Off" },
+                  ]}
+                />
+              </div>
+
+              <div className="logomenu-row">
+                <div className="logomenu-row-text">
+                  <div className="logomenu-row-title">Root operator</div>
+                  <div className="logomenu-row-desc">
+                    Show the AND / OR badge on the first level
+                  </div>
+                </div>
+                <SegmentedTabs
+                  ariaLabel="Root operator"
+                  value={showRootOperator ? "on" : "off"}
+                  onChange={(v) => onToggleRootOperator(v === "on")}
                   options={[
                     { value: "on", label: "On" },
                     { value: "off", label: "Off" },
