@@ -101,14 +101,13 @@ export function Group({
               >
                 Section
               </ActionPill>
-            ) : (
-              <ActionPill
-                icon={<IconReturn />}
-                onClick={() => onMutate(group.id, "addGroup")}
-              >
-                Group
-              </ActionPill>
-            )}
+            ) : null}
+            <ActionPill
+              icon={<IconReturn />}
+              onClick={() => onMutate(group.id, "addGroup")}
+            >
+              Group
+            </ActionPill>
           </div>
         </div>
       </div>
