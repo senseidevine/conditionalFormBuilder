@@ -24,33 +24,33 @@
 /* Left bracket connector with the AND/OR badge floating in the middle */
 .grp-bracket {
   position: relative;
-  /* Comfortably fits the 32px badge with room to spare. */
-  flex: 0 0 44px;
+  /* AND/OR badge on the left, bracket line pinned to the right edge of
+   * the column so its vertical line sits right up against the section.
+   * The horizontal ticks extend into the section itself. */
+  flex: 0 0 40px;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
 }
 .grp-bracket::before {
   content: "";
   position: absolute;
-  /* Top curve is anchored 20px in so it lines up with the visual centre
-   * of the first condition block's Title text (Title sits at cblock
-   * padding-top 12 + half text height). */
-  top: 20px;
-  bottom: 20px;
-  left: 14px;
-  width: 12px;
+  /* Top curve aligns with the top of the first section's Title label. */
+  top: 14px;
+  /* Bottom curve wraps down to just past the last action pill. */
+  bottom: 18px;
+  right: 0;
+  width: 8px;
   border: 1.5px solid rgba(255, 255, 255, 0.16);
   border-right: 0;
-  border-top-left-radius: 10px;
-  border-bottom-left-radius: 10px;
+  border-top-left-radius: 6px;
+  border-bottom-left-radius: 6px;
 }
 .grp-bracket .optog {
   position: relative;
   z-index: 1;
-  /* Nudge 4px left so the badge sits over the vertical bracket line
-   * instead of centered in the column. */
-  transform: translateX(-4px);
+  /* Badge right edge lands against the vertical bracket line — no
+   * transform, sits at the column's flex-start. */
 }
 
 .grp-children {
