@@ -43,11 +43,18 @@ export const IconCircleDashed = (p: SVGProps<SVGSVGElement>) => (
   </svg>
 );
 
-/** Corner-return arrow — used for "↳ Condition" */
+/** Return / enter icon — used for the Condition action. */
 export const IconReturn = (p: SVGProps<SVGSVGElement>) => (
-  <svg {...base} {...p}>
-    <path d="M4 4v3.5a1.5 1.5 0 0 0 1.5 1.5H12" />
-    <path d="m9.5 6.5 2.5 2.5-2.5 2.5" />
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width={16}
+    height={16}
+    viewBox="0 0 13 13"
+    fill="currentColor"
+    aria-hidden
+    {...p}
+  >
+    <path d="M0 0.666667V4.1849C0 7.62747 2.79076 10.4182 6.23333 10.4182H7.90755V11.9085C7.90755 12.7854 8.69734 13.0543 9.33139 12.5515L12.3904 10.1314C12.8131 9.80405 12.8131 9.18441 12.3904 8.84535L9.33139 6.43691C8.68621 5.92249 7.90755 6.22647 7.90755 7.06825V8.61823H6.23333C3.78487 8.61823 1.8 6.63336 1.8 4.1849V0.666667C1.8 0.298477 1.50152 0 1.13333 0H0.666667C0.298477 0 0 0.298477 0 0.666667Z" />
   </svg>
 );
 
