@@ -1,12 +1,10 @@
 .select {
   position: relative;
-  display: flex;
-  align-items: flex-end;
-  gap: 0;
+  display: block;
   flex: 1;
   min-width: 0;
-  height: 52px;
-  padding: 8px 36px 6px 14px;
+  height: 60px;
+  padding: 0 40px 0 16px;
   background: rgba(255, 255, 255, 0.14);
   color: var(--fg);
   border-radius: var(--r-control);
@@ -15,16 +13,17 @@
 }
 .select:hover { background: rgba(255, 255, 255, 0.2); }
 
-/* Floating label — Material / Android style. Centered vertically when
- * empty and unfocused, animates up to a smaller label when the user
- * focuses or picks a value. */
+/* Floating label — Material / Android style, following the design spec.
+ * Empty state: label sits centered vertically at 15px.
+ * Filled or focused: label pinned to top-left (16px, 7px) at 13px, and
+ * the value shows at bottom-left (16px from left, 8px from bottom). */
 .select-label {
   position: absolute;
-  left: 14px;
+  left: 16px;
   top: 50%;
   transform: translateY(-50%);
   color: var(--fg-mute);
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 400;
   letter-spacing: 0.1px;
   pointer-events: none;
@@ -37,19 +36,22 @@
 
 .select.is-filled .select-label,
 .select:focus-within .select-label {
-  top: 6px;
+  top: 7px;
   transform: translateY(0);
-  font-size: 10.5px;
+  font-size: 13px;
   font-weight: 500;
   letter-spacing: 0.24px;
   color: var(--fg-mute);
 }
 
 .select-value {
-  font-size: 14px;
+  position: absolute;
+  left: 16px;
+  right: 40px;
+  bottom: 8px;
+  font-size: 17px;
   font-weight: 500;
   color: var(--fg);
-  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -63,7 +65,7 @@
 
 .select-chevron {
   position: absolute;
-  right: 12px;
+  right: 14px;
   top: 50%;
   transform: translateY(-50%);
   color: var(--fg-mute);
