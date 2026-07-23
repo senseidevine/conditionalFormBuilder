@@ -20,6 +20,8 @@ export interface GroupNode {
   id: string;
   kind: "group";
   operator: Operator;
+  /** Optional title label displayed at the top of a nested group card. */
+  title?: string;
   children: Node[];
 }
 

@@ -70,6 +70,26 @@ export function Group({
 
   return (
     <div className={`grp grp--${variant}`} data-depth={depth}>
+      {variant === "nested" ? (
+        <div className="grp-head">
+          <input
+            className="grp-title"
+            value={group.title ?? ""}
+            onChange={(e) => onMutate(group.id, "setTitle", e.target.value)}
+            placeholder="Group"
+            aria-label="Group title"
+            spellCheck={false}
+          />
+          <button
+            type="button"
+            className="grp-remove"
+            aria-label="Remove group"
+            onClick={() => onMutate(group.id, "removeChild")}
+          >
+            ×
+          </button>
+        </div>
+      ) : null}
       <div className="grp-body">
         {showBracket ? (
           <div className="grp-bracket" aria-hidden>

@@ -54,9 +54,8 @@ export const T = {
     ) as GroupNode;
   },
   setTitle(root: GroupNode, id: string, title: string): GroupNode {
-    return update(root, id, (n) =>
-      n.kind === "condition" ? { ...n, title } : n
-    ) as GroupNode;
+    /* Both conditions and groups can carry a title now. */
+    return update(root, id, (n) => ({ ...n, title })) as GroupNode;
   },
   addProperty(root: GroupNode, conditionId: string): GroupNode {
     return update(root, conditionId, (n) =>

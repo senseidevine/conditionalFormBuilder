@@ -7,6 +7,65 @@
    * against it uniformly regardless of nesting depth. */
   background: rgba(255, 255, 255, 0.03);
   padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Header row for a nested group — mirrors the ConditionBlock header. */
+.grp-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 20px;
+  padding: 0 2px;
+}
+
+.grp-title {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--fg-mute);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.1px;
+  padding: 0;
+  width: 100%;
+  outline: none;
+}
+.grp-title::placeholder { color: var(--fg-mute); }
+.grp-title:focus { color: var(--fg); }
+
+.grp-remove {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--fg-mute);
+  font-size: 18px;
+  line-height: 1;
+  width: 24px;
+  height: 24px;
+  border-radius: 9999px;
+  cursor: pointer;
+  opacity: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: opacity var(--dur-1) var(--ease),
+    background var(--dur-1) var(--ease),
+    color var(--dur-1) var(--ease);
+}
+.grp--nested:hover > .grp-head .grp-remove { opacity: 1; }
+.grp-remove:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--fg);
+}
+.grp-remove:focus-visible {
+  opacity: 1;
+  outline: 2px solid var(--accent-focus);
+  outline-offset: 2px;
 }
 
 /* Deepen a touch per nesting level to keep hierarchy readable */
