@@ -20,21 +20,23 @@
 }
 
 .logomenu-pop {
-  position: absolute;
-  top: calc(100% + 10px);
-  left: 0;
-  width: 280px;
+  /* Rendered into document.body via a portal — fixed positioning +
+   * top-tier z-index guarantee it's never clipped or covered. */
+  position: fixed;
+  width: 300px;
   background: #1a1c22;
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 14px;
   padding: 14px;
   box-shadow: 0 20px 48px rgba(0, 0, 0, 0.48),
     0 6px 12px rgba(0, 0, 0, 0.32);
-  z-index: 20;
+  z-index: 9999;
   display: flex;
   flex-direction: column;
   gap: 12px;
   animation: pop-in 180ms var(--ease) both;
+  font-family: var(--font-sans);
+  color: var(--fg);
 }
 @keyframes pop-in {
   from { opacity: 0; transform: translateY(-4px); }
@@ -53,7 +55,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: 14px;
+  flex-wrap: wrap;
 }
 
 .logomenu-row-text {
