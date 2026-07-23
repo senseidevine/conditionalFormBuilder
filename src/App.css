@@ -1,0 +1,130 @@
+.page {
+  position: relative;
+  min-height: 100dvh;
+  display: flex;
+  background: var(--bg);
+  overflow: hidden;
+  isolation: isolate;
+}
+
+/* Radial glow anchored at top-center of the canvas */
+.page-glow {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: radial-gradient(
+    ellipse 70% 50% at 50% -10%,
+    rgba(60, 66, 84, 0.55) 0%,
+    rgba(30, 32, 40, 0.35) 30%,
+    rgba(10, 11, 14, 0) 65%
+  );
+  pointer-events: none;
+}
+
+.main {
+  flex: 1;
+  min-width: 0;
+  padding: 40px 24px 140px;
+  display: flex;
+  justify-content: center;
+}
+
+.main-inner {
+  width: 100%;
+  max-width: var(--main-max);
+  position: relative;
+}
+
+/* Back button — circular chip at top-left of the block */
+.backbtn {
+  appearance: none;
+  border: 0;
+  background: var(--surface-2);
+  color: var(--fg);
+  width: 36px;
+  height: 36px;
+  border-radius: 9999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  margin-bottom: 20px;
+  transition: background var(--dur-1) var(--ease),
+    transform 120ms var(--ease);
+}
+.backbtn:hover { background: #262932; }
+.backbtn:active { transform: translateY(1px); }
+.backbtn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  transform: none;
+}
+.backbtn:focus-visible {
+  outline: 2px solid var(--accent-focus);
+  outline-offset: 2px;
+}
+
+.h1 {
+  font-size: 26px;
+  line-height: 1.15;
+  letter-spacing: -0.5px;
+  font-weight: 600;
+  margin: 0;
+  color: var(--fg);
+}
+
+.subtitle {
+  margin: 6px 0 0;
+  color: var(--fg-mute);
+  font-size: 14px;
+  letter-spacing: 0.1px;
+}
+
+.content {
+  margin-top: 20px;
+}
+
+.placeholder {
+  border: 1px dashed var(--hairline);
+  border-radius: var(--r-card);
+  padding: 60px 20px;
+  text-align: center;
+  color: var(--fg-mute);
+}
+.placeholder p { margin: 0; font-size: 14px; }
+
+/* Continue CTA — fixed at the bottom-center of the viewport */
+.cta-dock {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 40px;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.cta {
+  pointer-events: auto;
+  appearance: none;
+  border: 0;
+  background: #ffffff;
+  color: #0a0b0e;
+  min-width: 240px;
+  height: 48px;
+  padding: 0 24px;
+  border-radius: 9999px;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.1px;
+  cursor: pointer;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.32), 0 2px 6px rgba(0, 0, 0, 0.24);
+  transition: transform 120ms var(--ease), background var(--dur-1) var(--ease);
+}
+.cta:hover { background: #f2f2f4; }
+.cta:active { transform: translateY(1px); }
+.cta:focus-visible {
+  outline: 2px solid var(--accent-focus);
+  outline-offset: 2px;
+}

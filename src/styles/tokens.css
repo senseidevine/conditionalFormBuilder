@@ -1,0 +1,67 @@
+:root {
+  /* Canvas — near-black with cool undertone */
+  --bg: #08090c;
+  --bg-glow: #1a1c22;
+  --bg-glow-alpha: 0.9;
+
+  /* Elevated surfaces */
+  --surface-1: #17181c;   /* card */
+  --surface-2: #1e2025;   /* control pill */
+  --surface-3: #26282e;   /* action pill (Condition / Group) */
+
+  /* Ink */
+  --fg: #f2f3f5;
+  --fg-mute: #7d8087;
+  --fg-faint: #565961;
+  --hairline: rgba(255, 255, 255, 0.06);
+
+  /* Accents — only complete-step green and CTA white */
+  --success: #1fc16b;
+  --accent-focus: #7c83ff;
+
+  /* Type */
+  --font-sans:
+    "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+
+  /* Layout */
+  --rail-w: 96px;
+  --main-max: 720px;
+
+  /* Radii */
+  --r-pill: 9999px;
+  --r-card: 20px;
+  --r-control: 12px;
+  --r-chip: 10px;
+
+  /* Motion */
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --dur-1: 160ms;
+  --dur-2: 240ms;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: var(--font-sans);
+  color: var(--fg);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings: "cv11";
+  letter-spacing: 0.1px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+button {
+  font-family: inherit;
+}
