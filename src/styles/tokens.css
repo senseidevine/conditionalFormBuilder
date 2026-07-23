@@ -11,7 +11,7 @@
 
   /* Ink */
   --fg: #f2f3f5;
-  --fg-mute: #7d8087;
+  --fg-mute: rgba(255, 255, 255, 0.4);
   --fg-faint: #565961;
   --hairline: rgba(255, 255, 255, 0.06);
 
