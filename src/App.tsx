@@ -25,7 +25,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<string>("configuration");
   const [completed, setCompleted] = useState<string[]>(["general"]);
   const [tree, setTree] = useState<GroupNode>(() => seedRoot());
-  const [showConnectors, setShowConnectors] = useState<boolean>(true);
+  const [swapButtons, setSwapButtons] = useState<boolean>(false);
   const [showLoneBracket, setShowLoneBracket] = useState<boolean>(true);
 
   const activeIndex = useMemo(
@@ -88,8 +88,8 @@ export default function App() {
         steps={RAIL_STEPS}
         activeId="s1"
         completedIds={[]}
-        showConnectors={showConnectors}
-        onToggleConnectors={setShowConnectors}
+        swapButtons={swapButtons}
+        onToggleSwapButtons={setSwapButtons}
         showLoneBracket={showLoneBracket}
         onToggleLoneBracket={setShowLoneBracket}
       />
@@ -123,7 +123,7 @@ export default function App() {
                   group={tree}
                   depth={1}
                   variant="root"
-                  showConnectors={showConnectors}
+                  swapButtons={swapButtons}
                   showLoneBracket={showLoneBracket}
                   onMutate={onMutate}
                 />

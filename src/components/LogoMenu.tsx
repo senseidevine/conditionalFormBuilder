@@ -5,8 +5,8 @@ import { SegmentedTabs } from "./SegmentedTabs";
 import "./LogoMenu.css";
 
 interface LogoMenuProps {
-  showConnectors: boolean;
-  onToggleConnectors: (v: boolean) => void;
+  swapButtons: boolean;
+  onToggleSwapButtons: (v: boolean) => void;
   showLoneBracket: boolean;
   onToggleLoneBracket: (v: boolean) => void;
 }
@@ -17,8 +17,8 @@ type Anchor = { top: number; left: number };
  *  document.body via a portal + fixed positioning so it's never clipped
  *  by a parent stacking context. */
 export function LogoMenu({
-  showConnectors,
-  onToggleConnectors,
+  swapButtons,
+  onToggleSwapButtons,
   showLoneBracket,
   onToggleLoneBracket,
 }: LogoMenuProps) {
@@ -86,15 +86,15 @@ export function LogoMenu({
 
               <div className="logomenu-row">
                 <div className="logomenu-row-text">
-                  <div className="logomenu-row-title">Connectors</div>
+                  <div className="logomenu-row-title">Swap buttons</div>
                   <div className="logomenu-row-desc">
-                    Show AND / OR brackets and the Section action
+                    Swap the position of the Section and Group actions
                   </div>
                 </div>
                 <SegmentedTabs
-                  ariaLabel="Connectors"
-                  value={showConnectors ? "on" : "off"}
-                  onChange={(v) => onToggleConnectors(v === "on")}
+                  ariaLabel="Swap buttons"
+                  value={swapButtons ? "on" : "off"}
+                  onChange={(v) => onToggleSwapButtons(v === "on")}
                   options={[
                     { value: "off", label: "Off" },
                     { value: "on", label: "On" },

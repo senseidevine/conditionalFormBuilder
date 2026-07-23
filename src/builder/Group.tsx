@@ -20,9 +20,9 @@ interface GroupProps {
   /** "root" — no outer chrome / bracket; renders like a flat form area.
    *  "nested" — wrapped in a bracket connector with an operator toggle. */
   variant: "root" | "nested";
-  /** Config from the logo menu — when false, the AND/OR bracket and the
-   *  "Condition" action pill are hidden across the whole builder. */
-  showConnectors: boolean;
+  /** When true, the Section and Group action pills swap positions
+   *  (Group on the left, Section on the right). */
+  swapButtons: boolean;
   /** When false, the bracket is hidden for groups that have only one
    *  section (nothing to AND/OR yet). Groups with 2+ sections always
    *  show the bracket. */
@@ -34,7 +34,7 @@ export function Group({
   group,
   depth,
   variant,
-  showConnectors,
+  swapButtons,
   showLoneBracket,
   onMutate,
 }: GroupProps) {
@@ -43,8 +43,30 @@ export function Group({
    * AND / OR badge additionally requires 2+ children to have something
    * to operate on. */
   const hasMany = group.children.length > 1;
-  const showBracket = showConnectors && (hasMany || showLoneBracket);
+  const showBracket = hasMany || showLoneBracket;
   const showToggle = showBracket && hasMany;
+
+  const sectionPill = (
+    <ActionPill
+      key="section"
+      icon={<IconGroup />}
+      onClick={() => onMutate(group.id, "addCondition")}
+    >
+      Section
+    </ActionPill>
+  );
+  const groupPill = (
+    <ActionPill
+      key="group"
+      icon={<IconReturn />}
+      onClick={() => onMutate(group.id, "addGroup")}
+    >
+      Group
+    </ActionPill>
+  );
+  const actionOrder = swapButtons
+    ? [groupPill, sectionPill]
+    : [sectionPill, groupPill];
 
   return (
     <div className={`grp grp--${variant}`} data-depth={depth}>
@@ -86,29 +108,14 @@ export function Group({
                 group={child}
                 depth={depth + 1}
                 variant="nested"
-                showConnectors={showConnectors}
+                swapButtons={swapButtons}
                 showLoneBracket={showLoneBracket}
                 onMutate={onMutate}
               />
             )
           )}
 
-          <div className="grp-actions">
-            <ActionPill
-              icon={<IconGroup />}
-              onClick={() => onMutate(group.id, "addCondition")}
-            >
-              Section
-            </ActionPill>
-            {showConnectors ? (
-              <ActionPill
-                icon={<IconReturn />}
-                onClick={() => onMutate(group.id, "addGroup")}
-              >
-                Group
-              </ActionPill>
-            ) : null}
-          </div>
+          <div className="grp-actions">{actionOrder}</div>
         </div>
       </div>
     </div>

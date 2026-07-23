@@ -7,8 +7,8 @@ interface StepRailProps {
   activeId: string;
   completedIds: string[];
   onSelect?: (id: string) => void;
-  showConnectors: boolean;
-  onToggleConnectors: (v: boolean) => void;
+  swapButtons: boolean;
+  onToggleSwapButtons: (v: boolean) => void;
   showLoneBracket: boolean;
   onToggleLoneBracket: (v: boolean) => void;
 }
@@ -18,16 +18,16 @@ export function StepRail({
   activeId,
   completedIds,
   onSelect,
-  showConnectors,
-  onToggleConnectors,
+  swapButtons,
+  onToggleSwapButtons,
   showLoneBracket,
   onToggleLoneBracket,
 }: StepRailProps) {
   return (
     <aside className="rail" aria-label="Wizard steps">
       <LogoMenu
-        showConnectors={showConnectors}
-        onToggleConnectors={onToggleConnectors}
+        swapButtons={swapButtons}
+        onToggleSwapButtons={onToggleSwapButtons}
         showLoneBracket={showLoneBracket}
         onToggleLoneBracket={onToggleLoneBracket}
       />
