@@ -35,13 +35,12 @@
 .grp-bracket::before {
   content: "";
   position: absolute;
-  /* 20px top + bottom padding, vertical line 9px in from the column's
-   * left edge (moved 4px right from 5); arms extend 18px with 16px
-   * corner curves. */
+  /* Vertical line 15px in from the column's left edge (6px further right
+   * than 9), arms 14px wide (4px shorter than 18), 16px corner curves. */
   top: 20px;
   bottom: 20px;
-  left: 9px;
-  width: 18px;
+  left: 15px;
+  width: 14px;
   border: 1.5px solid rgba(255, 255, 255, 0.16);
   border-right: 0;
   border-top-left-radius: 16px;
