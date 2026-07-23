@@ -83,15 +83,19 @@
   color: var(--fg-mute);
   font-size: 16px;
   line-height: 1;
-  width: 24px;
-  height: 44px;
-  border-radius: 8px;
+  width: 28px;
+  height: 28px;
+  border-radius: 9999px;
   cursor: pointer;
   opacity: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+  padding: 0;
   transition: opacity var(--dur-1) var(--ease),
     background var(--dur-1) var(--ease),
     color var(--dur-1) var(--ease);
-  align-self: center;
 }
 .cblock-prop:hover .cblock-prop-remove { opacity: 1; }
 .cblock-prop-remove:hover {
