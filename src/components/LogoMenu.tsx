@@ -88,7 +88,7 @@ export function LogoMenu({
                 <div className="logomenu-row-text">
                   <div className="logomenu-row-title">Connectors</div>
                   <div className="logomenu-row-desc">
-                    Show AND / OR brackets and the Condition action
+                    Show AND / OR brackets and the Group action
                   </div>
                 </div>
                 <SegmentedTabs

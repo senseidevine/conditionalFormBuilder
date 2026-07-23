@@ -99,14 +99,14 @@ export function Group({
                 icon={<IconReturn />}
                 onClick={() => onMutate(group.id, "addCondition")}
               >
-                Condition
+                Group
               </ActionPill>
             ) : null}
             <ActionPill
               icon={<IconGroup />}
               onClick={() => onMutate(group.id, "addGroup")}
             >
-              Group
+              Section
             </ActionPill>
           </div>
         </div>
