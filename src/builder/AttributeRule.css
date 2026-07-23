@@ -1,0 +1,9 @@
+.arule {
+  display: flex;
+  gap: 10px;
+  align-items: stretch;
+}
+
+@media (max-width: 620px) {
+  .arule { flex-direction: column; }
+}

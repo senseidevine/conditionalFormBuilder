@@ -1,0 +1,58 @@
+.cblock {
+  background: var(--surface-1);
+  border-radius: 14px;
+  padding: 12px 14px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cblock-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 20px;
+}
+
+.cblock-title {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--fg-mute);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.1px;
+  padding: 0;
+  width: 100%;
+  outline: none;
+}
+.cblock-title::placeholder { color: var(--fg-mute); }
+.cblock-title:focus { color: var(--fg); }
+
+.cblock-remove {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--fg-mute);
+  font-size: 18px;
+  line-height: 1;
+  width: 24px;
+  height: 24px;
+  border-radius: 9999px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity var(--dur-1) var(--ease),
+    background var(--dur-1) var(--ease),
+    color var(--dur-1) var(--ease);
+}
+.cblock:hover .cblock-remove { opacity: 1; }
+.cblock-remove:hover {
+  background: var(--surface-3);
+  color: var(--fg);
+}
+.cblock-remove:focus-visible {
+  opacity: 1;
+  outline: 2px solid var(--accent-focus);
+  outline-offset: 2px;
+}

@@ -1,8 +1,10 @@
 import { useMemo, useState } from "react";
 import { StepRail } from "./components/StepRail";
 import { TabStrip, type TabItem } from "./components/TabStrip";
-import { ConditionCard } from "./components/ConditionCard";
 import { IconArrowLeft } from "./components/Icons";
+import { Group } from "./builder/Group";
+import { T } from "./builder/tree";
+import { seedRoot, type GroupNode } from "./builder/types";
 import "./App.css";
 
 const SECTIONS: TabItem[] = [
@@ -19,22 +21,10 @@ const RAIL_STEPS = [
   { id: "s4", label: "Label" },
 ];
 
-interface Row {
-  id: string;
-  field: string;
-  cond: string;
-  value: string;
-}
-
-let __id = 0;
-const uid = () => `r${++__id}`;
-
 export default function App() {
   const [activeTab, setActiveTab] = useState<string>("configuration");
   const [completed, setCompleted] = useState<string[]>(["general"]);
-  const [rows, setRows] = useState<Row[]>(() => [
-    { id: uid(), field: "", cond: "", value: "" },
-  ]);
+  const [tree, setTree] = useState<GroupNode>(() => seedRoot());
 
   const activeIndex = useMemo(
     () => SECTIONS.findIndex((s) => s.id === activeTab),
@@ -42,8 +32,35 @@ export default function App() {
   );
   const isLast = activeIndex === SECTIONS.length - 1;
 
-  const handleChange = (id: string, key: "field" | "cond" | "value", v: string) => {
-    setRows((rs) => rs.map((r) => (r.id === id ? { ...r, [key]: v } : r)));
+  const onMutate = (
+    id: string,
+    mut:
+      | "toggle"
+      | "removeChild"
+      | "addCondition"
+      | "addGroup"
+      | "setField",
+    payload?: unknown
+  ) => {
+    setTree((r) => {
+      switch (mut) {
+        case "toggle":
+          return T.toggleOperator(r, id);
+        case "removeChild":
+          return T.remove(r, id);
+        case "addCondition":
+          return T.addCondition(r, id);
+        case "addGroup":
+          return T.addGroup(r, id, "AND");
+        case "setField": {
+          const p = payload as {
+            key: "field" | "cond" | "value" | "title";
+            val: string;
+          };
+          return T.setField(r, id, p.key, p.val);
+        }
+      }
+    });
   };
 
   const handleContinue = () => {
@@ -87,22 +104,14 @@ export default function App() {
 
           <div className="content">
             {activeTab === "configuration" ? (
-              <ConditionCard
-                rows={rows}
-                onChange={handleChange}
-                onAddCondition={() =>
-                  setRows((rs) => [
-                    ...rs,
-                    { id: uid(), field: "", cond: "", value: "" },
-                  ])
-                }
-                onAddGroup={() =>
-                  setRows((rs) => [
-                    ...rs,
-                    { id: uid(), field: "", cond: "", value: "" },
-                  ])
-                }
-              />
+              <div className="form-frame">
+                <Group
+                  group={tree}
+                  depth={1}
+                  variant="root"
+                  onMutate={onMutate}
+                />
+              </div>
             ) : (
               <div className="placeholder">
                 <p>{SECTIONS.find((s) => s.id === activeTab)?.label} step</p>

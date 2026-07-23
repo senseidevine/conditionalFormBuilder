@@ -1,0 +1,90 @@
+.grp {
+  border-radius: 16px;
+}
+
+.grp--nested {
+  background: var(--surface-2);
+  padding: 12px;
+}
+
+/* Depth-based tint so nested groups feel visually contained */
+.grp[data-depth="2"] { background: #22242a; }
+.grp[data-depth="3"] { background: #262930; }
+
+.grp-body {
+  display: flex;
+  gap: 12px;
+  align-items: stretch;
+}
+
+/* Left bracket connector with the AND/OR badge floating in the middle */
+.grp-bracket {
+  position: relative;
+  flex: 0 0 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.grp-bracket::before {
+  content: "";
+  position: absolute;
+  top: 12px;
+  bottom: 12px;
+  left: 20px;
+  width: 12px;
+  border: 1.5px solid rgba(255, 255, 255, 0.16);
+  border-right: 0;
+  border-top-left-radius: 10px;
+  border-bottom-left-radius: 10px;
+}
+.grp-bracket .optog {
+  position: relative;
+  z-index: 1;
+}
+
+.grp-children {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Bottom Condition / Group action pills */
+.grp-actions {
+  display: flex;
+  gap: 8px;
+  padding-top: 2px;
+}
+
+.apill {
+  appearance: none;
+  border: 0;
+  background: var(--surface-3);
+  color: var(--fg);
+  padding: 7px 14px 7px 10px;
+  border-radius: 9999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background var(--dur-1) var(--ease),
+    transform 120ms var(--ease);
+}
+.apill:hover { background: #30333a; }
+.apill:active { transform: translateY(1px); }
+.apill:focus-visible {
+  outline: 2px solid var(--accent-focus);
+  outline-offset: 2px;
+}
+
+.apill-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  color: var(--fg-mute);
+}

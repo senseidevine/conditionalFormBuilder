@@ -1,0 +1,27 @@
+.optog {
+  appearance: none;
+  border: 0;
+  background: #ffffff;
+  color: #0a0b0e;
+  min-width: 42px;
+  height: 24px;
+  padding: 0 10px;
+  border-radius: 9999px;
+  font: inherit;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.28);
+  transition: background var(--dur-1) var(--ease),
+    transform 120ms var(--ease);
+}
+.optog:hover { background: #f2f2f4; }
+.optog:active { transform: translateY(1px); }
+.optog:focus-visible {
+  outline: 2px solid var(--accent-focus);
+  outline-offset: 2px;
+}

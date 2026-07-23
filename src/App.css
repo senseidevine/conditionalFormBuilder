@@ -93,6 +93,14 @@
 }
 .placeholder p { margin: 0; font-size: 14px; }
 
+/* Wraps the recursive Group builder inside the Configuration step */
+.form-frame {
+  border-radius: var(--r-card);
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+}
+
 /* Continue CTA — fixed at the bottom-center of the viewport */
 .cta-dock {
   position: fixed;
