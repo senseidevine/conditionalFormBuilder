@@ -15,7 +15,9 @@
 
 .grp-body {
   display: flex;
-  gap: 12px;
+  /* Bracket column butts right up against the children column so the
+   * bracket line reads as attached to the section it wraps. */
+  gap: 0;
   align-items: stretch;
 }
 
@@ -46,6 +48,9 @@
 .grp-bracket .optog {
   position: relative;
   z-index: 1;
+  /* Nudge 4px left so the badge sits over the vertical bracket line
+   * instead of centered in the column. */
+  transform: translateX(-4px);
 }
 
 .grp-children {
