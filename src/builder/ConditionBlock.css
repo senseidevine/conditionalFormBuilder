@@ -1,12 +1,16 @@
 .cblock {
-  /* Literal black at 15% opacity — the surface underneath (form frame or
-   * nested group) supplies the lift so this reads as a darker card. */
-  background: rgba(0, 0, 0, 0.15);
+  /* Nested background — default is 10% white. */
+  background: rgba(255, 255, 255, 0.1);
   border-radius: 14px;
   padding: 12px 14px 12px;
   display: flex;
   flex-direction: column;
   gap: 10px;
+}
+/* When any ancestor has the dark-nested toggle on, all cblocks switch
+ * from the 10% white lift to 15% black. */
+[data-bg-dark="true"] .cblock {
+  background: rgba(0, 0, 0, 0.15);
 }
 
 .cblock-head {
