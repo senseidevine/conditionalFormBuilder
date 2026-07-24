@@ -1,7 +1,7 @@
 import type { GroupNode } from "./types";
 import { ConditionBlock } from "./ConditionBlock";
 import { OperatorToggle } from "./OperatorToggle";
-import { IconGroup, IconReturn } from "../components/Icons";
+import { IconGroup, IconReturn, IconTrash } from "../components/Icons";
 import "./Group.css";
 
 export type Mutation =
@@ -93,7 +93,7 @@ export function Group({
             aria-label="Remove group"
             onClick={() => onMutate(group.id, "removeChild")}
           >
-            ×
+            <IconTrash />
           </button>
         </div>
       ) : null}

@@ -42,10 +42,8 @@
   border: 0;
   background: transparent;
   color: var(--fg-mute);
-  font-size: 18px;
-  line-height: 1;
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
   border-radius: 9999px;
   cursor: pointer;
   opacity: 0;
@@ -56,6 +54,10 @@
   transition: opacity var(--dur-1) var(--ease),
     background var(--dur-1) var(--ease),
     color var(--dur-1) var(--ease);
+}
+.grp-remove svg {
+  width: 14px;
+  height: 14px;
 }
 .grp--nested:hover > .grp-head .grp-remove { opacity: 1; }
 .grp-remove:hover {
