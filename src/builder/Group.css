@@ -73,10 +73,6 @@
   outline-offset: 2px;
 }
 
-/* Deepen a touch per nesting level to keep hierarchy readable */
-.cblock[data-depth="2"] { background: rgba(255, 255, 255, 0.045); }
-.cblock[data-depth="3"] { background: rgba(255, 255, 255, 0.06); }
-
 .grp-body {
   display: flex;
   /* Bracket column butts right up against the children column so the
