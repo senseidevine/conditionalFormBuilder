@@ -113,6 +113,11 @@
   border-color: rgba(255, 255, 255, 0.4);
   transition: border-color 400ms var(--ease);
 }
+/* Connector hover disabled — override the :hover rule so the bracket
+ * line stays at its base 16% white. */
+.grp[data-hover-off="true"] .grp-bracket:hover::before {
+  border-color: rgba(255, 255, 255, 0.16);
+}
 .grp-bracket .optog {
   position: relative;
   z-index: 1;

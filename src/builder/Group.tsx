@@ -27,6 +27,8 @@ interface GroupProps {
    *  section (nothing to AND/OR yet). Groups with 2+ sections always
    *  show the bracket. */
   showLoneBracket: boolean;
+  /** When false, the bracket line does not brighten on hover. */
+  connectorHover: boolean;
   onMutate: (id: string, mut: Mutation, payload?: unknown) => void;
 }
 
@@ -36,6 +38,7 @@ export function Group({
   variant,
   swapButtons,
   showLoneBracket,
+  connectorHover,
   onMutate,
 }: GroupProps) {
   /* Rule: 2+ sections always show the bracket. A group of one shows the
@@ -69,7 +72,11 @@ export function Group({
     : [sectionPill, groupPill];
 
   return (
-    <div className={`grp grp--${variant}`} data-depth={depth}>
+    <div
+      className={`grp grp--${variant}`}
+      data-depth={depth}
+      data-hover-off={!connectorHover}
+    >
       {variant === "nested" ? (
         <div className="grp-head">
           <input
@@ -130,6 +137,7 @@ export function Group({
                 variant="nested"
                 swapButtons={swapButtons}
                 showLoneBracket={showLoneBracket}
+                connectorHover={connectorHover}
                 onMutate={onMutate}
               />
             )

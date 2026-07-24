@@ -27,6 +27,7 @@ export default function App() {
   const [tree, setTree] = useState<GroupNode>(() => seedRoot());
   const [swapButtons, setSwapButtons] = useState<boolean>(false);
   const [showLoneBracket, setShowLoneBracket] = useState<boolean>(true);
+  const [connectorHover, setConnectorHover] = useState<boolean>(true);
 
   const activeIndex = useMemo(
     () => SECTIONS.findIndex((s) => s.id === activeTab),
@@ -92,6 +93,8 @@ export default function App() {
         onToggleSwapButtons={setSwapButtons}
         showLoneBracket={showLoneBracket}
         onToggleLoneBracket={setShowLoneBracket}
+        connectorHover={connectorHover}
+        onToggleConnectorHover={setConnectorHover}
       />
 
       <main className="main">
@@ -125,6 +128,7 @@ export default function App() {
                   variant="root"
                   swapButtons={swapButtons}
                   showLoneBracket={showLoneBracket}
+                  connectorHover={connectorHover}
                   onMutate={onMutate}
                 />
               </div>

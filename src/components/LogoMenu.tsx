@@ -9,6 +9,8 @@ interface LogoMenuProps {
   onToggleSwapButtons: (v: boolean) => void;
   showLoneBracket: boolean;
   onToggleLoneBracket: (v: boolean) => void;
+  connectorHover: boolean;
+  onToggleConnectorHover: (v: boolean) => void;
 }
 
 type Anchor = { top: number; left: number };
@@ -21,6 +23,8 @@ export function LogoMenu({
   onToggleSwapButtons,
   showLoneBracket,
   onToggleLoneBracket,
+  connectorHover,
+  onToggleConnectorHover,
 }: LogoMenuProps) {
   const [open, setOpen] = useState(false);
   const [anchor, setAnchor] = useState<Anchor>({ top: 0, left: 0 });
@@ -114,6 +118,24 @@ export function LogoMenu({
                   ariaLabel="Single-section bracket"
                   value={showLoneBracket ? "on" : "off"}
                   onChange={(v) => onToggleLoneBracket(v === "on")}
+                  options={[
+                    { value: "off", label: "Off" },
+                    { value: "on", label: "On" },
+                  ]}
+                />
+              </div>
+
+              <div className="logomenu-row">
+                <div className="logomenu-row-text">
+                  <div className="logomenu-row-title">Connector hover</div>
+                  <div className="logomenu-row-desc">
+                    Brighten the bracket line when you hover it
+                  </div>
+                </div>
+                <SegmentedTabs
+                  ariaLabel="Connector hover"
+                  value={connectorHover ? "on" : "off"}
+                  onChange={(v) => onToggleConnectorHover(v === "on")}
                   options={[
                     { value: "off", label: "Off" },
                     { value: "on", label: "On" },
