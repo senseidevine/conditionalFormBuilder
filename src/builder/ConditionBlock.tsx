@@ -1,5 +1,6 @@
 import type { ConditionNode, PropertyRow } from "./types";
 import { AttributeRule } from "./AttributeRule";
+import { IconTrash } from "../components/Icons";
 import "./ConditionBlock.css";
 
 interface ConditionBlockProps {
@@ -45,7 +46,7 @@ export function ConditionBlock({
             aria-label="Remove condition"
             onClick={onRemove}
           >
-            ×
+            <IconTrash />
           </button>
         ) : null}
       </div>
