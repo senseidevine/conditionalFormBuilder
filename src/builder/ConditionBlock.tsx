@@ -103,7 +103,7 @@ function PropertyRowView({
           aria-label="Remove property"
           onClick={onRemove}
         >
-          ×
+          <IconTrash />
         </button>
       ) : null}
     </div>

@@ -91,8 +91,6 @@
   border: 0;
   background: transparent;
   color: var(--fg-mute);
-  font-size: 16px;
-  line-height: 1;
   width: 28px;
   height: 28px;
   border-radius: 9999px;
@@ -106,6 +104,10 @@
   transition: opacity var(--dur-1) var(--ease),
     background var(--dur-1) var(--ease),
     color var(--dur-1) var(--ease);
+}
+.cblock-prop-remove svg {
+  width: 14px;
+  height: 14px;
 }
 .cblock-prop:hover .cblock-prop-remove { opacity: 1; }
 .cblock-prop-remove:hover {
