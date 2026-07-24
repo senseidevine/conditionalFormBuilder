@@ -58,7 +58,7 @@
   width: 14px;
   height: 14px;
 }
-.cblock:hover .cblock-remove { opacity: 1; }
+.cblock:hover:not(:has(.cblock:hover)) > .cblock-head .cblock-remove { opacity: 1; }
 .cblock-remove:hover {
   background: var(--surface-3);
   color: var(--fg);

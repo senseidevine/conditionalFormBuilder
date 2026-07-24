@@ -62,7 +62,10 @@
   width: 14px;
   height: 14px;
 }
-.cblock:hover > .grp-head .grp-remove { opacity: 1; }
+/* Only the innermost hovered cblock shows its remove — :has() excludes
+ * any ancestor cblock whose hover state is just a bubble from a nested
+ * cblock the cursor is actually on. */
+.cblock:hover:not(:has(.cblock:hover)) > .grp-head .grp-remove { opacity: 1; }
 .grp-remove:hover {
   background: rgba(255, 255, 255, 0.08);
   color: var(--fg);
