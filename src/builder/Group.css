@@ -2,7 +2,7 @@
   border-radius: 16px;
 }
 
-.grp--nested {
+.cblock {
   /* Nested background — default is 10% white. */
   background: rgba(255, 255, 255, 0.1);
   padding: 12px;
@@ -11,7 +11,7 @@
   gap: 10px;
 }
 /* Nested background config: 15% black instead of the white lift. */
-.grp--nested[data-bg-dark="true"] {
+.cblock[data-bg-dark="true"] {
   background: rgba(0, 0, 0, 0.15);
 }
 
@@ -62,7 +62,7 @@
   width: 14px;
   height: 14px;
 }
-.grp--nested:hover > .grp-head .grp-remove { opacity: 1; }
+.cblock:hover > .grp-head .grp-remove { opacity: 1; }
 .grp-remove:hover {
   background: rgba(255, 255, 255, 0.08);
   color: var(--fg);
@@ -74,8 +74,8 @@
 }
 
 /* Deepen a touch per nesting level to keep hierarchy readable */
-.grp[data-depth="2"] { background: rgba(255, 255, 255, 0.045); }
-.grp[data-depth="3"] { background: rgba(255, 255, 255, 0.06); }
+.cblock[data-depth="2"] { background: rgba(255, 255, 255, 0.045); }
+.cblock[data-depth="3"] { background: rgba(255, 255, 255, 0.06); }
 
 .grp-body {
   display: flex;
@@ -120,7 +120,7 @@
 }
 /* Connector hover disabled — override the :hover rule so the bracket
  * line stays at its base 16% white. */
-.grp[data-hover-off="true"] .grp-bracket:hover::before {
+[data-hover-off="true"] .grp-bracket:hover::before {
   border-color: rgba(255, 255, 255, 0.16);
 }
 .grp-bracket .optog {
