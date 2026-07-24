@@ -2,7 +2,7 @@
   border-radius: 16px;
 }
 
-.grp--nested {
+.grp.cblock {
   /* Nested background — default is 10% white. */
   background: rgba(255, 255, 255, 0.1);
   padding: 12px;
@@ -11,7 +11,7 @@
   gap: 10px;
 }
 /* Nested background config: 15% black instead of the white lift. */
-.grp--nested[data-bg-dark="true"] {
+.grp.cblock[data-bg-dark="true"] {
   background: rgba(0, 0, 0, 0.15);
 }
 
@@ -62,7 +62,7 @@
   width: 14px;
   height: 14px;
 }
-.grp--nested:hover > .grp-head .grp-remove { opacity: 1; }
+.grp.cblock:hover > .grp-head .grp-remove { opacity: 1; }
 .grp-remove:hover {
   background: rgba(255, 255, 255, 0.08);
   color: var(--fg);
