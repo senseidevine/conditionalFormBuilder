@@ -81,7 +81,7 @@ export function Group({
 
   return (
     <div
-      className={variant === "nested" ? "grp cblock" : "grp grp--root"}
+      className={`grp grp--${variant}`}
       data-depth={depth}
       data-hover-off={!connectorHover}
       data-bg-dark={nestedBgDark}
