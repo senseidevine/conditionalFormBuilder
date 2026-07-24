@@ -11,6 +11,10 @@
   flex-direction: column;
   gap: 10px;
 }
+/* Nested background config: 15% black instead of the white lift. */
+.grp--nested[data-bg-dark="true"] {
+  background: rgba(0, 0, 0, 0.15);
+}
 
 /* Header row for a nested group — mirrors the ConditionBlock header. */
 .grp-head {

@@ -11,6 +11,10 @@ interface LogoMenuProps {
   onToggleLoneBracket: (v: boolean) => void;
   connectorHover: boolean;
   onToggleConnectorHover: (v: boolean) => void;
+  showBrackets: boolean;
+  onToggleShowBrackets: (v: boolean) => void;
+  nestedBgDark: boolean;
+  onToggleNestedBgDark: (v: boolean) => void;
 }
 
 type Anchor = { top: number; left: number };
@@ -25,6 +29,10 @@ export function LogoMenu({
   onToggleLoneBracket,
   connectorHover,
   onToggleConnectorHover,
+  showBrackets,
+  onToggleShowBrackets,
+  nestedBgDark,
+  onToggleNestedBgDark,
 }: LogoMenuProps) {
   const [open, setOpen] = useState(false);
   const [anchor, setAnchor] = useState<Anchor>({ top: 0, left: 0 });
@@ -136,6 +144,42 @@ export function LogoMenu({
                   ariaLabel="Connector hover"
                   value={connectorHover ? "on" : "off"}
                   onChange={(v) => onToggleConnectorHover(v === "on")}
+                  options={[
+                    { value: "off", label: "Off" },
+                    { value: "on", label: "On" },
+                  ]}
+                />
+              </div>
+
+              <div className="logomenu-row">
+                <div className="logomenu-row-text">
+                  <div className="logomenu-row-title">Brackets</div>
+                  <div className="logomenu-row-desc">
+                    Show the bracket connector at every level
+                  </div>
+                </div>
+                <SegmentedTabs
+                  ariaLabel="Brackets"
+                  value={showBrackets ? "on" : "off"}
+                  onChange={(v) => onToggleShowBrackets(v === "on")}
+                  options={[
+                    { value: "off", label: "Off" },
+                    { value: "on", label: "On" },
+                  ]}
+                />
+              </div>
+
+              <div className="logomenu-row">
+                <div className="logomenu-row-text">
+                  <div className="logomenu-row-title">Nested background</div>
+                  <div className="logomenu-row-desc">
+                    Off: subtle white lift. On: 15 % black.
+                  </div>
+                </div>
+                <SegmentedTabs
+                  ariaLabel="Nested background"
+                  value={nestedBgDark ? "on" : "off"}
+                  onChange={(v) => onToggleNestedBgDark(v === "on")}
                   options={[
                     { value: "off", label: "Off" },
                     { value: "on", label: "On" },

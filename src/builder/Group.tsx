@@ -29,6 +29,11 @@ interface GroupProps {
   showLoneBracket: boolean;
   /** When false, the bracket line does not brighten on hover. */
   connectorHover: boolean;
+  /** Master toggle for bracket visibility across the whole builder. */
+  showBrackets: boolean;
+  /** When true, nested groups switch from the subtle white lift to
+   *  15% black. */
+  nestedBgDark: boolean;
   onMutate: (id: string, mut: Mutation, payload?: unknown) => void;
 }
 
@@ -39,14 +44,17 @@ export function Group({
   swapButtons,
   showLoneBracket,
   connectorHover,
+  showBrackets,
+  nestedBgDark,
   onMutate,
 }: GroupProps) {
   /* Rule: 2+ sections always show the bracket. A group of one shows the
    * bracket only when the Single-section bracket config is on. The
    * AND / OR badge additionally requires 2+ children to have something
-   * to operate on. */
+   * to operate on. The whole bracket is suppressed when the Brackets
+   * master toggle is off. */
   const hasMany = group.children.length > 1;
-  const showBracket = hasMany || showLoneBracket;
+  const showBracket = showBrackets && (hasMany || showLoneBracket);
   const showToggle = showBracket && hasMany;
 
   const sectionPill = (
@@ -76,6 +84,7 @@ export function Group({
       className={`grp grp--${variant}`}
       data-depth={depth}
       data-hover-off={!connectorHover}
+      data-bg-dark={nestedBgDark}
     >
       {variant === "nested" ? (
         <div className="grp-head">
@@ -138,6 +147,8 @@ export function Group({
                 swapButtons={swapButtons}
                 showLoneBracket={showLoneBracket}
                 connectorHover={connectorHover}
+                showBrackets={showBrackets}
+                nestedBgDark={nestedBgDark}
                 onMutate={onMutate}
               />
             )

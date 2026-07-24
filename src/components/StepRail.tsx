@@ -13,6 +13,10 @@ interface StepRailProps {
   onToggleLoneBracket: (v: boolean) => void;
   connectorHover: boolean;
   onToggleConnectorHover: (v: boolean) => void;
+  showBrackets: boolean;
+  onToggleShowBrackets: (v: boolean) => void;
+  nestedBgDark: boolean;
+  onToggleNestedBgDark: (v: boolean) => void;
 }
 
 export function StepRail({
@@ -26,6 +30,10 @@ export function StepRail({
   onToggleLoneBracket,
   connectorHover,
   onToggleConnectorHover,
+  showBrackets,
+  onToggleShowBrackets,
+  nestedBgDark,
+  onToggleNestedBgDark,
 }: StepRailProps) {
   return (
     <aside className="rail" aria-label="Wizard steps">
@@ -36,6 +44,10 @@ export function StepRail({
         onToggleLoneBracket={onToggleLoneBracket}
         connectorHover={connectorHover}
         onToggleConnectorHover={onToggleConnectorHover}
+        showBrackets={showBrackets}
+        onToggleShowBrackets={onToggleShowBrackets}
+        nestedBgDark={nestedBgDark}
+        onToggleNestedBgDark={onToggleNestedBgDark}
       />
       <ul className="rail-list">
         {steps.map((s) => {

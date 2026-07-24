@@ -28,6 +28,8 @@ export default function App() {
   const [swapButtons, setSwapButtons] = useState<boolean>(false);
   const [showLoneBracket, setShowLoneBracket] = useState<boolean>(true);
   const [connectorHover, setConnectorHover] = useState<boolean>(true);
+  const [showBrackets, setShowBrackets] = useState<boolean>(true);
+  const [nestedBgDark, setNestedBgDark] = useState<boolean>(false);
 
   const activeIndex = useMemo(
     () => SECTIONS.findIndex((s) => s.id === activeTab),
@@ -95,6 +97,10 @@ export default function App() {
         onToggleLoneBracket={setShowLoneBracket}
         connectorHover={connectorHover}
         onToggleConnectorHover={setConnectorHover}
+        showBrackets={showBrackets}
+        onToggleShowBrackets={setShowBrackets}
+        nestedBgDark={nestedBgDark}
+        onToggleNestedBgDark={setNestedBgDark}
       />
 
       <main className="main">
@@ -129,6 +135,8 @@ export default function App() {
                   swapButtons={swapButtons}
                   showLoneBracket={showLoneBracket}
                   connectorHover={connectorHover}
+                  showBrackets={showBrackets}
+                  nestedBgDark={nestedBgDark}
                   onMutate={onMutate}
                 />
               </div>
