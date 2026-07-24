@@ -116,6 +116,24 @@ export function LogoMenu({
 
               <div className="logomenu-row">
                 <div className="logomenu-row-text">
+                  <div className="logomenu-row-title">Brackets</div>
+                  <div className="logomenu-row-desc">
+                    Show the bracket connector at every level
+                  </div>
+                </div>
+                <SegmentedTabs
+                  ariaLabel="Brackets"
+                  value={showBrackets ? "on" : "off"}
+                  onChange={(v) => onToggleShowBrackets(v === "on")}
+                  options={[
+                    { value: "off", label: "Off" },
+                    { value: "on", label: "On" },
+                  ]}
+                />
+              </div>
+
+              <div className="logomenu-row">
+                <div className="logomenu-row-text">
                   <div className="logomenu-row-title">Single-section bracket</div>
                   <div className="logomenu-row-desc">
                     Show the bracket when a group has only one section.
@@ -153,27 +171,9 @@ export function LogoMenu({
 
               <div className="logomenu-row">
                 <div className="logomenu-row-text">
-                  <div className="logomenu-row-title">Brackets</div>
-                  <div className="logomenu-row-desc">
-                    Show the bracket connector at every level
-                  </div>
-                </div>
-                <SegmentedTabs
-                  ariaLabel="Brackets"
-                  value={showBrackets ? "on" : "off"}
-                  onChange={(v) => onToggleShowBrackets(v === "on")}
-                  options={[
-                    { value: "off", label: "Off" },
-                    { value: "on", label: "On" },
-                  ]}
-                />
-              </div>
-
-              <div className="logomenu-row">
-                <div className="logomenu-row-text">
                   <div className="logomenu-row-title">Nested background</div>
                   <div className="logomenu-row-desc">
-                    Off: subtle white lift. On: 15 % black.
+                    Off: 10 % white. On: 15 % black.
                   </div>
                 </div>
                 <SegmentedTabs

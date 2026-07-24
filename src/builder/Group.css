@@ -3,9 +3,8 @@
 }
 
 .grp--nested {
-  /* Same subtle lift as the outer form frame — cards inside darken
-   * against it uniformly regardless of nesting depth. */
-  background: rgba(255, 255, 255, 0.03);
+  /* Nested background — default is 10% white. */
+  background: rgba(255, 255, 255, 0.1);
   padding: 12px;
   display: flex;
   flex-direction: column;
