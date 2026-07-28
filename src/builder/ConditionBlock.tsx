@@ -96,16 +96,19 @@ function PropertyRowView({
         value={property.value}
         onChange={onChange}
       />
-      {canRemove ? (
-        <button
-          type="button"
-          className="cblock-prop-remove"
-          aria-label="Remove property"
-          onClick={onRemove}
-        >
-          <IconTrash />
-        </button>
-      ) : null}
+      {/* Rendered even when not removable so the width can transition to
+       * 0 as the last property becomes the only property — that gives
+       * the arule column a smooth expansion into the freed space. */}
+      <button
+        type="button"
+        className={`cblock-prop-remove ${canRemove ? "" : "is-hidden"}`}
+        aria-label="Remove property"
+        aria-hidden={!canRemove}
+        tabIndex={canRemove ? undefined : -1}
+        onClick={canRemove ? onRemove : undefined}
+      >
+        <IconTrash />
+      </button>
     </div>
   );
 }

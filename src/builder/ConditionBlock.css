@@ -101,10 +101,24 @@
   justify-content: center;
   align-self: center;
   padding: 0;
+  overflow: hidden;
+  flex: 0 0 auto;
   transition: opacity var(--dur-1) var(--ease),
     background var(--dur-1) var(--ease),
-    color var(--dur-1) var(--ease);
+    color var(--dur-1) var(--ease),
+    width 220ms var(--ease),
+    margin-left 220ms var(--ease);
 }
+/* When the row is the only remaining property, collapse the remove
+ * button (and the flex gap that would otherwise still sit before it)
+ * so .arule grows smoothly into the freed space. */
+.cblock-prop-remove.is-hidden {
+  opacity: 0;
+  width: 0;
+  margin-left: -6px;
+  pointer-events: none;
+}
+.cblock-prop:hover .cblock-prop-remove.is-hidden { opacity: 0; }
 .cblock-prop-remove svg {
   width: 14px;
   height: 14px;
