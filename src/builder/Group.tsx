@@ -1,12 +1,8 @@
-import { useState } from "react";
 import type { GroupNode } from "./types";
 import { ConditionBlock } from "./ConditionBlock";
 import { OperatorToggle } from "./OperatorToggle";
 import { IconGroup, IconReturn, IconTrash } from "../components/Icons";
-import { Slot } from "../components/Slot";
 import "./Group.css";
-
-const REMOVE_ANIM_MS = 200;
 
 export type Mutation =
   | "toggle"
@@ -52,11 +48,6 @@ export function Group({
   nestedBgDark,
   onMutate,
 }: GroupProps) {
-  /* Rule: 2+ sections always show the bracket. A group of one shows the
-   * bracket only when the Single-section bracket config is on. The
-   * AND / OR badge additionally requires 2+ children to have something
-   * to operate on. The whole bracket is suppressed when the Brackets
-   * master toggle is off. */
   const hasMany = group.children.length > 1;
   const showBracket = showBrackets && (hasMany || showLoneBracket);
   const showToggle = showBracket && hasMany;
@@ -83,13 +74,7 @@ export function Group({
     ? [groupPill, sectionPill]
     : [sectionPill, groupPill];
 
-  const [leaving, setLeaving] = useState(false);
-  const handleRemove = () => {
-    setLeaving(true);
-    setTimeout(() => onMutate(group.id, "removeChild"), REMOVE_ANIM_MS);
-  };
-
-  const inner = (
+  return (
     <div
       className={variant === "nested" ? "cblock" : "grp grp--root"}
       data-depth={depth}
@@ -110,7 +95,7 @@ export function Group({
             type="button"
             className="grp-remove"
             aria-label="Remove group"
-            onClick={handleRemove}
+            onClick={() => onMutate(group.id, "removeChild")}
           >
             <IconTrash />
           </button>
@@ -169,8 +154,6 @@ export function Group({
       </div>
     </div>
   );
-
-  return variant === "nested" ? <Slot leaving={leaving}>{inner}</Slot> : inner;
 }
 
 function ActionPill({
