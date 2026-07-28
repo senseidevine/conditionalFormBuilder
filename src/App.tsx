@@ -15,7 +15,7 @@ const RAIL_STEPS = [
 export default function App() {
   const [tree, setTree] = useState<GroupNode>(() => seedRoot());
   const [swapButtons, setSwapButtons] = useState<boolean>(false);
-  const [showLoneBracket, setShowLoneBracket] = useState<boolean>(true);
+  const [showLoneBracket, setShowLoneBracket] = useState<boolean>(false);
   const [connectorHover, setConnectorHover] = useState<boolean>(false);
   const [showBrackets, setShowBrackets] = useState<boolean>(true);
   const [nestedBgDark, setNestedBgDark] = useState<boolean>(true);
