@@ -5,7 +5,7 @@ import { IconTrash } from "../components/Icons";
 import { Slot } from "../components/Slot";
 import "./ConditionBlock.css";
 
-const REMOVE_ANIM_MS = 220;
+const REMOVE_ANIM_MS = 200;
 
 interface ConditionBlockProps {
   node: ConditionNode;
