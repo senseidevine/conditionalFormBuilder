@@ -15,6 +15,8 @@ interface LogoMenuProps {
   onToggleShowBrackets: (v: boolean) => void;
   nestedBgDark: boolean;
   onToggleNestedBgDark: (v: boolean) => void;
+  smoothAnim: boolean;
+  onToggleSmoothAnim: (v: boolean) => void;
 }
 
 type Anchor = { top: number; left: number };
@@ -33,6 +35,8 @@ export function LogoMenu({
   onToggleShowBrackets,
   nestedBgDark,
   onToggleNestedBgDark,
+  smoothAnim,
+  onToggleSmoothAnim,
 }: LogoMenuProps) {
   const [open, setOpen] = useState(false);
   const [anchor, setAnchor] = useState<Anchor>({ top: 0, left: 0 });
@@ -180,6 +184,25 @@ export function LogoMenu({
                   ariaLabel="Nested background"
                   value={nestedBgDark ? "on" : "off"}
                   onChange={(v) => onToggleNestedBgDark(v === "on")}
+                  options={[
+                    { value: "off", label: "Off" },
+                    { value: "on", label: "On" },
+                  ]}
+                />
+              </div>
+
+              <div className="logomenu-row">
+                <div className="logomenu-row-text">
+                  <div className="logomenu-row-title">Smooth animations</div>
+                  <div className="logomenu-row-desc">
+                    Animate the bracket appearing and the property row's
+                    empty-space collapse.
+                  </div>
+                </div>
+                <SegmentedTabs
+                  ariaLabel="Smooth animations"
+                  value={smoothAnim ? "on" : "off"}
+                  onChange={(v) => onToggleSmoothAnim(v === "on")}
                   options={[
                     { value: "off", label: "Off" },
                     { value: "on", label: "On" },

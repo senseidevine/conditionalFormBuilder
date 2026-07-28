@@ -106,8 +106,8 @@
   transition: opacity var(--dur-1) var(--ease),
     background var(--dur-1) var(--ease),
     color var(--dur-1) var(--ease),
-    width 220ms var(--ease),
-    margin-left 220ms var(--ease);
+    width var(--anim-dur) var(--ease),
+    margin-left var(--anim-dur) var(--ease);
 }
 /* When the row is the only remaining property, collapse the remove
  * button (and the flex gap that would otherwise still sit before it)

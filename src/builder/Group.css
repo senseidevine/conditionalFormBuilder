@@ -95,7 +95,8 @@
   align-items: center;
   justify-content: flex-start;
   overflow: hidden;
-  transition: flex-basis 220ms var(--ease), opacity 220ms var(--ease);
+  transition: flex-basis var(--anim-dur) var(--ease),
+    opacity var(--anim-dur) var(--ease);
 }
 /* When the bracket shouldn't be shown (e.g. single-section group, or
  * the Brackets master toggle is off), collapse its column width and

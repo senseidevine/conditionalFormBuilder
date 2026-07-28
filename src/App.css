@@ -5,6 +5,15 @@
   background: var(--bg);
   overflow: hidden;
   isolation: isolate;
+  /* Global gate for the Smooth animations toggle. Descendants use
+   * `var(--anim-dur)` as the duration of their soft layout transitions
+   * (bracket wipe-in, arule expansion when a property row loses its
+   * remove button, etc.); flipping this to 0ms makes those changes
+   * instant. */
+  --anim-dur: 0ms;
+}
+.page[data-smooth-anim="true"] {
+  --anim-dur: 220ms;
 }
 
 /* Radial glow anchored at top-center of the canvas */

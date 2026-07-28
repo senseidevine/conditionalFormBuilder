@@ -19,6 +19,7 @@ export default function App() {
   const [connectorHover, setConnectorHover] = useState<boolean>(false);
   const [showBrackets, setShowBrackets] = useState<boolean>(true);
   const [nestedBgDark, setNestedBgDark] = useState<boolean>(true);
+  const [smoothAnim, setSmoothAnim] = useState<boolean>(true);
 
   const onMutate: (id: string, mut: Mutation, payload?: unknown) => void = (
     id,
@@ -56,7 +57,7 @@ export default function App() {
   };
 
   return (
-    <div className="page">
+    <div className="page" data-smooth-anim={smoothAnim}>
       <div className="page-glow" aria-hidden />
 
       <StepRail
@@ -73,6 +74,8 @@ export default function App() {
         onToggleShowBrackets={setShowBrackets}
         nestedBgDark={nestedBgDark}
         onToggleNestedBgDark={setNestedBgDark}
+        smoothAnim={smoothAnim}
+        onToggleSmoothAnim={setSmoothAnim}
       />
 
       <main className="main">
