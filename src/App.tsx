@@ -96,7 +96,6 @@ export default function App() {
                 connectorHover={connectorHover}
                 showBrackets={showBrackets}
                 nestedBgDark={nestedBgDark}
-                smoothAnim={smoothAnim}
                 onMutate={onMutate}
               />
             </div>
