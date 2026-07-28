@@ -1,8 +1,12 @@
+import { useState } from "react";
 import type { GroupNode } from "./types";
 import { ConditionBlock } from "./ConditionBlock";
 import { OperatorToggle } from "./OperatorToggle";
 import { IconGroup, IconReturn, IconTrash } from "../components/Icons";
+import { Slot } from "../components/Slot";
 import "./Group.css";
+
+const REMOVE_ANIM_MS = 220;
 
 export type Mutation =
   | "toggle"
@@ -34,6 +38,9 @@ interface GroupProps {
   /** When true, nested groups switch from the subtle white lift to
    *  15% black. */
   nestedBgDark: boolean;
+  /** When true, Section / Group add and remove animate via the Slot
+   *  wrapper. When false, mutations apply instantly. */
+  smoothAnim: boolean;
   onMutate: (id: string, mut: Mutation, payload?: unknown) => void;
 }
 
@@ -46,6 +53,7 @@ export function Group({
   connectorHover,
   showBrackets,
   nestedBgDark,
+  smoothAnim,
   onMutate,
 }: GroupProps) {
   const hasMany = group.children.length > 1;
@@ -74,7 +82,17 @@ export function Group({
     ? [groupPill, sectionPill]
     : [sectionPill, groupPill];
 
-  return (
+  const [leaving, setLeaving] = useState(false);
+  const handleRemove = () => {
+    if (!smoothAnim) {
+      onMutate(group.id, "removeChild");
+      return;
+    }
+    setLeaving(true);
+    setTimeout(() => onMutate(group.id, "removeChild"), REMOVE_ANIM_MS);
+  };
+
+  const inner = (
     <div
       className={variant === "nested" ? "cblock" : "grp grp--root"}
       data-depth={depth}
@@ -95,7 +113,7 @@ export function Group({
             type="button"
             className="grp-remove"
             aria-label="Remove group"
-            onClick={() => onMutate(group.id, "removeChild")}
+            onClick={handleRemove}
           >
             <IconTrash />
           </button>
@@ -136,6 +154,7 @@ export function Group({
                     ? () => onMutate(child.id, "removeChild")
                     : undefined
                 }
+                smoothAnim={smoothAnim}
               />
             ) : (
               <Group
@@ -148,6 +167,7 @@ export function Group({
                 connectorHover={connectorHover}
                 showBrackets={showBrackets}
                 nestedBgDark={nestedBgDark}
+                smoothAnim={smoothAnim}
                 onMutate={onMutate}
               />
             )
@@ -158,6 +178,8 @@ export function Group({
       </div>
     </div>
   );
+
+  return variant === "nested" ? <Slot leaving={leaving}>{inner}</Slot> : inner;
 }
 
 function ActionPill({

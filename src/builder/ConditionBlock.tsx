@@ -1,7 +1,11 @@
+import { useState } from "react";
 import type { ConditionNode, PropertyRow } from "./types";
 import { AttributeRule } from "./AttributeRule";
 import { IconTrash } from "../components/Icons";
+import { Slot } from "../components/Slot";
 import "./ConditionBlock.css";
+
+const REMOVE_ANIM_MS = 220;
 
 interface ConditionBlockProps {
   node: ConditionNode;
@@ -14,6 +18,7 @@ interface ConditionBlockProps {
   onAddProperty: () => void;
   onRemoveProperty: (propertyId: string) => void;
   onRemove?: () => void;
+  smoothAnim: boolean;
 }
 
 /** Title label sitting on top of one or more AttributeRules, wrapped in a
@@ -26,54 +31,68 @@ export function ConditionBlock({
   onAddProperty,
   onRemoveProperty,
   onRemove,
+  smoothAnim,
 }: ConditionBlockProps) {
   const canRemoveProperty = node.properties.length > 1;
+  const [leaving, setLeaving] = useState(false);
+  const handleRemove = onRemove
+    ? () => {
+        if (!smoothAnim) {
+          onRemove();
+          return;
+        }
+        setLeaving(true);
+        setTimeout(onRemove, REMOVE_ANIM_MS);
+      }
+    : undefined;
   return (
-    <div className="cblock">
-      <div className="cblock-head">
-        <input
-          className="cblock-title"
-          value={node.title}
-          onChange={(e) => onSetTitle(e.target.value)}
-          placeholder="Title"
-          aria-label="Condition title"
-          spellCheck={false}
-        />
-        {onRemove ? (
-          <button
-            type="button"
-            className="cblock-remove"
-            aria-label="Remove condition"
-            onClick={onRemove}
-          >
-            <IconTrash />
-          </button>
-        ) : null}
-      </div>
-
-      <div className="cblock-props">
-        {node.properties.map((p) => (
-          <PropertyRowView
-            key={p.id}
-            property={p}
-            canRemove={canRemoveProperty}
-            onChange={(k, v) => onSetProperty(p.id, k, v)}
-            onRemove={() => onRemoveProperty(p.id)}
+    <Slot leaving={leaving}>
+      <div className="cblock">
+        <div className="cblock-head">
+          <input
+            className="cblock-title"
+            value={node.title}
+            onChange={(e) => onSetTitle(e.target.value)}
+            placeholder="Title"
+            aria-label="Condition title"
+            spellCheck={false}
           />
-        ))}
-      </div>
+          {handleRemove ? (
+            <button
+              type="button"
+              className="cblock-remove"
+              aria-label="Remove condition"
+              onClick={handleRemove}
+            >
+              <IconTrash />
+            </button>
+          ) : null}
+        </div>
 
-      <button
-        type="button"
-        className="cblock-add-property"
-        onClick={onAddProperty}
-      >
-        <span className="cblock-add-property-plus" aria-hidden>
-          +
-        </span>
-        <span>Property</span>
-      </button>
-    </div>
+        <div className="cblock-props">
+          {node.properties.map((p) => (
+            <PropertyRowView
+              key={p.id}
+              property={p}
+              canRemove={canRemoveProperty}
+              onChange={(k, v) => onSetProperty(p.id, k, v)}
+              onRemove={() => onRemoveProperty(p.id)}
+            />
+          ))}
+        </div>
+
+        <button
+          type="button"
+          className="cblock-add-property"
+          onClick={onAddProperty}
+        >
+          <span className="cblock-add-property-plus" aria-hidden>
+            +
+          </span>
+          <span>Property</span>
+        </button>
+      </div>
+    </Slot>
   );
 }
 
@@ -96,9 +115,6 @@ function PropertyRowView({
         value={property.value}
         onChange={onChange}
       />
-      {/* Rendered even when not removable so the width can transition to
-       * 0 as the last property becomes the only property — that gives
-       * the arule column a smooth expansion into the freed space. */}
       <button
         type="button"
         className={`cblock-prop-remove ${canRemove ? "" : "is-hidden"}`}
