@@ -115,8 +115,10 @@ export default function App() {
             <IconArrowLeft />
           </button>
 
-          <h1 className="h1">Create a test</h1>
-          <p className="subtitle">Configure a new test case</p>
+          <h1 className="h1">Conditional form builder</h1>
+          <p className="subtitle">
+            Designed to create complicated rule building in web application.
+          </p>
 
           <TabStrip
             items={SECTIONS}
