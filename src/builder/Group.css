@@ -135,6 +135,9 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
+  /* Consumed by nested Slot wrappers so their enter/leave collapse the
+   * flex gap in step with the row height. */
+  --slot-gap: 10px;
 }
 
 /* Bottom Condition / Group action pills */

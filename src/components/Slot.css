@@ -2,8 +2,14 @@
   display: grid;
   grid-template-rows: 0fr;
   opacity: 0;
+  /* Negative margin cancels the parent's flex `gap` that would otherwise
+   * hang around this slot at collapse — the parent sets `--slot-gap` to
+   * its own gap size so enter/leave both animate the gap in sync with
+   * the row height. */
+  margin-bottom: calc(-1 * var(--slot-gap, 0px));
   transition: grid-template-rows 220ms var(--ease),
-    opacity 220ms var(--ease);
+    opacity 220ms var(--ease),
+    margin-bottom 220ms var(--ease);
 }
 .slot-inner {
   min-height: 0;
@@ -12,8 +18,10 @@
 .slot.is-entered {
   grid-template-rows: 1fr;
   opacity: 1;
+  margin-bottom: 0;
 }
 .slot.is-leaving {
   grid-template-rows: 0fr;
   opacity: 0;
+  margin-bottom: calc(-1 * var(--slot-gap, 0px));
 }
