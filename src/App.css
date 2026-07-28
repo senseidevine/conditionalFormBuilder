@@ -13,10 +13,10 @@
   inset: 0;
   z-index: -1;
   background: radial-gradient(
-    80% 54% at 50% -17%,
-    #3c42548c 0%,
-    #1e202859 65%,
-    #0a0b0e00 125%
+    70% 64% at 50% -7%,
+    #3c42548c 16%,
+    #1e202859 61%,
+    #0a0b0e00 105%
   );
   pointer-events: none;
 }
