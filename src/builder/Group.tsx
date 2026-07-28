@@ -102,16 +102,20 @@ export function Group({
         </div>
       ) : null}
       <div className="grp-body">
-        {showBracket ? (
-          <div className="grp-bracket" aria-hidden>
-            {showToggle ? (
-              <OperatorToggle
-                operator={group.operator}
-                onToggle={() => onMutate(group.id, "toggle")}
-              />
-            ) : null}
-          </div>
-        ) : null}
+        {/* Always rendered so its width + opacity can transition when
+         * `showBracket` flips (e.g. when a 2nd section is added and the
+         * bracket appears). */}
+        <div
+          className={`grp-bracket ${showBracket ? "" : "is-hidden"}`}
+          aria-hidden
+        >
+          {showToggle ? (
+            <OperatorToggle
+              operator={group.operator}
+              onToggle={() => onMutate(group.id, "toggle")}
+            />
+          ) : null}
+        </div>
 
         <div className="grp-children">
           {group.children.map((child) =>

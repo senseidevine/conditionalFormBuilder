@@ -94,6 +94,17 @@
   display: flex;
   align-items: center;
   justify-content: flex-start;
+  overflow: hidden;
+  transition: flex-basis 220ms var(--ease), opacity 220ms var(--ease);
+}
+/* When the bracket shouldn't be shown (e.g. single-section group, or
+ * the Brackets master toggle is off), collapse its column width and
+ * fade it out so a later transition back to visible reads as a smooth
+ * wipe-in rather than a snap. */
+.grp-bracket.is-hidden {
+  flex-basis: 0;
+  opacity: 0;
+  pointer-events: none;
 }
 .grp-bracket::before {
   content: "";
