@@ -1,7 +1,7 @@
 .cblock {
   /* Nested background — default is 10% white. */
   background: rgba(255, 255, 255, 0.1);
-  border-radius: 14px;
+  border-radius: 8px;
   padding: 12px 14px 12px;
   display: flex;
   flex-direction: column;
