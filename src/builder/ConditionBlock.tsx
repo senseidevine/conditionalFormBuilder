@@ -1,7 +1,11 @@
+import { useState } from "react";
 import type { ConditionNode, PropertyRow } from "./types";
 import { AttributeRule } from "./AttributeRule";
 import { IconTrash } from "../components/Icons";
+import { Slot } from "../components/Slot";
 import "./ConditionBlock.css";
+
+const REMOVE_ANIM_MS = 220;
 
 interface ConditionBlockProps {
   node: ConditionNode;
@@ -28,52 +32,61 @@ export function ConditionBlock({
   onRemove,
 }: ConditionBlockProps) {
   const canRemoveProperty = node.properties.length > 1;
+  const [leaving, setLeaving] = useState(false);
+  const handleRemove = onRemove
+    ? () => {
+        setLeaving(true);
+        setTimeout(onRemove, REMOVE_ANIM_MS);
+      }
+    : undefined;
   return (
-    <div className="cblock">
-      <div className="cblock-head">
-        <input
-          className="cblock-title"
-          value={node.title}
-          onChange={(e) => onSetTitle(e.target.value)}
-          placeholder="Title"
-          aria-label="Condition title"
-          spellCheck={false}
-        />
-        {onRemove ? (
-          <button
-            type="button"
-            className="cblock-remove"
-            aria-label="Remove condition"
-            onClick={onRemove}
-          >
-            <IconTrash />
-          </button>
-        ) : null}
-      </div>
-
-      <div className="cblock-props">
-        {node.properties.map((p) => (
-          <PropertyRowView
-            key={p.id}
-            property={p}
-            canRemove={canRemoveProperty}
-            onChange={(k, v) => onSetProperty(p.id, k, v)}
-            onRemove={() => onRemoveProperty(p.id)}
+    <Slot leaving={leaving}>
+      <div className="cblock">
+        <div className="cblock-head">
+          <input
+            className="cblock-title"
+            value={node.title}
+            onChange={(e) => onSetTitle(e.target.value)}
+            placeholder="Title"
+            aria-label="Condition title"
+            spellCheck={false}
           />
-        ))}
-      </div>
+          {handleRemove ? (
+            <button
+              type="button"
+              className="cblock-remove"
+              aria-label="Remove condition"
+              onClick={handleRemove}
+            >
+              <IconTrash />
+            </button>
+          ) : null}
+        </div>
 
-      <button
-        type="button"
-        className="cblock-add-property"
-        onClick={onAddProperty}
-      >
-        <span className="cblock-add-property-plus" aria-hidden>
-          +
-        </span>
-        <span>Property</span>
-      </button>
-    </div>
+        <div className="cblock-props">
+          {node.properties.map((p) => (
+            <PropertyRowView
+              key={p.id}
+              property={p}
+              canRemove={canRemoveProperty}
+              onChange={(k, v) => onSetProperty(p.id, k, v)}
+              onRemove={() => onRemoveProperty(p.id)}
+            />
+          ))}
+        </div>
+
+        <button
+          type="button"
+          className="cblock-add-property"
+          onClick={onAddProperty}
+        >
+          <span className="cblock-add-property-plus" aria-hidden>
+            +
+          </span>
+          <span>Property</span>
+        </button>
+      </div>
+    </Slot>
   );
 }
 
@@ -88,24 +101,31 @@ function PropertyRowView({
   onChange: (key: "field" | "cond" | "value", v: string) => void;
   onRemove: () => void;
 }) {
+  const [leaving, setLeaving] = useState(false);
+  const handleRemove = () => {
+    setLeaving(true);
+    setTimeout(onRemove, REMOVE_ANIM_MS);
+  };
   return (
-    <div className="cblock-prop">
-      <AttributeRule
-        field={property.field}
-        cond={property.cond}
-        value={property.value}
-        onChange={onChange}
-      />
-      {canRemove ? (
-        <button
-          type="button"
-          className="cblock-prop-remove"
-          aria-label="Remove property"
-          onClick={onRemove}
-        >
-          <IconTrash />
-        </button>
-      ) : null}
-    </div>
+    <Slot leaving={leaving}>
+      <div className="cblock-prop">
+        <AttributeRule
+          field={property.field}
+          cond={property.cond}
+          value={property.value}
+          onChange={onChange}
+        />
+        {canRemove ? (
+          <button
+            type="button"
+            className="cblock-prop-remove"
+            aria-label="Remove property"
+            onClick={handleRemove}
+          >
+            <IconTrash />
+          </button>
+        ) : null}
+      </div>
+    </Slot>
   );
 }

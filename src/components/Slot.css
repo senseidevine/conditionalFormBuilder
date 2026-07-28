@@ -1,0 +1,19 @@
+.slot {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition: grid-template-rows 220ms var(--ease),
+    opacity 220ms var(--ease);
+}
+.slot-inner {
+  min-height: 0;
+  overflow: hidden;
+}
+.slot.is-entered {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+.slot.is-leaving {
+  grid-template-rows: 0fr;
+  opacity: 0;
+}

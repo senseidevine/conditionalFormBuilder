@@ -1,8 +1,12 @@
+import { useState } from "react";
 import type { GroupNode } from "./types";
 import { ConditionBlock } from "./ConditionBlock";
 import { OperatorToggle } from "./OperatorToggle";
 import { IconGroup, IconReturn, IconTrash } from "../components/Icons";
+import { Slot } from "../components/Slot";
 import "./Group.css";
+
+const REMOVE_ANIM_MS = 220;
 
 export type Mutation =
   | "toggle"
@@ -79,7 +83,13 @@ export function Group({
     ? [groupPill, sectionPill]
     : [sectionPill, groupPill];
 
-  return (
+  const [leaving, setLeaving] = useState(false);
+  const handleRemove = () => {
+    setLeaving(true);
+    setTimeout(() => onMutate(group.id, "removeChild"), REMOVE_ANIM_MS);
+  };
+
+  const inner = (
     <div
       className={variant === "nested" ? "cblock" : "grp grp--root"}
       data-depth={depth}
@@ -100,7 +110,7 @@ export function Group({
             type="button"
             className="grp-remove"
             aria-label="Remove group"
-            onClick={() => onMutate(group.id, "removeChild")}
+            onClick={handleRemove}
           >
             <IconTrash />
           </button>
@@ -159,6 +169,8 @@ export function Group({
       </div>
     </div>
   );
+
+  return variant === "nested" ? <Slot leaving={leaving}>{inner}</Slot> : inner;
 }
 
 function ActionPill({
