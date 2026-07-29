@@ -56,6 +56,8 @@ export default function App() {
           return T.moveSibling(r, id, -1);
         case "moveDown":
           return T.moveSibling(r, id, 1);
+        case "moveTo":
+          return T.moveSiblingTo(r, id, payload as number);
       }
     });
   };

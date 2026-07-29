@@ -1,18 +1,28 @@
-import { IconChevronDown, IconChevronUp } from "../components/Icons";
+import {
+  IconChevronDown,
+  IconChevronUp,
+  IconGrip,
+} from "../components/Icons";
 import "./ReorderControls.css";
 
 interface ReorderControlsProps {
   onMoveUp?: () => void;
   onMoveDown?: () => void;
+  /** Whether this cblock has any siblings — if not, hide the grip too
+   *  since there's nowhere to drag to. */
+  canDrag: boolean;
 }
 
-/** Twin up/down buttons that live in the centre of a cblock/grp header
- *  and appear on hover. Passing `undefined` for either handler disables
- *  that direction — used by the first and last siblings. */
-export function ReorderControls({ onMoveUp, onMoveDown }: ReorderControlsProps) {
-  /* If neither move is possible (single-child group), don't render — the
-   * hover reveal would just show two disabled buttons with no purpose. */
-  if (!onMoveUp && !onMoveDown) return null;
+/** Up chevron / grip drag-handle / down chevron, centred in the cblock
+ *  header, revealed on hover. The grip carries `data-drag-handle` so
+ *  the enclosing Group's pointerdown delegate can start a drag from it
+ *  without triggering when the user clicks an input or button. */
+export function ReorderControls({
+  onMoveUp,
+  onMoveDown,
+  canDrag,
+}: ReorderControlsProps) {
+  if (!onMoveUp && !onMoveDown && !canDrag) return null;
   return (
     <div className="reorder">
       <button
@@ -24,6 +34,17 @@ export function ReorderControls({ onMoveUp, onMoveDown }: ReorderControlsProps) 
       >
         <IconChevronUp />
       </button>
+      {canDrag ? (
+        <span
+          className="reorder-grip"
+          data-drag-handle
+          aria-label="Drag to reorder"
+          role="button"
+          tabIndex={-1}
+        >
+          <IconGrip />
+        </span>
+      ) : null}
       <button
         type="button"
         className="reorder-btn"

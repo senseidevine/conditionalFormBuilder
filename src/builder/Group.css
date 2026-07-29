@@ -150,6 +150,17 @@
   gap: 10px;
 }
 
+/* Wraps each cblock so Group can attach the pointer-drag delegate for
+ * reorder without threading pointer handlers through the child
+ * components. Layout-transparent aside from being a block-level flex
+ * item in .grp-children. */
+.cblock-slot {
+  display: block;
+}
+.cblock-slot.is-dragging > .cblock {
+  opacity: 0.5;
+}
+
 /* Bottom Condition / Group action pills */
 .grp-actions {
   display: flex;

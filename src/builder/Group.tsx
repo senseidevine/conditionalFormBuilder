@@ -15,7 +15,8 @@ export type Mutation =
   | "setPropertyValue"
   | "removeProperty"
   | "moveUp"
-  | "moveDown";
+  | "moveDown"
+  | "moveTo";
 
 interface GroupProps {
   group: GroupNode;
@@ -42,6 +43,10 @@ interface GroupProps {
    *  receive nothing since they have no siblings. */
   onMoveUp?: () => void;
   onMoveDown?: () => void;
+  /** True when this cblock has siblings to swap with — enables the
+   *  drag grip in ReorderControls even when it's currently first or
+   *  last (both up and down would otherwise be undefined). */
+  canDrag?: boolean;
   onMutate: (id: string, mut: Mutation, payload?: unknown) => void;
 }
 
@@ -56,6 +61,7 @@ export function Group({
   nestedBgDark,
   onMoveUp,
   onMoveDown,
+  canDrag,
   onMutate,
 }: GroupProps) {
   const hasMany = group.children.length > 1;
@@ -101,7 +107,11 @@ export function Group({
             aria-label="Group title"
             spellCheck={false}
           />
-          <ReorderControls onMoveUp={onMoveUp} onMoveDown={onMoveDown} />
+          <ReorderControls
+            onMoveUp={onMoveUp}
+            onMoveDown={onMoveDown}
+            canDrag={!!canDrag}
+          />
           <button
             type="button"
             className="grp-remove"
@@ -136,47 +146,63 @@ export function Group({
              * nothing. */
             const canMoveUp = i > 0;
             const canMoveDown = i < group.children.length - 1;
+            const childCanDrag = group.children.length > 1;
             const childMoveUp = canMoveUp
               ? () => onMutate(child.id, "moveUp")
               : undefined;
             const childMoveDown = canMoveDown
               ? () => onMutate(child.id, "moveDown")
               : undefined;
-            return child.kind === "condition" ? (
-              <ConditionBlock
+            return (
+              <div
                 key={child.id}
-                node={child}
-                onSetTitle={(v) => onMutate(child.id, "setTitle", v)}
-                onSetProperty={(propertyId, key, val) =>
-                  onMutate(child.id, "setPropertyValue", { propertyId, key, val })
+                className="cblock-slot"
+                data-child-id={child.id}
+                onPointerDown={(e) =>
+                  startDrag(e, child.id, group.id, onMutate)
                 }
-                onAddProperty={() => onMutate(child.id, "addProperty")}
-                onRemoveProperty={(propertyId) =>
-                  onMutate(child.id, "removeProperty", { propertyId })
-                }
-                onRemove={
-                  group.children.length > 1 || variant !== "root"
-                    ? () => onMutate(child.id, "removeChild")
-                    : undefined
-                }
-                onMoveUp={childMoveUp}
-                onMoveDown={childMoveDown}
-              />
-            ) : (
-              <Group
-                key={child.id}
-                group={child}
-                depth={depth + 1}
-                variant="nested"
-                swapButtons={swapButtons}
-                showLoneBracket={showLoneBracket}
-                connectorHover={connectorHover}
-                showBrackets={showBrackets}
-                nestedBgDark={nestedBgDark}
-                onMoveUp={childMoveUp}
-                onMoveDown={childMoveDown}
-                onMutate={onMutate}
-              />
+              >
+                {child.kind === "condition" ? (
+                  <ConditionBlock
+                    node={child}
+                    onSetTitle={(v) => onMutate(child.id, "setTitle", v)}
+                    onSetProperty={(propertyId, key, val) =>
+                      onMutate(child.id, "setPropertyValue", {
+                        propertyId,
+                        key,
+                        val,
+                      })
+                    }
+                    onAddProperty={() => onMutate(child.id, "addProperty")}
+                    onRemoveProperty={(propertyId) =>
+                      onMutate(child.id, "removeProperty", { propertyId })
+                    }
+                    onRemove={
+                      group.children.length > 1 || variant !== "root"
+                        ? () => onMutate(child.id, "removeChild")
+                        : undefined
+                    }
+                    onMoveUp={childMoveUp}
+                    onMoveDown={childMoveDown}
+                    canDrag={childCanDrag}
+                  />
+                ) : (
+                  <Group
+                    group={child}
+                    depth={depth + 1}
+                    variant="nested"
+                    swapButtons={swapButtons}
+                    showLoneBracket={showLoneBracket}
+                    connectorHover={connectorHover}
+                    showBrackets={showBrackets}
+                    nestedBgDark={nestedBgDark}
+                    onMoveUp={childMoveUp}
+                    onMoveDown={childMoveDown}
+                    canDrag={childCanDrag}
+                    onMutate={onMutate}
+                  />
+                )}
+              </div>
             );
           })}
 
@@ -185,6 +211,71 @@ export function Group({
       </div>
     </div>
   );
+}
+
+/** Pointer-drag reorder delegate. Fires from the child's cblock-slot
+ *  wrapper's onPointerDown but only takes action when the pointer went
+ *  down on an element carrying `data-drag-handle` (the grip inside
+ *  ReorderControls). While the pointer is held, we walk the slot's
+ *  parent to find the sibling under the cursor and dispatch a moveTo
+ *  mutation whenever the target index changes — the tree re-renders
+ *  the child into its new slot, keeping React keys stable so pointer
+ *  capture stays with the same DOM node. */
+function startDrag(
+  e: React.PointerEvent<HTMLDivElement>,
+  childId: string,
+  parentId: string,
+  onMutate: (id: string, mut: Mutation, payload?: unknown) => void
+) {
+  const target = e.target as HTMLElement;
+  if (!target.closest("[data-drag-handle]")) return;
+  const slot = e.currentTarget;
+  const parentEl = slot.parentElement;
+  if (!parentEl) return;
+  e.preventDefault();
+  slot.setPointerCapture(e.pointerId);
+  slot.classList.add("is-dragging");
+
+  const handleMove = (ev: PointerEvent) => {
+    const y = ev.clientY;
+    const slots = Array.from(
+      parentEl.querySelectorAll<HTMLElement>(":scope > .cblock-slot")
+    );
+    const currentIdx = slots.findIndex(
+      (s) => s.dataset.childId === childId
+    );
+    if (currentIdx === -1) return;
+    let targetIdx = slots.length - 1;
+    for (let i = 0; i < slots.length; i++) {
+      const rect = slots[i].getBoundingClientRect();
+      const mid = rect.top + rect.height / 2;
+      if (y < mid) {
+        targetIdx = i;
+        break;
+      }
+    }
+    if (targetIdx !== currentIdx) {
+      onMutate(childId, "moveTo", targetIdx);
+    }
+  };
+  const cleanup = () => {
+    slot.removeEventListener("pointermove", handleMove);
+    slot.removeEventListener("pointerup", cleanup);
+    slot.removeEventListener("pointercancel", cleanup);
+    slot.classList.remove("is-dragging");
+    try {
+      slot.releasePointerCapture(e.pointerId);
+    } catch {
+      /* capture may already be released */
+    }
+  };
+  slot.addEventListener("pointermove", handleMove);
+  slot.addEventListener("pointerup", cleanup);
+  slot.addEventListener("pointercancel", cleanup);
+
+  /* parentId isn't used here — drag is scoped to same parent by the
+   * fact that we query siblings from the wrapper's own parentEl. */
+  void parentId;
 }
 
 function ActionPill({

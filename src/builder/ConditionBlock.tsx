@@ -17,6 +17,7 @@ interface ConditionBlockProps {
   onRemove?: () => void;
   onMoveUp?: () => void;
   onMoveDown?: () => void;
+  canDrag?: boolean;
 }
 
 /** Title label sitting on top of one or more AttributeRules, wrapped in a
@@ -31,6 +32,7 @@ export function ConditionBlock({
   onRemove,
   onMoveUp,
   onMoveDown,
+  canDrag,
 }: ConditionBlockProps) {
   const canRemoveProperty = node.properties.length > 1;
   return (
@@ -44,7 +46,11 @@ export function ConditionBlock({
           aria-label="Condition title"
           spellCheck={false}
         />
-        <ReorderControls onMoveUp={onMoveUp} onMoveDown={onMoveDown} />
+        <ReorderControls
+          onMoveUp={onMoveUp}
+          onMoveDown={onMoveDown}
+          canDrag={!!canDrag}
+        />
         {onRemove ? (
           <button
             type="button"
