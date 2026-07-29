@@ -15,12 +15,12 @@ const RAIL_STEPS = [
 export default function App() {
   const [tree, setTree] = useState<GroupNode>(() => seedRoot());
   const [swapButtons, setSwapButtons] = useState<boolean>(false);
-  const [showLoneBracket, setShowLoneBracket] = useState<boolean>(false);
+  const [showLoneBracket, setShowLoneBracket] = useState<boolean>(true);
   const [connectorHover, setConnectorHover] = useState<boolean>(false);
   const [showBrackets, setShowBrackets] = useState<boolean>(true);
   const [nestedBgDark, setNestedBgDark] = useState<boolean>(true);
   const [smoothAnim, setSmoothAnim] = useState<boolean>(true);
-  const [operatorMenu, setOperatorMenu] = useState<boolean>(false);
+  const [operatorMenu, setOperatorMenu] = useState<boolean>(true);
 
   const onMutate: (id: string, mut: Mutation, payload?: unknown) => void = (
     id,
