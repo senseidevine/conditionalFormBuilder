@@ -99,23 +99,4 @@ export const T = {
     const pruned = pruneEmptyGroups(removed, true) as GroupNode;
     return pruned;
   },
-  /** Swap the target child with its previous (delta=-1) or next (+1)
-   *  sibling inside whichever group directly contains it. Cross-group
-   *  moves are not supported — the child stays in its parent. */
-  moveSibling(root: GroupNode, id: string, delta: -1 | 1): GroupNode {
-    function walk(node: Node): Node {
-      if (node.kind !== "group") return node;
-      let children = node.children.map(walk);
-      const idx = children.findIndex((c) => c.id === id);
-      if (idx !== -1) {
-        const target = idx + delta;
-        if (target >= 0 && target < children.length) {
-          children = [...children];
-          [children[idx], children[target]] = [children[target], children[idx]];
-        }
-      }
-      return { ...node, children };
-    }
-    return walk(root) as GroupNode;
-  },
 };

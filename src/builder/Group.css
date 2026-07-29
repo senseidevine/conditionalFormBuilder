@@ -17,7 +17,6 @@
 
 /* Header row for a nested group — mirrors the ConditionBlock header. */
 .grp-head {
-  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;

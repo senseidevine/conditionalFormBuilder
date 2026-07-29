@@ -1,7 +1,6 @@
 import type { GroupNode } from "./types";
 import { ConditionBlock } from "./ConditionBlock";
 import { OperatorToggle } from "./OperatorToggle";
-import { ReorderControls } from "./ReorderControls";
 import { IconGroup, IconReturn, IconTrash } from "../components/Icons";
 import "./Group.css";
 
@@ -13,9 +12,7 @@ export type Mutation =
   | "setTitle"
   | "addProperty"
   | "setPropertyValue"
-  | "removeProperty"
-  | "moveUp"
-  | "moveDown";
+  | "removeProperty";
 
 interface GroupProps {
   group: GroupNode;
@@ -37,11 +34,6 @@ interface GroupProps {
   /** When true, nested groups switch from the subtle white lift to
    *  15% black. */
   nestedBgDark: boolean;
-  /** Sibling reorder handlers — undefined when this cblock is at the
-   *  edge of its parent (top → no up, bottom → no down). Root Groups
-   *  receive nothing since they have no siblings. */
-  onMoveUp?: () => void;
-  onMoveDown?: () => void;
   onMutate: (id: string, mut: Mutation, payload?: unknown) => void;
 }
 
@@ -54,8 +46,6 @@ export function Group({
   connectorHover,
   showBrackets,
   nestedBgDark,
-  onMoveUp,
-  onMoveDown,
   onMutate,
 }: GroupProps) {
   const hasMany = group.children.length > 1;
@@ -101,7 +91,6 @@ export function Group({
             aria-label="Group title"
             spellCheck={false}
           />
-          <ReorderControls onMoveUp={onMoveUp} onMoveDown={onMoveDown} />
           <button
             type="button"
             className="grp-remove"
@@ -129,20 +118,8 @@ export function Group({
         </div>
 
         <div className="grp-children">
-          {group.children.map((child, i) => {
-            /* Sibling reorder scope: only within this group's children.
-             * First child can't move up; last can't move down. Single
-             * children get neither handler and ReorderControls renders
-             * nothing. */
-            const canMoveUp = i > 0;
-            const canMoveDown = i < group.children.length - 1;
-            const childMoveUp = canMoveUp
-              ? () => onMutate(child.id, "moveUp")
-              : undefined;
-            const childMoveDown = canMoveDown
-              ? () => onMutate(child.id, "moveDown")
-              : undefined;
-            return child.kind === "condition" ? (
+          {group.children.map((child) =>
+            child.kind === "condition" ? (
               <ConditionBlock
                 key={child.id}
                 node={child}
@@ -159,8 +136,6 @@ export function Group({
                     ? () => onMutate(child.id, "removeChild")
                     : undefined
                 }
-                onMoveUp={childMoveUp}
-                onMoveDown={childMoveDown}
               />
             ) : (
               <Group
@@ -173,12 +148,10 @@ export function Group({
                 connectorHover={connectorHover}
                 showBrackets={showBrackets}
                 nestedBgDark={nestedBgDark}
-                onMoveUp={childMoveUp}
-                onMoveDown={childMoveDown}
                 onMutate={onMutate}
               />
-            );
-          })}
+            )
+          )}
 
           <div className="grp-actions">{actionOrder}</div>
         </div>
