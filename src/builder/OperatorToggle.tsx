@@ -1,3 +1,4 @@
+import { useState } from "react";
 import type { Operator } from "./types";
 import "./OperatorToggle.css";
 
@@ -26,9 +27,20 @@ export function OperatorToggle({
   onSet,
   menuMode,
 }: OperatorToggleProps) {
+  /* Once the user picks an option we suppress the hover-reveal until
+   * their cursor actually leaves the wrap — otherwise the popover
+   * keeps sitting under the cursor and reads as "did nothing". */
+  const [dismissed, setDismissed] = useState(false);
   if (menuMode) {
+    const pick = (op: Operator) => {
+      onSet?.(op);
+      setDismissed(true);
+    };
     return (
-      <div className="optog-wrap">
+      <div
+        className={`optog-wrap ${dismissed ? "is-dismissed" : ""}`}
+        onMouseLeave={() => setDismissed(false)}
+      >
         <span
           className="optog"
           role="button"
@@ -44,7 +56,7 @@ export function OperatorToggle({
             type="button"
             role="menuitem"
             className={`optog-option ${operator === "AND" ? "is-active" : ""}`}
-            onClick={() => onSet?.("AND")}
+            onClick={() => pick("AND")}
           >
             And
           </button>
@@ -52,7 +64,7 @@ export function OperatorToggle({
             type="button"
             role="menuitem"
             className={`optog-option ${operator === "OR" ? "is-active" : ""}`}
-            onClick={() => onSet?.("OR")}
+            onClick={() => pick("OR")}
           >
             Or
           </button>

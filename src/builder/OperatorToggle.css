@@ -71,6 +71,13 @@
   opacity: 1;
   pointer-events: auto;
 }
+/* After the user picks an option we suppress the hover-reveal until
+ * the cursor actually leaves the wrap (React clears is-dismissed on
+ * onMouseLeave). */
+.optog-wrap.is-dismissed .optog-menu {
+  opacity: 0;
+  pointer-events: none;
+}
 .optog-option {
   appearance: none;
   border: 0;

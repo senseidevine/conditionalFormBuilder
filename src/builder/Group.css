@@ -94,7 +94,6 @@
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  overflow: hidden;
   transition: flex-basis var(--anim-dur) var(--ease),
     opacity var(--anim-dur) var(--ease);
 }
