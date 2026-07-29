@@ -14,6 +14,9 @@ interface ConditionBlockProps {
   onAddProperty: () => void;
   onRemoveProperty: (propertyId: string) => void;
   onRemove?: () => void;
+  /** Master bracket toggle. When true and the condition has 2+
+   *  properties, a grp-bracket is drawn around the property column. */
+  showBrackets: boolean;
 }
 
 /** Title label sitting on top of one or more AttributeRules, wrapped in a
@@ -26,8 +29,13 @@ export function ConditionBlock({
   onAddProperty,
   onRemoveProperty,
   onRemove,
+  showBrackets,
 }: ConditionBlockProps) {
   const canRemoveProperty = node.properties.length > 1;
+  /* Bracket appears only when there are 2+ properties AND the master
+   * Brackets toggle is on. Always rendered so the same wipe-in/out
+   * transition Group's grp-bracket uses works here too. */
+  const showBracket = showBrackets && node.properties.length > 1;
   return (
     <div className="cblock">
       <div className="cblock-head">
@@ -51,28 +59,36 @@ export function ConditionBlock({
         ) : null}
       </div>
 
-      <div className="cblock-props">
-        {node.properties.map((p) => (
-          <PropertyRowView
-            key={p.id}
-            property={p}
-            canRemove={canRemoveProperty}
-            onChange={(k, v) => onSetProperty(p.id, k, v)}
-            onRemove={() => onRemoveProperty(p.id)}
-          />
-        ))}
-      </div>
+      <div className="grp-body">
+        <div
+          className={`grp-bracket ${showBracket ? "" : "is-hidden"}`}
+          aria-hidden
+        />
+        <div className="cblock-column">
+          <div className="cblock-props">
+            {node.properties.map((p) => (
+              <PropertyRowView
+                key={p.id}
+                property={p}
+                canRemove={canRemoveProperty}
+                onChange={(k, v) => onSetProperty(p.id, k, v)}
+                onRemove={() => onRemoveProperty(p.id)}
+              />
+            ))}
+          </div>
 
-      <button
-        type="button"
-        className="cblock-add-property"
-        onClick={onAddProperty}
-      >
-        <span className="cblock-add-property-plus" aria-hidden>
-          +
-        </span>
-        <span>Property</span>
-      </button>
+          <button
+            type="button"
+            className="cblock-add-property"
+            onClick={onAddProperty}
+          >
+            <span className="cblock-add-property-plus" aria-hidden>
+              +
+            </span>
+            <span>Property</span>
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

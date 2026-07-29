@@ -143,6 +143,7 @@ export function Group({
                     ? () => onMutate(child.id, "removeChild")
                     : undefined
                 }
+                showBrackets={showBrackets}
               />
             ) : (
               <Group
