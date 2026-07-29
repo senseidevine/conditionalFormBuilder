@@ -55,7 +55,6 @@
   transform: translateX(-50%);
   z-index: 20;
   background: #242424;
-  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 10px;
   padding: 4px;
   display: flex;
@@ -96,8 +95,7 @@
   background: rgba(255, 255, 255, 0.08);
 }
 .optog-option.is-active {
-  color: var(--fg);
-  font-weight: 600;
+  background: hsl(0deg 0% 100% / 10%);
 }
 .optog-option:focus-visible {
   outline: 2px solid var(--accent-focus);
