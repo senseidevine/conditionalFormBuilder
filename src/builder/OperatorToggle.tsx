@@ -58,7 +58,7 @@ export function OperatorToggle({
             className={`optog-option ${operator === "AND" ? "is-active" : ""}`}
             onClick={() => pick("AND")}
           >
-            And
+            And (Require all)
           </button>
           <button
             type="button"
@@ -66,7 +66,7 @@ export function OperatorToggle({
             className={`optog-option ${operator === "OR" ? "is-active" : ""}`}
             onClick={() => pick("OR")}
           >
-            Or
+            Or (Require at least one)
           </button>
         </div>
       </div>
