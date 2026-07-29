@@ -33,3 +33,65 @@
   outline: 2px solid var(--accent-focus);
   outline-offset: 2px;
 }
+
+/* Menu-mode: hover on the wrap reveals a small And/Or dropdown. The
+ * wrap sits at the badge's own bounds so the wrap-hover reach also
+ * covers the menu that sits below it (there's a 4px gap the wrap's
+ * padding-bottom bridges so the cursor can travel down without the
+ * menu closing). */
+.optog-wrap {
+  position: relative;
+  display: inline-flex;
+  padding-bottom: 4px;
+  margin-bottom: -4px;
+}
+.optog-wrap .optog {
+  cursor: default;
+}
+.optog-menu {
+  position: absolute;
+  top: calc(100% - 2px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  background: #242424;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 72px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--dur-1) var(--ease);
+}
+.optog-wrap:hover .optog-menu,
+.optog-wrap:focus-within .optog-menu {
+  opacity: 1;
+  pointer-events: auto;
+}
+.optog-option {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--fg);
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background var(--dur-1) var(--ease);
+}
+.optog-option:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+.optog-option.is-active {
+  color: var(--fg);
+  font-weight: 600;
+}
+.optog-option:focus-visible {
+  outline: 2px solid var(--accent-focus);
+  outline-offset: 2px;
+}

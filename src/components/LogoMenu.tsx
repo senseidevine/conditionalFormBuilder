@@ -17,6 +17,8 @@ interface LogoMenuProps {
   onToggleNestedBgDark: (v: boolean) => void;
   smoothAnim: boolean;
   onToggleSmoothAnim: (v: boolean) => void;
+  operatorMenu: boolean;
+  onToggleOperatorMenu: (v: boolean) => void;
 }
 
 type Anchor = { top: number; left: number };
@@ -37,6 +39,8 @@ export function LogoMenu({
   onToggleNestedBgDark,
   smoothAnim,
   onToggleSmoothAnim,
+  operatorMenu,
+  onToggleOperatorMenu,
 }: LogoMenuProps) {
   const [open, setOpen] = useState(false);
   const [anchor, setAnchor] = useState<Anchor>({ top: 0, left: 0 });
@@ -203,6 +207,25 @@ export function LogoMenu({
                   ariaLabel="Smooth animations"
                   value={smoothAnim ? "on" : "off"}
                   onChange={(v) => onToggleSmoothAnim(v === "on")}
+                  options={[
+                    { value: "off", label: "Off" },
+                    { value: "on", label: "On" },
+                  ]}
+                />
+              </div>
+
+              <div className="logomenu-row">
+                <div className="logomenu-row-text">
+                  <div className="logomenu-row-title">Operator menu</div>
+                  <div className="logomenu-row-desc">
+                    On: hover the AND/OR badge to pick from a dropdown.
+                    Off: tap to toggle between AND and OR.
+                  </div>
+                </div>
+                <SegmentedTabs
+                  ariaLabel="Operator menu"
+                  value={operatorMenu ? "on" : "off"}
+                  onChange={(v) => onToggleOperatorMenu(v === "on")}
                   options={[
                     { value: "off", label: "Off" },
                     { value: "on", label: "On" },

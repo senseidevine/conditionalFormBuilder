@@ -19,6 +19,8 @@ interface StepRailProps {
   onToggleNestedBgDark: (v: boolean) => void;
   smoothAnim: boolean;
   onToggleSmoothAnim: (v: boolean) => void;
+  operatorMenu: boolean;
+  onToggleOperatorMenu: (v: boolean) => void;
 }
 
 export function StepRail({
@@ -38,6 +40,8 @@ export function StepRail({
   onToggleNestedBgDark,
   smoothAnim,
   onToggleSmoothAnim,
+  operatorMenu,
+  onToggleOperatorMenu,
 }: StepRailProps) {
   return (
     <aside className="rail" aria-label="Wizard steps">
@@ -54,6 +58,8 @@ export function StepRail({
         onToggleNestedBgDark={onToggleNestedBgDark}
         smoothAnim={smoothAnim}
         onToggleSmoothAnim={onToggleSmoothAnim}
+        operatorMenu={operatorMenu}
+        onToggleOperatorMenu={onToggleOperatorMenu}
       />
       <ul className="rail-list">
         {steps.map((s) => {

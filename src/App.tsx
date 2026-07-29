@@ -20,6 +20,7 @@ export default function App() {
   const [showBrackets, setShowBrackets] = useState<boolean>(true);
   const [nestedBgDark, setNestedBgDark] = useState<boolean>(true);
   const [smoothAnim, setSmoothAnim] = useState<boolean>(true);
+  const [operatorMenu, setOperatorMenu] = useState<boolean>(false);
 
   const onMutate: (id: string, mut: Mutation, payload?: unknown) => void = (
     id,
@@ -30,6 +31,8 @@ export default function App() {
       switch (mut) {
         case "toggle":
           return T.toggleOperator(r, id);
+        case "setOperator":
+          return T.setOperator(r, id, payload as "AND" | "OR");
         case "removeChild":
           return T.remove(r, id);
         case "addCondition":
@@ -76,6 +79,8 @@ export default function App() {
         onToggleNestedBgDark={setNestedBgDark}
         smoothAnim={smoothAnim}
         onToggleSmoothAnim={setSmoothAnim}
+        operatorMenu={operatorMenu}
+        onToggleOperatorMenu={setOperatorMenu}
       />
 
       <main className="main">
@@ -96,6 +101,7 @@ export default function App() {
                 connectorHover={connectorHover}
                 showBrackets={showBrackets}
                 nestedBgDark={nestedBgDark}
+                operatorMenu={operatorMenu}
                 onMutate={onMutate}
               />
             </div>

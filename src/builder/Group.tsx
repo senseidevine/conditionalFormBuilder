@@ -6,6 +6,7 @@ import "./Group.css";
 
 export type Mutation =
   | "toggle"
+  | "setOperator"
   | "removeChild"
   | "addCondition"
   | "addGroup"
@@ -34,6 +35,9 @@ interface GroupProps {
   /** When true, nested groups switch from the subtle white lift to
    *  15% black. */
   nestedBgDark: boolean;
+  /** When true, the AND/OR badge behaves as a hover dropdown with two
+   *  options instead of a click-to-toggle button. */
+  operatorMenu: boolean;
   onMutate: (id: string, mut: Mutation, payload?: unknown) => void;
 }
 
@@ -46,6 +50,7 @@ export function Group({
   connectorHover,
   showBrackets,
   nestedBgDark,
+  operatorMenu,
   onMutate,
 }: GroupProps) {
   const hasMany = group.children.length > 1;
@@ -113,6 +118,8 @@ export function Group({
             <OperatorToggle
               operator={group.operator}
               onToggle={() => onMutate(group.id, "toggle")}
+              onSet={(op) => onMutate(group.id, "setOperator", op)}
+              menuMode={operatorMenu}
             />
           ) : null}
         </div>
@@ -148,6 +155,7 @@ export function Group({
                 connectorHover={connectorHover}
                 showBrackets={showBrackets}
                 nestedBgDark={nestedBgDark}
+                operatorMenu={operatorMenu}
                 onMutate={onMutate}
               />
             )

@@ -53,6 +53,11 @@ export const T = {
         : n
     ) as GroupNode;
   },
+  setOperator(root: GroupNode, id: string, operator: Operator): GroupNode {
+    return update(root, id, (n) =>
+      n.kind === "group" ? { ...n, operator } : n
+    ) as GroupNode;
+  },
   setTitle(root: GroupNode, id: string, title: string): GroupNode {
     /* Both conditions and groups can carry a title now. */
     return update(root, id, (n) => ({ ...n, title })) as GroupNode;
