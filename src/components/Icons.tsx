@@ -30,26 +30,6 @@ export const IconChevronUp = (p: SVGProps<SVGSVGElement>) => (
   </svg>
 );
 
-/** 6-dot grip — the drag-to-reorder handle. */
-export const IconGrip = (p: SVGProps<SVGSVGElement>) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width={16}
-    height={16}
-    viewBox="0 0 16 16"
-    fill="currentColor"
-    aria-hidden
-    {...p}
-  >
-    <circle cx="6" cy="4" r="1.1" />
-    <circle cx="10" cy="4" r="1.1" />
-    <circle cx="6" cy="8" r="1.1" />
-    <circle cx="10" cy="8" r="1.1" />
-    <circle cx="6" cy="12" r="1.1" />
-    <circle cx="10" cy="12" r="1.1" />
-  </svg>
-);
-
 export const IconCheck = (p: SVGProps<SVGSVGElement>) => (
   <svg {...base} {...p}>
     <path d="m4 8 3 3 5-6" />

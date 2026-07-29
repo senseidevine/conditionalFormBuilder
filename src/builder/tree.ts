@@ -118,22 +118,4 @@ export const T = {
     }
     return walk(root) as GroupNode;
   },
-  /** Move the target child to a specific index inside its parent group.
-   *  Used by pointer-drag reorder; targetIndex is clamped to the valid
-   *  range and cross-group moves are not supported. */
-  moveSiblingTo(root: GroupNode, id: string, targetIndex: number): GroupNode {
-    function walk(node: Node): Node {
-      if (node.kind !== "group") return node;
-      let children = node.children.map(walk);
-      const idx = children.findIndex((c) => c.id === id);
-      if (idx !== -1) {
-        children = [...children];
-        const [item] = children.splice(idx, 1);
-        const clamped = Math.max(0, Math.min(children.length, targetIndex));
-        children.splice(clamped, 0, item);
-      }
-      return { ...node, children };
-    }
-    return walk(root) as GroupNode;
-  },
 };

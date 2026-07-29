@@ -54,31 +54,3 @@
   outline: 2px solid var(--accent-focus);
   outline-offset: 2px;
 }
-
-/* The drag grip lives between the up/down chevrons. It's the only
- * element inside .reorder that starts a pointer drag (via the
- * data-drag-handle attribute picked up by the enclosing Group). */
-.reorder-grip {
-  color: var(--fg-mute);
-  width: 22px;
-  height: 22px;
-  border-radius: 6px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: grab;
-  transition: background var(--dur-1) var(--ease),
-    color var(--dur-1) var(--ease);
-  touch-action: none;
-}
-.reorder-grip svg {
-  width: 12px;
-  height: 12px;
-}
-.reorder-grip:hover {
-  background: rgba(255, 255, 255, 0.08);
-  color: var(--fg);
-}
-.reorder-grip:active {
-  cursor: grabbing;
-}
