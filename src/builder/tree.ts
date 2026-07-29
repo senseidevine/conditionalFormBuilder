@@ -47,15 +47,19 @@ export const T = {
     ) as GroupNode;
   },
   toggleOperator(root: GroupNode, id: string): GroupNode {
+    /* Works for both a Group's operator (across its children) and a
+     * Condition's operator (across its property rules). */
     return update(root, id, (n) =>
-      n.kind === "group"
+      n.kind === "group" || n.kind === "condition"
         ? { ...n, operator: n.operator === "AND" ? "OR" : "AND" }
         : n
     ) as GroupNode;
   },
   setOperator(root: GroupNode, id: string, operator: Operator): GroupNode {
     return update(root, id, (n) =>
-      n.kind === "group" ? { ...n, operator } : n
+      n.kind === "group" || n.kind === "condition"
+        ? { ...n, operator }
+        : n
     ) as GroupNode;
   },
   setTitle(root: GroupNode, id: string, title: string): GroupNode {

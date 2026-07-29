@@ -12,6 +12,9 @@ export interface ConditionNode {
   kind: "condition";
   /** Label above the property list — the "Title" text in the spec sheet. */
   title: string;
+  /** AND/OR joining the property rules together. Only shown when the
+   *  condition has 2+ properties (same rule as a group's bracket). */
+  operator: Operator;
   /** One or more attribute rules attached to this condition. */
   properties: PropertyRow[];
 }
@@ -39,6 +42,7 @@ export function makeCondition(title = "Title"): ConditionNode {
     id: uid(),
     kind: "condition",
     title,
+    operator: "AND",
     properties: [makeProperty()],
   };
 }

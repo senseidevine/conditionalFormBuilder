@@ -1,5 +1,6 @@
-import type { ConditionNode, PropertyRow } from "./types";
+import type { ConditionNode, Operator, PropertyRow } from "./types";
 import { AttributeRule } from "./AttributeRule";
+import { OperatorToggle } from "./OperatorToggle";
 import { IconTrash } from "../components/Icons";
 import "./ConditionBlock.css";
 
@@ -17,6 +18,15 @@ interface ConditionBlockProps {
   /** Master bracket toggle. When true and the condition has 2+
    *  properties, a grp-bracket is drawn around the property column. */
   showBrackets: boolean;
+  /** Toggle the condition's own AND/OR operator (used when the badge
+   *  behaves as a click-toggle). */
+  onToggleOperator: () => void;
+  /** Set the condition's operator directly (used by the operator
+   *  hover menu). */
+  onSetOperator: (op: Operator) => void;
+  /** When true, the AND/OR badge inside the bracket becomes a hover
+   *  dropdown instead of a click-toggle. */
+  operatorMenu: boolean;
 }
 
 /** Title label sitting on top of one or more AttributeRules, wrapped in a
@@ -30,12 +40,16 @@ export function ConditionBlock({
   onRemoveProperty,
   onRemove,
   showBrackets,
+  onToggleOperator,
+  onSetOperator,
+  operatorMenu,
 }: ConditionBlockProps) {
   const canRemoveProperty = node.properties.length > 1;
   /* Bracket appears only when there are 2+ properties AND the master
    * Brackets toggle is on. Always rendered so the same wipe-in/out
    * transition Group's grp-bracket uses works here too. */
-  const showBracket = showBrackets && node.properties.length > 1;
+  const hasMany = node.properties.length > 1;
+  const showBracket = showBrackets && hasMany;
   return (
     <div className="cblock">
       <div className="cblock-head">
@@ -63,7 +77,16 @@ export function ConditionBlock({
         <div
           className={`grp-bracket ${showBracket ? "" : "is-hidden"}`}
           aria-hidden
-        />
+        >
+          {hasMany ? (
+            <OperatorToggle
+              operator={node.operator}
+              onToggle={onToggleOperator}
+              onSet={onSetOperator}
+              menuMode={operatorMenu}
+            />
+          ) : null}
+        </div>
         <div className="cblock-column">
           <div className="cblock-props">
             {node.properties.map((p) => (

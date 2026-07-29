@@ -144,6 +144,11 @@ export function Group({
                     : undefined
                 }
                 showBrackets={showBrackets}
+                onToggleOperator={() => onMutate(child.id, "toggle")}
+                onSetOperator={(op) =>
+                  onMutate(child.id, "setOperator", op)
+                }
+                operatorMenu={operatorMenu}
               />
             ) : (
               <Group
