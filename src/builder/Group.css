@@ -3,14 +3,14 @@
 }
 
 .cblock {
-  /* Nested background — default is 10% white. */
-  background: rgba(255, 255, 255, 0.1);
+  /* Nested-background OFF: no background at all — bracket + rounded
+   * padding still frame the group visually. The dark 15% black lift
+   * is applied only when the toggle is on. */
   padding: 12px;
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
-/* Nested background config: 15% black instead of the white lift. */
 .cblock[data-bg-dark="true"] {
   background: rgba(0, 0, 0, 0.15);
 }

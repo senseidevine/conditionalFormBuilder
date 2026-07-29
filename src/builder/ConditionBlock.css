@@ -1,14 +1,14 @@
 .cblock {
-  /* Nested background — default is 10% white. */
-  background: rgba(255, 255, 255, 0.1);
+  /* Nested-background OFF: no background at all. The dark 15% black
+   * lift is applied only when the toggle is on (see below). */
   border-radius: 8px;
   padding: 12px 14px 12px;
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
-/* When any ancestor has the dark-nested toggle on, all cblocks switch
- * from the 10% white lift to 15% black. */
+/* When any ancestor has the dark-nested toggle on, all cblocks pick up
+ * the 15% black lift. */
 [data-bg-dark="true"] .cblock {
   background: rgba(0, 0, 0, 0.15);
 }
