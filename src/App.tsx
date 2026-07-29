@@ -52,6 +52,10 @@ export default function App() {
           const p = payload as { propertyId: string };
           return T.removeProperty(r, id, p.propertyId);
         }
+        case "moveUp":
+          return T.moveSibling(r, id, -1);
+        case "moveDown":
+          return T.moveSibling(r, id, 1);
       }
     });
   };

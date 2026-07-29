@@ -1,5 +1,6 @@
 import type { ConditionNode, PropertyRow } from "./types";
 import { AttributeRule } from "./AttributeRule";
+import { ReorderControls } from "./ReorderControls";
 import { IconTrash } from "../components/Icons";
 import "./ConditionBlock.css";
 
@@ -14,6 +15,8 @@ interface ConditionBlockProps {
   onAddProperty: () => void;
   onRemoveProperty: (propertyId: string) => void;
   onRemove?: () => void;
+  onMoveUp?: () => void;
+  onMoveDown?: () => void;
 }
 
 /** Title label sitting on top of one or more AttributeRules, wrapped in a
@@ -26,6 +29,8 @@ export function ConditionBlock({
   onAddProperty,
   onRemoveProperty,
   onRemove,
+  onMoveUp,
+  onMoveDown,
 }: ConditionBlockProps) {
   const canRemoveProperty = node.properties.length > 1;
   return (
@@ -39,6 +44,7 @@ export function ConditionBlock({
           aria-label="Condition title"
           spellCheck={false}
         />
+        <ReorderControls onMoveUp={onMoveUp} onMoveDown={onMoveDown} />
         {onRemove ? (
           <button
             type="button"
