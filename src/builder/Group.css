@@ -3,13 +3,18 @@
 }
 
 .cblock {
-  /* Nested-background OFF: no background at all — bracket + rounded
-   * padding still frame the group visually. The dark 15% black lift
-   * is applied only when the toggle is on. */
+  /* Section cblocks (no data-depth) inherit no background in the OFF
+   * state — the dark lift below applies only when the toggle is on.
+   * Group cblocks always carry data-depth and keep the 10% white lift
+   * regardless of the toggle, since a nested group without any surface
+   * loses its visual grouping. */
   padding: 12px;
   display: flex;
   flex-direction: column;
   gap: 10px;
+}
+.cblock[data-depth] {
+  background: rgba(255, 255, 255, 0.1);
 }
 .cblock[data-bg-dark="true"] {
   background: rgba(0, 0, 0, 0.15);
