@@ -76,6 +76,7 @@ export function ConditionBlock({
       <div className="grp-body">
         <div
           className={`grp-bracket ${showBracket ? "" : "is-hidden"}`}
+          data-op={node.operator}
           aria-hidden
         >
           {hasMany ? (

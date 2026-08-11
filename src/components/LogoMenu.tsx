@@ -9,8 +9,6 @@ interface LogoMenuProps {
   onToggleSwapButtons: (v: boolean) => void;
   showLoneBracket: boolean;
   onToggleLoneBracket: (v: boolean) => void;
-  connectorHover: boolean;
-  onToggleConnectorHover: (v: boolean) => void;
   showBrackets: boolean;
   onToggleShowBrackets: (v: boolean) => void;
   nestedBgDark: boolean;
@@ -19,6 +17,10 @@ interface LogoMenuProps {
   onToggleSmoothAnim: (v: boolean) => void;
   operatorMenu: boolean;
   onToggleOperatorMenu: (v: boolean) => void;
+  bracketDottedOr: boolean;
+  onToggleBracketDottedOr: (v: boolean) => void;
+  bareCblocks: boolean;
+  onToggleBareCblocks: (v: boolean) => void;
 }
 
 type Anchor = { top: number; left: number };
@@ -31,8 +33,6 @@ export function LogoMenu({
   onToggleSwapButtons,
   showLoneBracket,
   onToggleLoneBracket,
-  connectorHover,
-  onToggleConnectorHover,
   showBrackets,
   onToggleShowBrackets,
   nestedBgDark,
@@ -41,6 +41,10 @@ export function LogoMenu({
   onToggleSmoothAnim,
   operatorMenu,
   onToggleOperatorMenu,
+  bracketDottedOr,
+  onToggleBracketDottedOr,
+  bareCblocks,
+  onToggleBareCblocks,
 }: LogoMenuProps) {
   const [open, setOpen] = useState(false);
   const [anchor, setAnchor] = useState<Anchor>({ top: 0, left: 0 });
@@ -161,15 +165,35 @@ export function LogoMenu({
 
               <div className="logomenu-row">
                 <div className="logomenu-row-text">
-                  <div className="logomenu-row-title">Connector hover</div>
+                  <div className="logomenu-row-title">Dotted OR bracket</div>
                   <div className="logomenu-row-desc">
-                    Brighten the bracket line when you hover it
+                    Render the bracket line dashed when the group's
+                    operator is OR; solid for AND.
                   </div>
                 </div>
                 <SegmentedTabs
-                  ariaLabel="Connector hover"
-                  value={connectorHover ? "on" : "off"}
-                  onChange={(v) => onToggleConnectorHover(v === "on")}
+                  ariaLabel="Dotted OR bracket"
+                  value={bracketDottedOr ? "on" : "off"}
+                  onChange={(v) => onToggleBracketDottedOr(v === "on")}
+                  options={[
+                    { value: "off", label: "Off" },
+                    { value: "on", label: "On" },
+                  ]}
+                />
+              </div>
+
+              <div className="logomenu-row">
+                <div className="logomenu-row-text">
+                  <div className="logomenu-row-title">Bare cblocks</div>
+                  <div className="logomenu-row-desc">
+                    Strip all backgrounds off section and group cards so
+                    only the bracket lines structure the tree.
+                  </div>
+                </div>
+                <SegmentedTabs
+                  ariaLabel="Bare cblocks"
+                  value={bareCblocks ? "on" : "off"}
+                  onChange={(v) => onToggleBareCblocks(v === "on")}
                   options={[
                     { value: "off", label: "Off" },
                     { value: "on", label: "On" },

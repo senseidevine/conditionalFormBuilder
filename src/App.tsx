@@ -19,11 +19,12 @@ export default function App() {
   const [activeStep, setActiveStep] = useState<string>("s1");
   const [swapButtons, setSwapButtons] = useState<boolean>(false);
   const [showLoneBracket, setShowLoneBracket] = useState<boolean>(true);
-  const [connectorHover, setConnectorHover] = useState<boolean>(false);
   const [showBrackets, setShowBrackets] = useState<boolean>(true);
   const [nestedBgDark, setNestedBgDark] = useState<boolean>(true);
   const [smoothAnim, setSmoothAnim] = useState<boolean>(true);
   const [operatorMenu, setOperatorMenu] = useState<boolean>(true);
+  const [bracketDottedOr, setBracketDottedOr] = useState<boolean>(false);
+  const [bareCblocks, setBareCblocks] = useState<boolean>(false);
 
   const activeTree = activeStep === "s2" ? treeS2 : treeS1;
   const setActiveTree = activeStep === "s2" ? setTreeS2 : setTreeS1;
@@ -68,7 +69,12 @@ export default function App() {
   };
 
   return (
-    <div className="page" data-smooth-anim={smoothAnim}>
+    <div
+      className="page"
+      data-smooth-anim={smoothAnim}
+      data-bracket-dotted-or={bracketDottedOr}
+      data-bare-cblocks={bareCblocks}
+    >
       <div className="page-glow" aria-hidden />
 
       <StepRail
@@ -80,8 +86,6 @@ export default function App() {
         onToggleSwapButtons={setSwapButtons}
         showLoneBracket={showLoneBracket}
         onToggleLoneBracket={setShowLoneBracket}
-        connectorHover={connectorHover}
-        onToggleConnectorHover={setConnectorHover}
         showBrackets={showBrackets}
         onToggleShowBrackets={setShowBrackets}
         nestedBgDark={nestedBgDark}
@@ -90,6 +94,10 @@ export default function App() {
         onToggleSmoothAnim={setSmoothAnim}
         operatorMenu={operatorMenu}
         onToggleOperatorMenu={setOperatorMenu}
+        bracketDottedOr={bracketDottedOr}
+        onToggleBracketDottedOr={setBracketDottedOr}
+        bareCblocks={bareCblocks}
+        onToggleBareCblocks={setBareCblocks}
       />
 
       <main className="main">
@@ -107,7 +115,6 @@ export default function App() {
                 variant="root"
                 swapButtons={swapButtons}
                 showLoneBracket={showLoneBracket}
-                connectorHover={connectorHover}
                 showBrackets={showBrackets}
                 nestedBgDark={nestedBgDark}
                 operatorMenu={operatorMenu}

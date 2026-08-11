@@ -11,8 +11,6 @@ interface StepRailProps {
   onToggleSwapButtons: (v: boolean) => void;
   showLoneBracket: boolean;
   onToggleLoneBracket: (v: boolean) => void;
-  connectorHover: boolean;
-  onToggleConnectorHover: (v: boolean) => void;
   showBrackets: boolean;
   onToggleShowBrackets: (v: boolean) => void;
   nestedBgDark: boolean;
@@ -21,6 +19,10 @@ interface StepRailProps {
   onToggleSmoothAnim: (v: boolean) => void;
   operatorMenu: boolean;
   onToggleOperatorMenu: (v: boolean) => void;
+  bracketDottedOr: boolean;
+  onToggleBracketDottedOr: (v: boolean) => void;
+  bareCblocks: boolean;
+  onToggleBareCblocks: (v: boolean) => void;
 }
 
 export function StepRail({
@@ -32,8 +34,6 @@ export function StepRail({
   onToggleSwapButtons,
   showLoneBracket,
   onToggleLoneBracket,
-  connectorHover,
-  onToggleConnectorHover,
   showBrackets,
   onToggleShowBrackets,
   nestedBgDark,
@@ -42,6 +42,10 @@ export function StepRail({
   onToggleSmoothAnim,
   operatorMenu,
   onToggleOperatorMenu,
+  bracketDottedOr,
+  onToggleBracketDottedOr,
+  bareCblocks,
+  onToggleBareCblocks,
 }: StepRailProps) {
   return (
     <aside className="rail" aria-label="Wizard steps">
@@ -50,8 +54,6 @@ export function StepRail({
         onToggleSwapButtons={onToggleSwapButtons}
         showLoneBracket={showLoneBracket}
         onToggleLoneBracket={onToggleLoneBracket}
-        connectorHover={connectorHover}
-        onToggleConnectorHover={onToggleConnectorHover}
         showBrackets={showBrackets}
         onToggleShowBrackets={onToggleShowBrackets}
         nestedBgDark={nestedBgDark}
@@ -60,6 +62,10 @@ export function StepRail({
         onToggleSmoothAnim={onToggleSmoothAnim}
         operatorMenu={operatorMenu}
         onToggleOperatorMenu={onToggleOperatorMenu}
+        bracketDottedOr={bracketDottedOr}
+        onToggleBracketDottedOr={onToggleBracketDottedOr}
+        bareCblocks={bareCblocks}
+        onToggleBareCblocks={onToggleBareCblocks}
       />
       <ul className="rail-list">
         {steps.map((s) => {

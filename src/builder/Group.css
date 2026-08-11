@@ -133,10 +133,19 @@
   border-color: rgba(255, 255, 255, 0.4);
   transition: border-color 400ms var(--ease);
 }
-/* Connector hover disabled — override the :hover rule so the bracket
- * line stays at its base 16% white. */
-[data-hover-off="true"] .grp-bracket:hover::before {
-  border-color: rgba(255, 255, 255, 0.16);
+/* Dotted-OR: when the config toggle is on, OR brackets render dashed
+ * so the operator is legible from the line style alone. AND brackets
+ * stay solid. */
+.page[data-bracket-dotted-or="true"] .grp-bracket[data-op="OR"]::before {
+  border-style: dashed;
+}
+/* Bare cblocks: strip all backgrounds off section and group cards so
+ * only the bracket lines structure the tree. Overrides both the depth
+ * lift and the nested-bg-dark rule. */
+.page[data-bare-cblocks="true"] .cblock,
+.page[data-bare-cblocks="true"] .cblock[data-depth],
+.page[data-bare-cblocks="true"] .cblock[data-bg-dark="true"] {
+  background: transparent;
 }
 .grp-bracket .optog {
   position: relative;

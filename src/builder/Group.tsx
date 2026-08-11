@@ -29,8 +29,6 @@ interface GroupProps {
    *  section (nothing to AND/OR yet). Groups with 2+ sections always
    *  show the bracket. */
   showLoneBracket: boolean;
-  /** When false, the bracket line does not brighten on hover. */
-  connectorHover: boolean;
   /** Master toggle for bracket visibility across the whole builder. */
   showBrackets: boolean;
   /** When true, nested groups switch from the subtle white lift to
@@ -48,7 +46,6 @@ export function Group({
   variant,
   swapButtons,
   showLoneBracket,
-  connectorHover,
   showBrackets,
   nestedBgDark,
   operatorMenu,
@@ -89,7 +86,6 @@ export function Group({
     <div
       className={variant === "nested" ? "cblock" : "grp grp--root"}
       data-depth={depth}
-      data-hover-off={!connectorHover}
       data-bg-dark={nestedBgDark}
     >
       {variant === "nested" ? (
@@ -118,6 +114,7 @@ export function Group({
          * bracket appears). */}
         <div
           className={`grp-bracket ${showBracket ? "" : "is-hidden"}`}
+          data-op={group.operator}
           aria-hidden
         >
           {showToggle ? (
@@ -166,7 +163,6 @@ export function Group({
                 variant="nested"
                 swapButtons={swapButtons}
                 showLoneBracket={showLoneBracket}
-                connectorHover={connectorHover}
                 showBrackets={showBrackets}
                 nestedBgDark={nestedBgDark}
                 operatorMenu={operatorMenu}
