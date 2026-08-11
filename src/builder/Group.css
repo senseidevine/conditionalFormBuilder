@@ -148,12 +148,12 @@
 .page[data-bare-cblocks="true"] .cblock[data-bg-dark="true"] {
   background: transparent;
 }
-/* …but restore the background on hover so the hovered card lifts back
- * out of the flat layout. :not(:has(.cblock:hover)) confines the lift
- * to the innermost hovered cblock — otherwise every ancestor would
- * light up too, since :hover bubbles. */
-.page[data-bare-cblocks="true"] .cblock[data-depth]:hover:not(:has(.cblock:hover)),
-.page[data-bare-cblocks="true"] .cblock[data-bg-dark="true"]:hover:not(:has(.cblock:hover)) {
+/* …but restore the background on any cblock the cursor is inside so
+ * hover lift is visible for the target and every ancestor along the
+ * hover chain. Covers Section and Group cblocks equally — including
+ * Section cblocks that have no default background — so the lift is
+ * consistent regardless of the Nested background toggle. */
+.page[data-bare-cblocks="true"] .cblock:hover {
   background: rgba(0, 0, 0, 0.15);
 }
 .grp-bracket .optog {
