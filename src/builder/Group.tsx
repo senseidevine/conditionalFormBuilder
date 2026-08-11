@@ -7,6 +7,7 @@ import "./Group.css";
 export type Mutation =
   | "toggle"
   | "setOperator"
+  | "toggleNegated"
   | "removeChild"
   | "addCondition"
   | "addGroup"
@@ -54,12 +55,13 @@ export function Group({
   onMutate,
 }: GroupProps) {
   const hasMany = group.children.length > 1;
-  const isNot = group.operator === "NOT";
-  /* NOT is a unary wrapper — its bracket + badge must appear even with
-   * a single child, regardless of the lone-bracket / master toggles,
-   * because the badge is the only cue that the group is negated. */
-  const showBracket = isNot || (showBrackets && (hasMany || showLoneBracket));
-  const showToggle = isNot || (showBracket && hasMany);
+  const isNegated = !!group.negated;
+  /* When the group is negated, the bracket + badge must appear even
+   * on a single child — the NOT chip lives on the badge, and hiding
+   * the badge would hide the only cue that the group is negated. */
+  const showBracket =
+    isNegated || (showBrackets && (hasMany || showLoneBracket));
+  const showToggle = isNegated || (showBracket && hasMany);
 
   const sectionPill = (
     <ActionPill
@@ -121,15 +123,17 @@ export function Group({
           {showToggle ? (
             <OperatorToggle
               operator={group.operator}
+              negated={isNegated}
               onToggle={() => onMutate(group.id, "toggle")}
               onSet={(op) => onMutate(group.id, "setOperator", op)}
+              onToggleNegated={() => onMutate(group.id, "toggleNegated")}
               menuMode={operatorMenu}
             />
           ) : null}
         </div>
 
         <div className="grp-children">
-          {(isNot ? group.children.slice(0, 1) : group.children).map((child) =>
+          {group.children.map((child) =>
             child.kind === "condition" ? (
               <ConditionBlock
                 key={child.id}
@@ -171,9 +175,7 @@ export function Group({
             )
           )}
 
-          {/* NOT is unary — no room for a second child, so hide the
-           * Section / Group add pills. */}
-          {isNot ? null : <div className="grp-actions">{actionOrder}</div>}
+          <div className="grp-actions">{actionOrder}</div>
         </div>
       </div>
     </div>

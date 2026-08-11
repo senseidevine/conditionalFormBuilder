@@ -25,13 +25,19 @@ function grp(op: Operator, ...children: Node[]): GroupNode {
   return { id: uid(), kind: "group", operator: op, children };
 }
 
+function notGrp(op: Operator, ...children: Node[]): GroupNode {
+  return { id: uid(), kind: "group", operator: op, negated: true, children };
+}
+
 /** The criteria tree from the reference screenshot, encoded so the
- *  regular Group builder can render and edit it directly. */
+ *  regular Group builder can render and edit it directly. Each NOT
+ *  wrapper in the reference collapses into its inner group with
+ *  `negated: true` on it — no extra nesting level required. */
 export function seedSample(): GroupNode {
   return grp(
     "AND",
-    grp(
-      "NOT",
+    notGrp(
+      "AND",
       cond(
         "Collection attribute",
         ["Name", "wallet.limit.exempt"],
@@ -41,38 +47,32 @@ export function seedSample(): GroupNode {
     cond("Transaction type", ["Direction", "IN"]),
     grp(
       "AND",
-      grp("NOT", cond("Transaction type", ["Type", "TRADE"], ["Direction", "IN"])),
-      grp(
-        "NOT",
+      notGrp(
+        "AND",
+        cond("Transaction type", ["Type", "TRADE"], ["Direction", "IN"])
+      ),
+      notGrp(
+        "AND",
+        cond("Attribute", ["Type", "UUID"], ["Name", "loyalty.transaction.id"]),
+        cond("Transaction type", ["Type", "REWARD"])
+      ),
+      notGrp(
+        "AND",
+        cond("Transaction type", ["Type", "TRANSFER"], ["Direction", "IN"]),
         grp(
-          "AND",
-          cond("Attribute", ["Type", "UUID"], ["Name", "loyalty.transaction.id"]),
-          cond("Transaction type", ["Type", "REWARD"])
+          "OR",
+          cond("Attribute", ["Type", "UUID"], ["Name", "trading.portfolio.id"]),
+          cond("Attribute", ["Type", "UUID"], ["Name", "vault.id"])
         )
       ),
-      grp(
-        "NOT",
-        grp(
-          "AND",
-          cond("Transaction type", ["Type", "TRANSFER"], ["Direction", "IN"]),
-          grp(
-            "OR",
-            cond("Attribute", ["Type", "UUID"], ["Name", "trading.portfolio.id"]),
-            cond("Attribute", ["Type", "UUID"], ["Name", "vault.id"])
-          )
-        )
-      ),
-      grp(
-        "NOT",
-        grp(
-          "AND",
-          cond(
-            "Attribute",
-            ["Type", "String"],
-            ["Name", "topup.type"],
-            ["Match", "Exactly"],
-            ["Value", "INVESTMENT_WALLET"]
-          )
+      notGrp(
+        "AND",
+        cond(
+          "Attribute",
+          ["Type", "String"],
+          ["Name", "topup.type"],
+          ["Match", "Exactly"],
+          ["Value", "INVESTMENT_WALLET"]
         )
       )
     )

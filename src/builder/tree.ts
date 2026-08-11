@@ -47,15 +47,21 @@ export const T = {
     ) as GroupNode;
   },
   toggleOperator(root: GroupNode, id: string): GroupNode {
-    /* Cycle AND -> OR -> NOT -> AND. Works for both a Group's operator
-     * (across its children) and a Condition's operator (across its
-     * property rules). */
-    return update(root, id, (n) => {
-      if (n.kind !== "group" && n.kind !== "condition") return n;
-      const next: Operator =
-        n.operator === "AND" ? "OR" : n.operator === "OR" ? "NOT" : "AND";
-      return { ...n, operator: next };
-    }) as GroupNode;
+    /* Flip AND <-> OR. NOT lives as a separate `negated` flag on
+     * groups now (see toggleNegated below), so it is not part of the
+     * combinator cycle. */
+    return update(root, id, (n) =>
+      n.kind === "group" || n.kind === "condition"
+        ? { ...n, operator: n.operator === "AND" ? "OR" : "AND" }
+        : n
+    ) as GroupNode;
+  },
+  toggleNegated(root: GroupNode, id: string): GroupNode {
+    /* Flip the group's `negated` modifier. AND + negated = NAND,
+     * OR + negated = NOR. Only applies to groups. */
+    return update(root, id, (n) =>
+      n.kind === "group" ? { ...n, negated: !n.negated } : n
+    ) as GroupNode;
   },
   setOperator(root: GroupNode, id: string, operator: Operator): GroupNode {
     return update(root, id, (n) =>

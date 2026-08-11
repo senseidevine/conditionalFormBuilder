@@ -1,4 +1,4 @@
-export type Operator = "AND" | "OR" | "NOT";
+export type Operator = "AND" | "OR";
 
 export interface PropertyRow {
   id: string;
@@ -22,6 +22,12 @@ export interface GroupNode {
   id: string;
   kind: "group";
   operator: Operator;
+  /** Orthogonal negation modifier. When true the group as a whole is
+   *  negated — combined with AND it reads as NAND, combined with OR as
+   *  NOR. Kept as a flag alongside the combinator instead of as a
+   *  separate operator so a NOT can wrap an n-ary group without the
+   *  distributivity ambiguity a bare NOT(A, B) would carry. */
+  negated?: boolean;
   /** Optional title label displayed at the top of a nested group card. */
   title?: string;
   children: Node[];

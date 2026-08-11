@@ -39,6 +39,8 @@ export default function App() {
           return T.toggleOperator(r, id);
         case "setOperator":
           return T.setOperator(r, id, payload as Operator);
+        case "toggleNegated":
+          return T.toggleNegated(r, id);
         case "removeChild":
           return T.remove(r, id);
         case "addCondition":

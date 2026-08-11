@@ -1,3 +1,17 @@
+/* Vertical stack of the NOT chip (top) and the AND/OR badge (bottom).
+ * The stack is the hover-reach for revealing the NOT chip and is also
+ * the wrap the menu-mode dropdown lives inside. Wide enough to line
+ * up both pills' left edges. */
+.optog-stack {
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding-bottom: 4px;
+  margin-bottom: -4px;
+}
+
 .optog {
   appearance: none;
   border: 0;
@@ -34,11 +48,67 @@
   outline-offset: 2px;
 }
 
-/* Menu-mode: hover on the wrap reveals a small And/Or dropdown. The
- * wrap sits at the badge's own bounds so the wrap-hover reach also
- * covers the menu that sits below it (there's a 4px gap the wrap's
- * padding-bottom bridges so the cursor can travel down without the
- * menu closing). */
+/* NOT chip — smaller dark pill above the AND/OR badge. Hidden by default,
+ * fades in when the stack is hovered/focused, and stays sticky when the
+ * group is actually negated so the state is always visible. */
+.optog-neg {
+  appearance: none;
+  border: 0;
+  background: rgba(255, 255, 255, 0.14);
+  color: var(--fg);
+  width: 32px;
+  height: 18px;
+  padding: 0;
+  border-radius: 9999px;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transform: translateY(2px);
+  pointer-events: none;
+  transition: opacity var(--dur-1) var(--ease),
+    transform var(--dur-1) var(--ease),
+    background var(--dur-1) var(--ease),
+    color var(--dur-1) var(--ease);
+}
+.optog-stack:hover .optog-neg,
+.optog-stack:focus-within .optog-neg,
+.optog-stack[data-negated="true"] .optog-neg {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+.optog-stack[data-negated="true"] .optog-neg,
+.optog-neg.is-on {
+  background: #ffffff;
+  color: #0a0b0e;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.28);
+}
+.optog-neg:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+.optog-neg.is-on:hover,
+.optog-stack[data-negated="true"] .optog-neg:hover {
+  background: #f2f2f4;
+}
+.optog-neg:active {
+  transform: scale(0.9);
+  transition: background 60ms linear, transform 60ms ease-out;
+}
+.optog-neg:focus-visible {
+  outline: 2px solid var(--accent-focus);
+  outline-offset: 2px;
+}
+
+/* Menu-mode wrap that sits directly around the AND/OR badge — the
+ * hover-reveal for the And/Or dropdown reads from this wrap so the
+ * menu opens whether the cursor lands on the badge or drifts down to
+ * the popover. */
 .optog-wrap {
   position: relative;
   display: inline-flex;
@@ -71,9 +141,9 @@
   pointer-events: auto;
 }
 /* After the user picks an option we suppress the hover-reveal until
- * the cursor actually leaves the wrap (React clears is-dismissed on
+ * the cursor actually leaves the stack (React clears is-dismissed on
  * onMouseLeave). */
-.optog-wrap.is-dismissed .optog-menu {
+.optog-stack.is-dismissed .optog-menu {
   opacity: 0;
   pointer-events: none;
 }
