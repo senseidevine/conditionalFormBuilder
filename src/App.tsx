@@ -3,6 +3,8 @@ import { StepRail } from "./components/StepRail";
 import { Group, type Mutation } from "./builder/Group";
 import { T } from "./builder/tree";
 import { seedRoot, type GroupNode } from "./builder/types";
+import { CriteriaView } from "./criteria/CriteriaView";
+import { SAMPLE_TREE } from "./criteria/sample";
 import "./App.css";
 
 const RAIL_STEPS = [
@@ -14,6 +16,7 @@ const RAIL_STEPS = [
 
 export default function App() {
   const [tree, setTree] = useState<GroupNode>(() => seedRoot());
+  const [activeStep, setActiveStep] = useState<string>("s1");
   const [swapButtons, setSwapButtons] = useState<boolean>(false);
   const [showLoneBracket, setShowLoneBracket] = useState<boolean>(true);
   const [connectorHover, setConnectorHover] = useState<boolean>(false);
@@ -65,8 +68,9 @@ export default function App() {
 
       <StepRail
         steps={RAIL_STEPS}
-        activeId="s1"
+        activeId={activeStep}
         completedIds={[]}
+        onSelect={setActiveStep}
         swapButtons={swapButtons}
         onToggleSwapButtons={setSwapButtons}
         showLoneBracket={showLoneBracket}
@@ -92,18 +96,22 @@ export default function App() {
 
           <div className="content">
             <div className="form-frame">
-              <Group
-                group={tree}
-                depth={1}
-                variant="root"
-                swapButtons={swapButtons}
-                showLoneBracket={showLoneBracket}
-                connectorHover={connectorHover}
-                showBrackets={showBrackets}
-                nestedBgDark={nestedBgDark}
-                operatorMenu={operatorMenu}
-                onMutate={onMutate}
-              />
+              {activeStep === "s2" ? (
+                <CriteriaView node={SAMPLE_TREE} />
+              ) : (
+                <Group
+                  group={tree}
+                  depth={1}
+                  variant="root"
+                  swapButtons={swapButtons}
+                  showLoneBracket={showLoneBracket}
+                  connectorHover={connectorHover}
+                  showBrackets={showBrackets}
+                  nestedBgDark={nestedBgDark}
+                  operatorMenu={operatorMenu}
+                  onMutate={onMutate}
+                />
+              )}
             </div>
           </div>
         </div>
