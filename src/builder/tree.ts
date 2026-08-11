@@ -1,4 +1,4 @@
-import type { GroupNode, Node, Operator, PropertyRow } from "./types";
+import type { GroupNode, Node, Operator } from "./types";
 import { makeCondition, makeGroup, makeProperty } from "./types";
 
 type Updater = (n: Node) => Node;
@@ -47,13 +47,15 @@ export const T = {
     ) as GroupNode;
   },
   toggleOperator(root: GroupNode, id: string): GroupNode {
-    /* Works for both a Group's operator (across its children) and a
-     * Condition's operator (across its property rules). */
-    return update(root, id, (n) =>
-      n.kind === "group" || n.kind === "condition"
-        ? { ...n, operator: n.operator === "AND" ? "OR" : "AND" }
-        : n
-    ) as GroupNode;
+    /* Cycle AND -> OR -> NOT -> AND. Works for both a Group's operator
+     * (across its children) and a Condition's operator (across its
+     * property rules). */
+    return update(root, id, (n) => {
+      if (n.kind !== "group" && n.kind !== "condition") return n;
+      const next: Operator =
+        n.operator === "AND" ? "OR" : n.operator === "OR" ? "NOT" : "AND";
+      return { ...n, operator: next };
+    }) as GroupNode;
   },
   setOperator(root: GroupNode, id: string, operator: Operator): GroupNode {
     return update(root, id, (n) =>
@@ -77,7 +79,7 @@ export const T = {
     root: GroupNode,
     conditionId: string,
     propertyId: string,
-    key: keyof Pick<PropertyRow, "field" | "cond" | "value">,
+    key: "key" | "value",
     val: string
   ): GroupNode {
     return update(root, conditionId, (n) =>

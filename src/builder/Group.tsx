@@ -54,8 +54,12 @@ export function Group({
   onMutate,
 }: GroupProps) {
   const hasMany = group.children.length > 1;
-  const showBracket = showBrackets && (hasMany || showLoneBracket);
-  const showToggle = showBracket && hasMany;
+  const isNot = group.operator === "NOT";
+  /* NOT is a unary wrapper — its bracket + badge must appear even with
+   * a single child, regardless of the lone-bracket / master toggles,
+   * because the badge is the only cue that the group is negated. */
+  const showBracket = isNot || (showBrackets && (hasMany || showLoneBracket));
+  const showToggle = isNot || (showBracket && hasMany);
 
   const sectionPill = (
     <ActionPill
@@ -125,7 +129,7 @@ export function Group({
         </div>
 
         <div className="grp-children">
-          {group.children.map((child) =>
+          {(isNot ? group.children.slice(0, 1) : group.children).map((child) =>
             child.kind === "condition" ? (
               <ConditionBlock
                 key={child.id}
@@ -167,7 +171,9 @@ export function Group({
             )
           )}
 
-          <div className="grp-actions">{actionOrder}</div>
+          {/* NOT is unary — no room for a second child, so hide the
+           * Section / Group add pills. */}
+          {isNot ? null : <div className="grp-actions">{actionOrder}</div>}
         </div>
       </div>
     </div>

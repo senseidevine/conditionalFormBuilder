@@ -1,9 +1,8 @@
-export type Operator = "AND" | "OR";
+export type Operator = "AND" | "OR" | "NOT";
 
 export interface PropertyRow {
   id: string;
-  field: string;
-  cond: string;
+  key: string;
   value: string;
 }
 
@@ -34,7 +33,7 @@ let __id = 0;
 const uid = () => `n${++__id}`;
 
 export function makeProperty(): PropertyRow {
-  return { id: uid(), field: "", cond: "", value: "" };
+  return { id: uid(), key: "", value: "" };
 }
 
 export function makeCondition(title = "Title"): ConditionNode {

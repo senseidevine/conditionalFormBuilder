@@ -1,34 +1,34 @@
-import { Select } from "../components/Select";
 import "./AttributeRule.css";
 
 interface AttributeRuleProps {
-  field: string;
-  cond: string;
+  attrKey: string;
   value: string;
-  onChange: (key: "field" | "cond" | "value", v: string) => void;
+  onChange: (key: "key" | "value", v: string) => void;
 }
 
-/** The atomic Field / Condition / Value row — no chrome, no title. */
-export function AttributeRule({ field, cond, value, onChange }: AttributeRuleProps) {
+/** A single key/value pair — two freeform inputs with a colon separator,
+ *  reading as "Label: value" once populated. */
+export function AttributeRule({ attrKey, value, onChange }: AttributeRuleProps) {
   return (
     <div className="arule">
-      <Select
-        value={field}
-        placeholder="Field"
-        onChange={(v) => onChange("field", v)}
-        options={["Name", "Email", "Plan", "Country"]}
+      <input
+        className="arule-input arule-input--key"
+        value={attrKey}
+        placeholder="Key"
+        onChange={(e) => onChange("key", e.target.value)}
+        aria-label="Attribute key"
+        spellCheck={false}
       />
-      <Select
-        value={cond}
-        placeholder="Condition"
-        onChange={(v) => onChange("cond", v)}
-        options={["equals", "not equals", "contains"]}
-      />
-      <Select
+      <span className="arule-sep" aria-hidden>
+        :
+      </span>
+      <input
+        className="arule-input arule-input--value"
         value={value}
         placeholder="Value"
-        onChange={(v) => onChange("value", v)}
-        options={["true", "false", "any"]}
+        onChange={(e) => onChange("value", e.target.value)}
+        aria-label="Attribute value"
+        spellCheck={false}
       />
     </div>
   );

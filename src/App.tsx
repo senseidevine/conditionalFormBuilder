@@ -2,9 +2,8 @@ import { useState } from "react";
 import { StepRail } from "./components/StepRail";
 import { Group, type Mutation } from "./builder/Group";
 import { T } from "./builder/tree";
-import { seedRoot, type GroupNode } from "./builder/types";
-import { CriteriaView } from "./criteria/CriteriaView";
-import { SAMPLE_TREE } from "./criteria/sample";
+import { seedRoot, type GroupNode, type Operator } from "./builder/types";
+import { seedSample } from "./criteria/sample";
 import "./App.css";
 
 const RAIL_STEPS = [
@@ -15,7 +14,8 @@ const RAIL_STEPS = [
 ];
 
 export default function App() {
-  const [tree, setTree] = useState<GroupNode>(() => seedRoot());
+  const [treeS1, setTreeS1] = useState<GroupNode>(() => seedRoot());
+  const [treeS2, setTreeS2] = useState<GroupNode>(() => seedSample());
   const [activeStep, setActiveStep] = useState<string>("s1");
   const [swapButtons, setSwapButtons] = useState<boolean>(false);
   const [showLoneBracket, setShowLoneBracket] = useState<boolean>(true);
@@ -25,17 +25,20 @@ export default function App() {
   const [smoothAnim, setSmoothAnim] = useState<boolean>(true);
   const [operatorMenu, setOperatorMenu] = useState<boolean>(true);
 
+  const activeTree = activeStep === "s2" ? treeS2 : treeS1;
+  const setActiveTree = activeStep === "s2" ? setTreeS2 : setTreeS1;
+
   const onMutate: (id: string, mut: Mutation, payload?: unknown) => void = (
     id,
     mut,
     payload
   ) => {
-    setTree((r) => {
+    setActiveTree((r) => {
       switch (mut) {
         case "toggle":
           return T.toggleOperator(r, id);
         case "setOperator":
-          return T.setOperator(r, id, payload as "AND" | "OR");
+          return T.setOperator(r, id, payload as Operator);
         case "removeChild":
           return T.remove(r, id);
         case "addCondition":
@@ -49,7 +52,7 @@ export default function App() {
         case "setPropertyValue": {
           const p = payload as {
             propertyId: string;
-            key: "field" | "cond" | "value";
+            key: "key" | "value";
             val: string;
           };
           return T.setPropertyValue(r, id, p.propertyId, p.key, p.val);
@@ -96,22 +99,18 @@ export default function App() {
 
           <div className="content">
             <div className="form-frame">
-              {activeStep === "s2" ? (
-                <CriteriaView node={SAMPLE_TREE} />
-              ) : (
-                <Group
-                  group={tree}
-                  depth={1}
-                  variant="root"
-                  swapButtons={swapButtons}
-                  showLoneBracket={showLoneBracket}
-                  connectorHover={connectorHover}
-                  showBrackets={showBrackets}
-                  nestedBgDark={nestedBgDark}
-                  operatorMenu={operatorMenu}
-                  onMutate={onMutate}
-                />
-              )}
+              <Group
+                group={activeTree}
+                depth={1}
+                variant="root"
+                swapButtons={swapButtons}
+                showLoneBracket={showLoneBracket}
+                connectorHover={connectorHover}
+                showBrackets={showBrackets}
+                nestedBgDark={nestedBgDark}
+                operatorMenu={operatorMenu}
+                onMutate={onMutate}
+              />
             </div>
           </div>
         </div>

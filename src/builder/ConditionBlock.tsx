@@ -9,7 +9,7 @@ interface ConditionBlockProps {
   onSetTitle: (v: string) => void;
   onSetProperty: (
     propertyId: string,
-    key: "field" | "cond" | "value",
+    key: "key" | "value",
     v: string
   ) => void;
   onAddProperty: () => void;
@@ -84,6 +84,7 @@ export function ConditionBlock({
               onToggle={onToggleOperator}
               onSet={onSetOperator}
               menuMode={operatorMenu}
+              allowNot={false}
             />
           ) : null}
         </div>
@@ -124,14 +125,13 @@ function PropertyRowView({
 }: {
   property: PropertyRow;
   canRemove: boolean;
-  onChange: (key: "field" | "cond" | "value", v: string) => void;
+  onChange: (key: "key" | "value", v: string) => void;
   onRemove: () => void;
 }) {
   return (
     <div className="cblock-prop">
       <AttributeRule
-        field={property.field}
-        cond={property.cond}
+        attrKey={property.key}
         value={property.value}
         onChange={onChange}
       />
