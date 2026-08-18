@@ -165,16 +165,16 @@
   color: #ff5777;
 }
 .tagpill-wrap[data-type="condition"] .tagpill {
-  background: rgba(255, 255, 255, 0.14);
-  color: var(--fg);
+  background: rgba(103, 144, 184, 0.2);
+  color: #6790b8;
 }
 .tagpill-wrap[data-type="conditional"] .tagpill {
   background: rgba(128, 92, 255, 0.2);
   color: #805cff;
 }
 .tagpill-wrap[data-type="value"] .tagpill {
-  background: rgba(103, 144, 184, 0.2);
-  color: #6790b8;
+  background: rgba(255, 255, 255, 0.14);
+  color: var(--fg);
 }
 
 .tagpill {
