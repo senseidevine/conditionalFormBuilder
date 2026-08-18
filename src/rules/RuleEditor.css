@@ -324,6 +324,34 @@
   transition: background var(--dur-1) var(--ease);
 }
 .rules-add-option:hover { background: rgba(255, 255, 255, 0.08); }
+.rules-add-option.is-selected {
+  background: rgba(255, 255, 255, 0.1);
+}
+.rules-add-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.rules-add-done {
+  appearance: none;
+  border: 0;
+  margin-top: 4px;
+  background: #ffffff;
+  color: #0a0b0e;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--dur-1) var(--ease), opacity var(--dur-1) var(--ease);
+}
+.rules-add-done:hover { background: #f2f2f4; }
+.rules-add-done:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
 
 /* Row-level trash — one button at the end of the tag flow that peels
  * the last tag off. Replaces the per-tag remove that used to sit on
@@ -413,10 +441,74 @@
   padding: 6px 10px;
   border-radius: 6px;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
   transition: background var(--dur-1) var(--ease);
 }
 .tagpill-option:hover { background: rgba(255, 255, 255, 0.08); }
 .tagpill-option.is-selected {
   background: rgba(255, 255, 255, 0.1);
+  color: var(--fg);
+}
+
+/* Checkbox tick used for Value tag multi-select — a fixed 14px slot
+ * so labels line up whether or not the row is currently selected. */
+.tagpill-check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--fg);
+  font-size: 11px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.tagpill-option.is-selected .tagpill-check,
+.rules-add-option.is-selected .tagpill-check {
+  background: #ffffff;
+  color: #0a0b0e;
+}
+
+/* Selected-values chip row at the top of a multi-select dropdown. */
+.tagpill-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding-bottom: 2px;
+}
+.tagpill-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 4px 3px 8px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--fg);
+  font-size: 12px;
+  line-height: 1.2;
+}
+.tagpill-chip-x {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--fg-mute);
+  width: 16px;
+  height: 16px;
+  border-radius: 9999px;
+  cursor: pointer;
+  padding: 0;
+  font-size: 14px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--dur-1) var(--ease), color var(--dur-1) var(--ease);
+}
+.tagpill-chip-x:hover {
+  background: rgba(255, 255, 255, 0.14);
   color: var(--fg);
 }

@@ -40,6 +40,17 @@ export function makeTag(type: TagType, value = ""): Tag {
   return { id: uid(), type, value };
 }
 
+/** Value tags may hold multiple picks; the tag stores them as a
+ *  comma-separated string so the underlying Tag stays a flat
+ *  { key, value } pair. These helpers parse/serialise around that. */
+export function parseValueList(value: string): string[] {
+  if (!value) return [];
+  return value.split(",").map((s) => s.trim()).filter(Boolean);
+}
+export function serializeValueList(values: string[]): string {
+  return values.join(", ");
+}
+
 export function makeBlock(): RuleBlock {
   /* Every block opens with an `if` operator so the CTA can immediately
    * prompt the user for the first condition value. */

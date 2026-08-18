@@ -5,6 +5,8 @@ import {
   CONDITION_OPTIONS,
   CONDITIONAL_OPTIONS,
   VALUE_SUGGESTIONS,
+  parseValueList,
+  serializeValueList,
 } from "./types";
 
 interface TagPillProps {
@@ -21,19 +23,19 @@ const TYPE_LABEL: Record<Tag["type"], string> = {
 };
 
 /** A single inline tag pill. Click to open a dropdown of options for
- *  the tag's type (operator and conditional dropdowns are picklists;
- *  the value dropdown is a freeform text input with suggestions). */
+ *  the tag's type. Operator / Condition / Conditional are pick-only
+ *  single-select. Value is multi-select: suggestions toggle in and
+ *  out, and Enter in the text input appends a custom value. */
 export function TagPill({ tag, autoOpen, onChange }: TagPillProps) {
   const [open, setOpen] = useState(!!autoOpen);
+  const [draft, setDraft] = useState("");
   const wrapRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const isValue = tag.type === "value";
 
   useEffect(() => {
     if (!open) return;
-    if (tag.type === "value") {
-      inputRef.current?.focus();
-      inputRef.current?.select();
-    }
+    if (isValue) inputRef.current?.focus();
     const onDoc = (e: MouseEvent) => {
       if (!wrapRef.current?.contains(e.target as Node)) setOpen(false);
     };
@@ -46,7 +48,7 @@ export function TagPill({ tag, autoOpen, onChange }: TagPillProps) {
       document.removeEventListener("mousedown", onDoc);
       document.removeEventListener("keydown", onKey);
     };
-  }, [open, tag.type]);
+  }, [open, isValue]);
 
   const options =
     tag.type === "operator"
@@ -57,11 +59,31 @@ export function TagPill({ tag, autoOpen, onChange }: TagPillProps) {
       ? CONDITIONAL_OPTIONS
       : VALUE_SUGGESTIONS;
 
-  const pick = (v: string) => {
+  /* Single-select — commits and closes. Used for the three
+   * pick-only tag types. */
+  const pickSingle = (v: string) => {
     onChange(v);
     setOpen(false);
   };
 
+  /* Multi-select — toggles `v` in the tag's comma-separated value
+   * and keeps the dropdown open so the user can pick more. */
+  const toggleValue = (v: string) => {
+    const list = parseValueList(tag.value);
+    const has = list.includes(v);
+    const next = has ? list.filter((x) => x !== v) : [...list, v];
+    onChange(serializeValueList(next));
+  };
+
+  const commitDraft = () => {
+    const v = draft.trim();
+    if (!v) return;
+    const list = parseValueList(tag.value);
+    if (!list.includes(v)) onChange(serializeValueList([...list, v]));
+    setDraft("");
+  };
+
+  const selectedValues = isValue ? parseValueList(tag.value) : [];
   const display = tag.value || TYPE_LABEL[tag.type];
 
   return (
@@ -77,24 +99,48 @@ export function TagPill({ tag, autoOpen, onChange }: TagPillProps) {
       </button>
 
       {open ? (
-        <div className="tagpill-menu" role="listbox">
-          {tag.type === "value" ? (
-            <input
-              ref={inputRef}
-              className="tagpill-input"
-              value={tag.value}
-              placeholder="Type any value"
-              onChange={(e) => onChange(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") setOpen(false);
-              }}
-              aria-label="Value"
-              spellCheck={false}
-            />
+        <div className="tagpill-menu" role={isValue ? "group" : "listbox"}>
+          {isValue ? (
+            <>
+              {selectedValues.length > 0 ? (
+                <div className="tagpill-chips">
+                  {selectedValues.map((v) => (
+                    <span key={v} className="tagpill-chip">
+                      {v}
+                      <button
+                        type="button"
+                        className="tagpill-chip-x"
+                        aria-label={`Remove ${v}`}
+                        onClick={() => toggleValue(v)}
+                      >
+                        ×
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              ) : null}
+              <input
+                ref={inputRef}
+                className="tagpill-input"
+                value={draft}
+                placeholder="Type any value and press Enter"
+                onChange={(e) => setDraft(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    commitDraft();
+                  }
+                }}
+                aria-label="Value"
+                spellCheck={false}
+              />
+            </>
           ) : null}
           <div className="tagpill-options">
             {options.map((o) => {
-              const selected = o === tag.value;
+              const selected = isValue
+                ? selectedValues.includes(o)
+                : o === tag.value;
               return (
                 <button
                   key={o}
@@ -102,9 +148,16 @@ export function TagPill({ tag, autoOpen, onChange }: TagPillProps) {
                   role="option"
                   aria-selected={selected}
                   className={`tagpill-option ${selected ? "is-selected" : ""}`}
-                  onClick={() => pick(o)}
+                  onClick={() =>
+                    isValue ? toggleValue(o) : pickSingle(o)
+                  }
                 >
-                  {o}
+                  {isValue ? (
+                    <span className="tagpill-check" aria-hidden>
+                      {selected ? "✓" : ""}
+                    </span>
+                  ) : null}
+                  <span>{o}</span>
                 </button>
               );
             })}

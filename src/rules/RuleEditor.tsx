@@ -9,6 +9,7 @@ import {
   makeTag,
   nextCtaLabel,
   nextTagType,
+  serializeValueList,
 } from "./types";
 import { TagPill } from "./TagPill";
 import { IconReturn, IconTrash } from "../components/Icons";
@@ -158,23 +159,39 @@ function InlineAddCta({
 }) {
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState("");
+  /* Multi-select draft for Value tags. Suggestions toggle in/out and
+   * the text input appends custom entries; the whole set commits as
+   * one comma-separated tag when the user clicks Done or hits Enter
+   * on the text input while it's empty. */
+  const [picks, setPicks] = useState<string[]>([]);
   const wrapRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const type = nextTagType(tags.length);
   const label = nextCtaLabel(tags);
+  const isValue = type === "value";
 
   useEffect(() => {
     if (!open) return;
-    if (type === "value") {
-      inputRef.current?.focus();
-      inputRef.current?.select();
-    }
+    if (isValue) inputRef.current?.focus();
     const onDoc = (e: MouseEvent) => {
-      if (!wrapRef.current?.contains(e.target as Node)) setOpen(false);
+      if (!wrapRef.current?.contains(e.target as Node)) {
+        /* Commit any pending Value picks before dismissing so the user
+         * doesn't lose their selection to an accidental outside click. */
+        if (isValue && picks.length > 0) {
+          onAdd(serializeValueList(picks));
+          setPicks([]);
+          setDraft("");
+        }
+        setOpen(false);
+      }
     };
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
+      if (e.key === "Escape") {
+        setOpen(false);
+        setPicks([]);
+        setDraft("");
+      }
     };
     document.addEventListener("mousedown", onDoc);
     document.addEventListener("keydown", onKey);
@@ -182,7 +199,7 @@ function InlineAddCta({
       document.removeEventListener("mousedown", onDoc);
       document.removeEventListener("keydown", onKey);
     };
-  }, [open, type]);
+  }, [open, isValue, picks, onAdd]);
 
   const options =
     type === "operator"
@@ -193,11 +210,32 @@ function InlineAddCta({
       ? CONDITIONAL_OPTIONS
       : VALUE_SUGGESTIONS;
 
-  const commit = (v: string) => {
+  /* Single-select commit — used by the three pick-only tag types.
+   * Adds the tag and closes the dropdown. */
+  const commitSingle = (v: string) => {
     if (!v) return;
     onAdd(v);
     setOpen(false);
     setDraft("");
+  };
+
+  const togglePick = (v: string) => {
+    setPicks((ps) => (ps.includes(v) ? ps.filter((x) => x !== v) : [...ps, v]));
+  };
+
+  const appendDraft = () => {
+    const v = draft.trim();
+    if (!v) return;
+    setPicks((ps) => (ps.includes(v) ? ps : [...ps, v]));
+    setDraft("");
+  };
+
+  const commitPicks = () => {
+    if (picks.length === 0) return;
+    onAdd(serializeValueList(picks));
+    setPicks([]);
+    setDraft("");
+    setOpen(false);
   };
 
   return (
@@ -213,34 +251,78 @@ function InlineAddCta({
         <span>{label}</span>
       </button>
       {open ? (
-        <div className="rules-add-menu" role="listbox">
-          {type === "value" ? (
-            <input
-              ref={inputRef}
-              className="rules-add-input"
-              value={draft}
-              placeholder="Type any value"
-              onChange={(e) => setDraft(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") commit(draft);
-              }}
-              aria-label="Value"
-              spellCheck={false}
-            />
+        <div className="rules-add-menu" role={isValue ? "group" : "listbox"}>
+          {isValue ? (
+            <>
+              {picks.length > 0 ? (
+                <div className="tagpill-chips">
+                  {picks.map((v) => (
+                    <span key={v} className="tagpill-chip">
+                      {v}
+                      <button
+                        type="button"
+                        className="tagpill-chip-x"
+                        aria-label={`Remove ${v}`}
+                        onClick={() => togglePick(v)}
+                      >
+                        ×
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              ) : null}
+              <input
+                ref={inputRef}
+                className="rules-add-input"
+                value={draft}
+                placeholder="Type any value and press Enter"
+                onChange={(e) => setDraft(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    if (draft.trim()) appendDraft();
+                    else commitPicks();
+                  }
+                }}
+                aria-label="Value"
+                spellCheck={false}
+              />
+            </>
           ) : null}
           <div className="rules-add-options">
-            {options.map((o) => (
-              <button
-                key={o}
-                type="button"
-                role="option"
-                className="rules-add-option"
-                onClick={() => commit(o)}
-              >
-                {o}
-              </button>
-            ))}
+            {options.map((o) => {
+              const selected = isValue ? picks.includes(o) : false;
+              return (
+                <button
+                  key={o}
+                  type="button"
+                  role="option"
+                  aria-selected={selected}
+                  className={`rules-add-option ${selected ? "is-selected" : ""}`}
+                  onClick={() =>
+                    isValue ? togglePick(o) : commitSingle(o)
+                  }
+                >
+                  {isValue ? (
+                    <span className="tagpill-check" aria-hidden>
+                      {selected ? "✓" : ""}
+                    </span>
+                  ) : null}
+                  <span>{o}</span>
+                </button>
+              );
+            })}
           </div>
+          {isValue ? (
+            <button
+              type="button"
+              className="rules-add-done"
+              onClick={commitPicks}
+              disabled={picks.length === 0}
+            >
+              Done
+            </button>
+          ) : null}
         </div>
       ) : null}
     </div>
