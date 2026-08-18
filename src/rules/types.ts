@@ -1,4 +1,4 @@
-export type TagType = "operator" | "conditional" | "value";
+export type TagType = "operator" | "condition" | "conditional" | "value";
 
 export interface Tag {
   id: string;
@@ -12,6 +12,15 @@ export interface RuleBlock {
 }
 
 export const OPERATOR_OPTIONS = ["and", "or", "not", "nor", "if", "then"];
+export const CONDITION_OPTIONS = [
+  "String",
+  "Trade Sweep",
+  "Trade liquidation fund operation",
+  "PNL",
+  "SOURCE",
+  "COLLATERAL",
+  "Exactly",
+];
 export const CONDITIONAL_OPTIONS = ["Is", "Is not", "In", "Not in"];
 /** Suggestions shown for Value tags — the input itself is freeform so
  *  the user can type any custom value, but these seed the dropdown. */
@@ -38,26 +47,25 @@ export function makeBlock(): RuleBlock {
 }
 
 /** The block's sequence is fixed: after the initial `if`, tags cycle
- *  Value -> Conditional -> Value -> Operator -> ... so the editor can
- *  hand-hold a rule like `if Transaction type is UUID and Amount is
- *  100`. Given the current tag count, this returns the type the next
- *  CTA should add. */
+ *  Condition -> Conditional -> Value -> Operator -> ... so the editor
+ *  can hand-hold a rule like `if Transaction type is UUID and Amount
+ *  is 100`. Given the current tag count, this returns the type the
+ *  next CTA should add. */
 export function nextTagType(count: number): TagType {
   if (count === 0) return "operator";
   const offset = (count - 1) % 4;
-  if (offset === 0 || offset === 2) return "value";
+  if (offset === 0) return "condition";
   if (offset === 1) return "conditional";
+  if (offset === 2) return "value";
   return "operator";
 }
 
-/** Human-readable label for the single CTA. The type says what will be
- *  added; the label matches the wording the spec uses — "Condition"
- *  for the value slot that follows an operator, "Value" for the value
- *  slot that follows a conditional. */
+/** Human-readable label for the single CTA — matches the tag type
+ *  the CTA is about to add. */
 export function nextCtaLabel(tags: Tag[]): string {
   const next = nextTagType(tags.length);
   if (next === "operator") return "Operator";
   if (next === "conditional") return "Conditional";
-  const prev = tags[tags.length - 1];
-  return prev && prev.type === "conditional" ? "Value" : "Condition";
+  if (next === "condition") return "Condition";
+  return "Value";
 }

@@ -164,6 +164,10 @@
   background: rgba(255, 87, 119, 0.18);
   color: #ff5777;
 }
+.tagpill-wrap[data-type="condition"] .tagpill {
+  background: rgba(255, 255, 255, 0.14);
+  color: var(--fg);
+}
 .tagpill-wrap[data-type="conditional"] .tagpill {
   background: rgba(128, 92, 255, 0.2);
   color: #805cff;

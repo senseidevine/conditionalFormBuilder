@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { RuleBlock, Tag } from "./types";
 import {
+  CONDITION_OPTIONS,
   CONDITIONAL_OPTIONS,
   OPERATOR_OPTIONS,
   VALUE_SUGGESTIONS,
@@ -186,6 +187,8 @@ function InlineAddCta({
   const options =
     type === "operator"
       ? OPERATOR_OPTIONS
+      : type === "condition"
+      ? CONDITION_OPTIONS
       : type === "conditional"
       ? CONDITIONAL_OPTIONS
       : VALUE_SUGGESTIONS;
