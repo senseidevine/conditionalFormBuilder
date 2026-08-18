@@ -199,20 +199,32 @@
   white-space: nowrap;
 }
 
-/* Inline next-step CTA — a small primary white pill that sits after
- * the last tag. Hidden until the block is hovered/focused (kept
- * visible once its own dropdown is open so the user can move the
- * cursor around without dismissing it). */
+/* Inline next-step CTA — a small ghost pill with a dashed outline
+ * that sits after the last tag. The whole wrap (button + attached
+ * dropdown) fades in and out together on block hover/focus, and stays
+ * up while the dropdown is open so the user can drift the cursor
+ * around the picker without dismissing it. */
 .rules-add-inline-wrap {
   position: relative;
   display: inline-flex;
+  opacity: 0;
+  transform: translateY(2px);
+  pointer-events: none;
+  transition: opacity 180ms var(--ease), transform 180ms var(--ease);
+}
+.rules-block:hover .rules-add-inline-wrap,
+.rules-block:focus-within .rules-add-inline-wrap,
+.rules-add-inline-wrap:has(.rules-add-inline[aria-expanded="true"]) {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
 }
 .rules-add-inline {
   appearance: none;
-  border: 0;
-  background: #ffffff;
-  color: #0a0b0e;
-  padding: 4px 10px 4px 8px;
+  border: 1px dashed rgba(255, 255, 255, 0.32);
+  background: transparent;
+  color: var(--fg);
+  padding: 3px 10px 3px 8px;
   border-radius: 9999px;
   display: inline-flex;
   align-items: center;
@@ -220,24 +232,16 @@
   font: inherit;
   font-family: var(--font-sans);
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 500;
   cursor: pointer;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.28);
-  opacity: 0;
-  transform: translateY(2px);
-  pointer-events: none;
-  transition: opacity var(--dur-1) var(--ease),
-    transform var(--dur-1) var(--ease),
-    background var(--dur-1) var(--ease);
+  transition: background var(--dur-1) var(--ease),
+    border-color var(--dur-1) var(--ease),
+    transform var(--dur-spring) var(--spring);
 }
-.rules-block:hover .rules-add-inline,
-.rules-block:focus-within .rules-add-inline,
-.rules-add-inline[aria-expanded="true"] {
-  opacity: 1;
-  transform: translateY(0);
-  pointer-events: auto;
+.rules-add-inline:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.5);
 }
-.rules-add-inline:hover { background: #f2f2f4; }
 .rules-add-inline:active {
   transform: scale(0.94);
   transition: background 60ms linear, transform 60ms ease-out;
@@ -247,11 +251,10 @@
   outline-offset: 2px;
 }
 .rules-add-inline-plus {
-  color: #0a0b0e;
+  color: var(--fg-mute);
   font-weight: 700;
   font-size: 13px;
   line-height: 1;
-  opacity: 0.7;
 }
 
 /* Dropdown attached to the CTA — the picker for the next tag's value.
