@@ -2,7 +2,7 @@ import { useState } from "react";
 import type { RuleBlock, Tag, TagType } from "./types";
 import { makeBlock, makeTag, nextCtaLabel, nextTagType } from "./types";
 import { TagPill } from "./TagPill";
-import { IconGroup, IconReturn, IconTrash } from "../components/Icons";
+import { IconReturn, IconTrash } from "../components/Icons";
 import "./RuleEditor.css";
 
 export function RuleEditor() {
@@ -124,6 +124,18 @@ function BlockView({
             onChange={(v) => onSetTagValue(t.id, v)}
           />
         ))}
+        {/* Inline next-step CTA — sits right after the last tag so the
+         * chain reads left-to-right; hidden by default and revealed
+         * when the block is hovered or focused, so the row stays clean
+         * once the rule is filled in. */}
+        <button
+          type="button"
+          className="rules-add-inline"
+          onClick={onAddNext}
+        >
+          <span className="rules-add-inline-plus" aria-hidden>+</span>
+          <span>{ctaLabel}</span>
+        </button>
         {canRemoveTag ? (
           <button
             type="button"
@@ -135,18 +147,8 @@ function BlockView({
           </button>
         ) : null}
       </div>
-      <div className="rules-block-actions">
-        <button
-          type="button"
-          className="rules-add-pill is-primary"
-          onClick={onAddNext}
-        >
-          <span className="rules-add-pill-icon" aria-hidden>
-            <IconGroup />
-          </span>
-          <span>{ctaLabel}</span>
-        </button>
-        {canRemove ? (
+      {canRemove ? (
+        <div className="rules-block-actions">
           <button
             type="button"
             className="rules-block-remove"
@@ -155,8 +157,8 @@ function BlockView({
           >
             Remove
           </button>
-        ) : null}
-      </div>
+        </div>
+      ) : null}
     </div>
   );
 }
