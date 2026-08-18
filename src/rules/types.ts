@@ -32,5 +32,32 @@ export function makeTag(type: TagType, value = ""): Tag {
 }
 
 export function makeBlock(): RuleBlock {
-  return { id: uid(), tags: [] };
+  /* Every block opens with an `if` operator so the CTA can immediately
+   * prompt the user for the first condition value. */
+  return { id: uid(), tags: [makeTag("operator", "if")] };
+}
+
+/** The block's sequence is fixed: after the initial `if`, tags cycle
+ *  Value -> Conditional -> Value -> Operator -> ... so the editor can
+ *  hand-hold a rule like `if Transaction type is UUID and Amount is
+ *  100`. Given the current tag count, this returns the type the next
+ *  CTA should add. */
+export function nextTagType(count: number): TagType {
+  if (count === 0) return "operator";
+  const offset = (count - 1) % 4;
+  if (offset === 0 || offset === 2) return "value";
+  if (offset === 1) return "conditional";
+  return "operator";
+}
+
+/** Human-readable label for the single CTA. The type says what will be
+ *  added; the label matches the wording the spec uses — "Condition"
+ *  for the value slot that follows an operator, "Value" for the value
+ *  slot that follows a conditional. */
+export function nextCtaLabel(tags: Tag[]): string {
+  const next = nextTagType(tags.length);
+  if (next === "operator") return "Operator";
+  if (next === "conditional") return "Conditional";
+  const prev = tags[tags.length - 1];
+  return prev && prev.type === "conditional" ? "Value" : "Condition";
 }

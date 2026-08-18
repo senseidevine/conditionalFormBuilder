@@ -1,32 +1,39 @@
 import { useState } from "react";
 import type { RuleBlock, Tag, TagType } from "./types";
-import { makeBlock, makeTag } from "./types";
+import { makeBlock, makeTag, nextCtaLabel, nextTagType } from "./types";
 import { TagPill } from "./TagPill";
 import { IconGroup, IconReturn, IconTrash } from "../components/Icons";
 import "./RuleEditor.css";
 
 export function RuleEditor() {
   const [blocks, setBlocks] = useState<RuleBlock[]>(() => [makeBlock()]);
-  /* Tag ids that just got created via an add-tag button and should open
-   * their dropdown on first render. Cleared as soon as the render is
+  /* Tag ids that just got created via the CTA and should open their
+   * dropdown on first render. Cleared as soon as the render is
    * committed so a later reopen behaves normally. */
   const [autoOpen, setAutoOpen] = useState<Set<string>>(() => new Set());
 
-  const addTag = (blockId: string, type: TagType) => {
-    const t = makeTag(type);
-    setBlocks((bs) =>
-      bs.map((b) => (b.id === blockId ? { ...b, tags: [...b.tags, t] } : b))
-    );
-    setAutoOpen((s) => new Set(s).add(t.id));
-    /* Drop the auto-open flag once the caller-driven render has landed
-     * so re-clicking the pill later toggles as usual. */
-    queueMicrotask(() => {
-      setAutoOpen((s) => {
-        if (!s.has(t.id)) return s;
-        const n = new Set(s);
-        n.delete(t.id);
-        return n;
+  const addNextTag = (blockId: string) => {
+    setBlocks((bs) => {
+      const target = bs.find((b) => b.id === blockId);
+      if (!target) return bs;
+      const type: TagType = nextTagType(target.tags.length);
+      const t = makeTag(type);
+      /* Queue the auto-open outside the setter — React 18 batches this
+       * with the block update so the pill lands with its dropdown open. */
+      queueMicrotask(() => {
+        setAutoOpen((s) => new Set(s).add(t.id));
+        queueMicrotask(() => {
+          setAutoOpen((s) => {
+            if (!s.has(t.id)) return s;
+            const n = new Set(s);
+            n.delete(t.id);
+            return n;
+          });
+        });
       });
+      return bs.map((b) =>
+        b.id === blockId ? { ...b, tags: [...b.tags, t] } : b
+      );
     });
   };
 
@@ -46,7 +53,11 @@ export function RuleEditor() {
   const removeLastTag = (blockId: string) => {
     setBlocks((bs) =>
       bs.map((b) =>
-        b.id === blockId ? { ...b, tags: b.tags.slice(0, -1) } : b
+        /* Keep the leading `if` — a block always opens with an operator
+         * so the guided CTA has a starting point. */
+        b.id === blockId && b.tags.length > 1
+          ? { ...b, tags: b.tags.slice(0, -1) }
+          : b
       )
     );
   };
@@ -67,7 +78,7 @@ export function RuleEditor() {
           block={block}
           autoOpen={autoOpen}
           canRemove={blocks.length > 1}
-          onAddTag={(type) => addTag(block.id, type)}
+          onAddNext={() => addNextTag(block.id)}
           onSetTagValue={(tagId, v) => setTagValue(block.id, tagId, v)}
           onRemoveLastTag={() => removeLastTag(block.id)}
           onRemoveBlock={() => removeBlock(block.id)}
@@ -87,7 +98,7 @@ function BlockView({
   block,
   autoOpen,
   canRemove,
-  onAddTag,
+  onAddNext,
   onSetTagValue,
   onRemoveLastTag,
   onRemoveBlock,
@@ -95,18 +106,16 @@ function BlockView({
   block: RuleBlock;
   autoOpen: Set<string>;
   canRemove: boolean;
-  onAddTag: (type: TagType) => void;
+  onAddNext: () => void;
   onSetTagValue: (tagId: string, v: string) => void;
   onRemoveLastTag: () => void;
   onRemoveBlock: () => void;
 }) {
-  const hasTags = block.tags.length > 0;
+  const canRemoveTag = block.tags.length > 1;
+  const ctaLabel = nextCtaLabel(block.tags);
   return (
     <div className="rules-block">
       <div className="rules-block-body">
-        {hasTags ? null : (
-          <span className="rules-empty">Empty block — add a condition to get started.</span>
-        )}
         {block.tags.map((t: Tag) => (
           <TagPill
             key={t.id}
@@ -115,7 +124,7 @@ function BlockView({
             onChange={(v) => onSetTagValue(t.id, v)}
           />
         ))}
-        {hasTags ? (
+        {canRemoveTag ? (
           <button
             type="button"
             className="rules-row-remove"
@@ -127,9 +136,16 @@ function BlockView({
         ) : null}
       </div>
       <div className="rules-block-actions">
-        <AddPill onClick={() => onAddTag("operator")} label="Operator" />
-        <AddPill onClick={() => onAddTag("conditional")} label="Conditional" />
-        <AddPill onClick={() => onAddTag("value")} label="Condition" primary />
+        <button
+          type="button"
+          className="rules-add-pill is-primary"
+          onClick={onAddNext}
+        >
+          <span className="rules-add-pill-icon" aria-hidden>
+            <IconGroup />
+          </span>
+          <span>{ctaLabel}</span>
+        </button>
         {canRemove ? (
           <button
             type="button"
@@ -142,28 +158,5 @@ function BlockView({
         ) : null}
       </div>
     </div>
-  );
-}
-
-function AddPill({
-  onClick,
-  label,
-  primary,
-}: {
-  onClick: () => void;
-  label: string;
-  primary?: boolean;
-}) {
-  return (
-    <button
-      type="button"
-      className={`rules-add-pill ${primary ? "is-primary" : ""}`}
-      onClick={onClick}
-    >
-      <span className="rules-add-pill-icon" aria-hidden>
-        <IconGroup />
-      </span>
-      <span>{label}</span>
-    </button>
   );
 }
