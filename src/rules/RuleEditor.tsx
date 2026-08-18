@@ -2,7 +2,7 @@ import { useState } from "react";
 import type { RuleBlock, Tag, TagType } from "./types";
 import { makeBlock, makeTag } from "./types";
 import { TagPill } from "./TagPill";
-import { IconGroup, IconReturn } from "../components/Icons";
+import { IconGroup, IconReturn, IconTrash } from "../components/Icons";
 import "./RuleEditor.css";
 
 export function RuleEditor() {
@@ -43,12 +43,10 @@ export function RuleEditor() {
     );
   };
 
-  const removeTag = (blockId: string, tagId: string) => {
+  const removeLastTag = (blockId: string) => {
     setBlocks((bs) =>
       bs.map((b) =>
-        b.id === blockId
-          ? { ...b, tags: b.tags.filter((t) => t.id !== tagId) }
-          : b
+        b.id === blockId ? { ...b, tags: b.tags.slice(0, -1) } : b
       )
     );
   };
@@ -71,7 +69,7 @@ export function RuleEditor() {
           canRemove={blocks.length > 1}
           onAddTag={(type) => addTag(block.id, type)}
           onSetTagValue={(tagId, v) => setTagValue(block.id, tagId, v)}
-          onRemoveTag={(tagId) => removeTag(block.id, tagId)}
+          onRemoveLastTag={() => removeLastTag(block.id)}
           onRemoveBlock={() => removeBlock(block.id)}
         />
       ))}
@@ -91,7 +89,7 @@ function BlockView({
   canRemove,
   onAddTag,
   onSetTagValue,
-  onRemoveTag,
+  onRemoveLastTag,
   onRemoveBlock,
 }: {
   block: RuleBlock;
@@ -99,24 +97,34 @@ function BlockView({
   canRemove: boolean;
   onAddTag: (type: TagType) => void;
   onSetTagValue: (tagId: string, v: string) => void;
-  onRemoveTag: (tagId: string) => void;
+  onRemoveLastTag: () => void;
   onRemoveBlock: () => void;
 }) {
+  const hasTags = block.tags.length > 0;
   return (
     <div className="rules-block">
       <div className="rules-block-body">
-        {block.tags.length === 0 ? (
+        {hasTags ? null : (
           <span className="rules-empty">Empty block — add a condition to get started.</span>
-        ) : null}
+        )}
         {block.tags.map((t: Tag) => (
           <TagPill
             key={t.id}
             tag={t}
             autoOpen={autoOpen.has(t.id)}
             onChange={(v) => onSetTagValue(t.id, v)}
-            onRemove={() => onRemoveTag(t.id)}
           />
         ))}
+        {hasTags ? (
+          <button
+            type="button"
+            className="rules-row-remove"
+            aria-label="Remove last tag"
+            onClick={onRemoveLastTag}
+          >
+            <IconTrash />
+          </button>
+        ) : null}
       </div>
       <div className="rules-block-actions">
         <AddPill onClick={() => onAddTag("operator")} label="Operator" />

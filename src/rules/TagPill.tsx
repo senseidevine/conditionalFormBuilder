@@ -5,13 +5,11 @@ import {
   CONDITIONAL_OPTIONS,
   VALUE_SUGGESTIONS,
 } from "./types";
-import { IconChevronDown, IconTrash } from "../components/Icons";
 
 interface TagPillProps {
   tag: Tag;
   autoOpen?: boolean;
   onChange: (value: string) => void;
-  onRemove: () => void;
 }
 
 const TYPE_LABEL: Record<Tag["type"], string> = {
@@ -23,7 +21,7 @@ const TYPE_LABEL: Record<Tag["type"], string> = {
 /** A single inline tag pill. Click to open a dropdown of options for
  *  the tag's type (operator and conditional dropdowns are picklists;
  *  the value dropdown is a freeform text input with suggestions). */
-export function TagPill({ tag, autoOpen, onChange, onRemove }: TagPillProps) {
+export function TagPill({ tag, autoOpen, onChange }: TagPillProps) {
   const [open, setOpen] = useState(!!autoOpen);
   const wrapRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -72,15 +70,6 @@ export function TagPill({ tag, autoOpen, onChange, onRemove }: TagPillProps) {
         aria-expanded={open}
       >
         <span className="tagpill-label">{display}</span>
-        <IconChevronDown className={`tagpill-chev ${open ? "is-open" : ""}`} />
-      </button>
-      <button
-        type="button"
-        className="tagpill-remove"
-        aria-label="Remove tag"
-        onClick={onRemove}
-      >
-        <IconTrash />
       </button>
 
       {open ? (

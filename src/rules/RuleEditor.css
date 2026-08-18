@@ -198,36 +198,35 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.tagpill-chev {
-  width: 10px;
-  height: 10px;
-  transition: transform var(--dur-1) var(--ease);
-}
-.tagpill-chev.is-open { transform: rotate(180deg); }
 
-.tagpill-remove {
+/* Row-level trash — one button at the end of the tag flow that peels
+ * the last tag off. Replaces the per-tag remove that used to sit on
+ * every pill and clutter the row. */
+.rules-row-remove {
   appearance: none;
   border: 0;
-  background: rgba(255, 255, 255, 0.06);
+  background: transparent;
   color: var(--fg-mute);
-  width: 22px;
+  width: 26px;
+  height: 26px;
   border-radius: 9999px;
+  margin-left: auto;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   padding: 0;
-  opacity: 0;
-  transition: opacity var(--dur-1) var(--ease),
-    background var(--dur-1) var(--ease),
+  transition: background var(--dur-1) var(--ease),
     color var(--dur-1) var(--ease);
 }
-.tagpill-remove svg { width: 10px; height: 10px; }
-.tagpill-wrap:hover .tagpill-remove,
-.tagpill-wrap:focus-within .tagpill-remove { opacity: 1; }
-.tagpill-remove:hover {
-  background: rgba(255, 255, 255, 0.12);
+.rules-row-remove svg { width: 14px; height: 14px; }
+.rules-row-remove:hover {
+  background: rgba(255, 255, 255, 0.08);
   color: var(--fg);
+}
+.rules-row-remove:focus-visible {
+  outline: 2px solid var(--accent-focus);
+  outline-offset: 2px;
 }
 
 /* Dropdown attached to the pill — value tags render a text input at
