@@ -106,7 +106,7 @@
  * The subtle white lift is what makes the black-15% cards inside read
  * as darker sections — otherwise they'd blend into the canvas. */
 .form-frame {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
   border-radius: 12px;
   padding: 16px;
   display: flex;
