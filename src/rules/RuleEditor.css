@@ -1,0 +1,297 @@
+.rules {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, "Roboto Mono", monospace;
+}
+
+/* One rule block — reads like a line in a code editor with tag chips
+ * flowing inline. Each block has its own dark surface + a footer row
+ * of add actions. */
+.rules-block {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: background var(--dur-1) var(--ease),
+    border-color var(--dur-1) var(--ease);
+}
+.rules-block:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.rules-block-body {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  min-height: 30px;
+}
+
+.rules-empty {
+  color: var(--fg-mute);
+  font-size: 12px;
+  letter-spacing: 0.1px;
+  font-family: var(--font-sans);
+}
+
+/* Bottom action row — add-tag pills + optional remove-group button. */
+.rules-block-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-top: 4px;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+  font-family: var(--font-sans);
+}
+
+.rules-add-pill {
+  appearance: none;
+  border: 0;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--fg);
+  padding: 6px 12px 6px 8px;
+  border-radius: 9999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background var(--dur-1) var(--ease),
+    transform var(--dur-spring) var(--spring);
+}
+.rules-add-pill:hover { background: rgba(255, 255, 255, 0.14); }
+.rules-add-pill:active {
+  transform: scale(0.94);
+  transition: background 60ms linear, transform 60ms ease-out;
+}
+.rules-add-pill.is-primary {
+  background: #ffffff;
+  color: #0a0b0e;
+}
+.rules-add-pill.is-primary:hover { background: #f2f2f4; }
+.rules-add-pill-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 12px;
+  height: 12px;
+}
+.rules-add-pill-icon svg {
+  width: 8px;
+  height: 8px;
+}
+
+.rules-block-remove {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--fg-mute);
+  font: inherit;
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  margin-left: auto;
+  cursor: pointer;
+  transition: background var(--dur-1) var(--ease), color var(--dur-1) var(--ease);
+}
+.rules-block-remove:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--fg);
+}
+
+/* + Group at the bottom of the editor — adds another block below. */
+.rules-add-block {
+  appearance: none;
+  border: 1px dashed rgba(255, 255, 255, 0.14);
+  background: transparent;
+  color: var(--fg);
+  padding: 10px 16px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  gap: 8px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  transition: background var(--dur-1) var(--ease),
+    border-color var(--dur-1) var(--ease),
+    transform var(--dur-spring) var(--spring);
+}
+.rules-add-block:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.28);
+}
+.rules-add-block:active {
+  transform: scale(0.98);
+  transition: background 60ms linear, transform 60ms ease-out;
+}
+.rules-add-block-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  color: var(--fg);
+}
+.rules-add-block-icon svg { width: 10px; height: 10px; }
+
+/* --- Tag pill ---------------------------------------------------- */
+
+.tagpill-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: stretch;
+  gap: 2px;
+  border-radius: 9999px;
+  overflow: visible;
+}
+
+/* Tag colour by type — subtle tints so all three read as the same
+ * family but the category is legible at a glance. */
+.tagpill-wrap[data-type="operator"] .tagpill {
+  background: rgba(124, 131, 255, 0.16);
+  color: #d3d6ff;
+}
+.tagpill-wrap[data-type="conditional"] .tagpill {
+  background: rgba(31, 193, 107, 0.14);
+  color: #baf3d1;
+}
+.tagpill-wrap[data-type="value"] .tagpill {
+  background: rgba(255, 255, 255, 0.14);
+  color: var(--fg);
+}
+
+.tagpill {
+  appearance: none;
+  border: 0;
+  padding: 4px 8px 4px 10px;
+  border-radius: 9999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background var(--dur-1) var(--ease),
+    transform var(--dur-spring) var(--spring);
+}
+.tagpill.is-empty { opacity: 0.72; font-style: italic; }
+.tagpill:hover { filter: brightness(1.15); }
+.tagpill:active {
+  transform: scale(0.94);
+  transition: transform 60ms ease-out;
+}
+.tagpill-label {
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.tagpill-chev {
+  width: 10px;
+  height: 10px;
+  transition: transform var(--dur-1) var(--ease);
+}
+.tagpill-chev.is-open { transform: rotate(180deg); }
+
+.tagpill-remove {
+  appearance: none;
+  border: 0;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--fg-mute);
+  width: 22px;
+  border-radius: 9999px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  opacity: 0;
+  transition: opacity var(--dur-1) var(--ease),
+    background var(--dur-1) var(--ease),
+    color var(--dur-1) var(--ease);
+}
+.tagpill-remove svg { width: 10px; height: 10px; }
+.tagpill-wrap:hover .tagpill-remove,
+.tagpill-wrap:focus-within .tagpill-remove { opacity: 1; }
+.tagpill-remove:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--fg);
+}
+
+/* Dropdown attached to the pill — value tags render a text input at
+ * the top so the user can type any custom string; picking from the
+ * options below is optional. */
+.tagpill-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 30;
+  min-width: 200px;
+  max-width: 320px;
+  background: #1c1d21;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+  font-family: var(--font-sans);
+}
+
+.tagpill-input {
+  appearance: none;
+  border: 0;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--fg);
+  padding: 8px 10px;
+  border-radius: 6px;
+  font: inherit;
+  font-size: 13px;
+  outline: none;
+  transition: background var(--dur-1) var(--ease),
+    box-shadow var(--dur-1) var(--ease);
+}
+.tagpill-input::placeholder { color: var(--fg-mute); }
+.tagpill-input:focus {
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.16);
+}
+
+.tagpill-options {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 240px;
+  overflow-y: auto;
+}
+.tagpill-option {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--fg);
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background var(--dur-1) var(--ease);
+}
+.tagpill-option:hover { background: rgba(255, 255, 255, 0.08); }
+.tagpill-option.is-selected {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--fg);
+}

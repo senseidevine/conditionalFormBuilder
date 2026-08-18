@@ -4,6 +4,7 @@ import { Group, type Mutation } from "./builder/Group";
 import { T } from "./builder/tree";
 import { seedRoot, type GroupNode, type Operator } from "./builder/types";
 import { seedSample } from "./criteria/sample";
+import { RuleEditor } from "./rules/RuleEditor";
 import "./App.css";
 
 const RAIL_STEPS = [
@@ -109,17 +110,21 @@ export default function App() {
 
           <div className="content">
             <div className="form-frame">
-              <Group
-                group={activeTree}
-                depth={1}
-                variant="root"
-                swapButtons={swapButtons}
-                showLoneBracket={showLoneBracket}
-                showBrackets={showBrackets}
-                nestedBgDark={nestedBgDark}
-                operatorMenu={operatorMenu}
-                onMutate={onMutate}
-              />
+              {activeStep === "s3" ? (
+                <RuleEditor />
+              ) : (
+                <Group
+                  group={activeTree}
+                  depth={1}
+                  variant="root"
+                  swapButtons={swapButtons}
+                  showLoneBracket={showLoneBracket}
+                  showBrackets={showBrackets}
+                  nestedBgDark={nestedBgDark}
+                  operatorMenu={operatorMenu}
+                  onMutate={onMutate}
+                />
+              )}
             </div>
           </div>
         </div>
