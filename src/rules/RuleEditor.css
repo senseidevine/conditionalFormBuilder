@@ -156,15 +156,17 @@
   overflow: visible;
 }
 
-/* Tag colour by type — subtle tints so all three read as the same
- * family but the category is legible at a glance. */
+/* Tag colour by type — a coral for operators, a steel-blue for
+ * conditionals, neutral white for values. Backgrounds are a low-alpha
+ * wash of the same colour so the category is legible at a glance
+ * without shouting over the rule content. */
 .tagpill-wrap[data-type="operator"] .tagpill {
-  background: rgba(124, 131, 255, 0.16);
-  color: #d3d6ff;
+  background: rgba(255, 87, 119, 0.18);
+  color: #ff5777;
 }
 .tagpill-wrap[data-type="conditional"] .tagpill {
-  background: rgba(31, 193, 107, 0.14);
-  color: #baf3d1;
+  background: rgba(103, 144, 184, 0.2);
+  color: #6790b8;
 }
 .tagpill-wrap[data-type="value"] .tagpill {
   background: rgba(255, 255, 255, 0.14);
