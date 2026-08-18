@@ -1,38 +1,30 @@
-import { useState } from "react";
-import type { RuleBlock, Tag, TagType } from "./types";
-import { makeBlock, makeTag, nextCtaLabel, nextTagType } from "./types";
+import { useEffect, useRef, useState } from "react";
+import type { RuleBlock, Tag } from "./types";
+import {
+  CONDITIONAL_OPTIONS,
+  OPERATOR_OPTIONS,
+  VALUE_SUGGESTIONS,
+  makeBlock,
+  makeTag,
+  nextCtaLabel,
+  nextTagType,
+} from "./types";
 import { TagPill } from "./TagPill";
 import { IconReturn, IconTrash } from "../components/Icons";
 import "./RuleEditor.css";
 
 export function RuleEditor() {
   const [blocks, setBlocks] = useState<RuleBlock[]>(() => [makeBlock()]);
-  /* Tag ids that just got created via the CTA and should open their
-   * dropdown on first render. Cleared as soon as the render is
-   * committed so a later reopen behaves normally. */
-  const [autoOpen, setAutoOpen] = useState<Set<string>>(() => new Set());
 
-  const addNextTag = (blockId: string) => {
+  const addNextTag = (blockId: string, value: string) => {
     setBlocks((bs) => {
       const target = bs.find((b) => b.id === blockId);
       if (!target) return bs;
-      const type: TagType = nextTagType(target.tags.length);
-      const t = makeTag(type);
-      /* Queue the auto-open outside the setter — React 18 batches this
-       * with the block update so the pill lands with its dropdown open. */
-      queueMicrotask(() => {
-        setAutoOpen((s) => new Set(s).add(t.id));
-        queueMicrotask(() => {
-          setAutoOpen((s) => {
-            if (!s.has(t.id)) return s;
-            const n = new Set(s);
-            n.delete(t.id);
-            return n;
-          });
-        });
-      });
+      const type = nextTagType(target.tags.length);
       return bs.map((b) =>
-        b.id === blockId ? { ...b, tags: [...b.tags, t] } : b
+        b.id === blockId
+          ? { ...b, tags: [...b.tags, makeTag(type, value)] }
+          : b
       );
     });
   };
@@ -76,9 +68,8 @@ export function RuleEditor() {
         <BlockView
           key={block.id}
           block={block}
-          autoOpen={autoOpen}
           canRemove={blocks.length > 1}
-          onAddNext={() => addNextTag(block.id)}
+          onAddNext={(v) => addNextTag(block.id, v)}
           onSetTagValue={(tagId, v) => setTagValue(block.id, tagId, v)}
           onRemoveLastTag={() => removeLastTag(block.id)}
           onRemoveBlock={() => removeBlock(block.id)}
@@ -96,7 +87,6 @@ export function RuleEditor() {
 
 function BlockView({
   block,
-  autoOpen,
   canRemove,
   onAddNext,
   onSetTagValue,
@@ -104,15 +94,13 @@ function BlockView({
   onRemoveBlock,
 }: {
   block: RuleBlock;
-  autoOpen: Set<string>;
   canRemove: boolean;
-  onAddNext: () => void;
+  onAddNext: (value: string) => void;
   onSetTagValue: (tagId: string, v: string) => void;
   onRemoveLastTag: () => void;
   onRemoveBlock: () => void;
 }) {
   const canRemoveTag = block.tags.length > 1;
-  const ctaLabel = nextCtaLabel(block.tags);
   return (
     <div className="rules-block">
       <div className="rules-block-body">
@@ -120,7 +108,6 @@ function BlockView({
           <TagPill
             key={t.id}
             tag={t}
-            autoOpen={autoOpen.has(t.id)}
             onChange={(v) => onSetTagValue(t.id, v)}
           />
         ))}
@@ -128,14 +115,7 @@ function BlockView({
          * chain reads left-to-right; hidden by default and revealed
          * when the block is hovered or focused, so the row stays clean
          * once the rule is filled in. */}
-        <button
-          type="button"
-          className="rules-add-inline"
-          onClick={onAddNext}
-        >
-          <span className="rules-add-inline-plus" aria-hidden>+</span>
-          <span>{ctaLabel}</span>
-        </button>
+        <InlineAddCta tags={block.tags} onAdd={onAddNext} />
         {canRemoveTag ? (
           <button
             type="button"
@@ -157,6 +137,107 @@ function BlockView({
           >
             Remove
           </button>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+/** Inline next-step CTA. Renders as a primary white pill (revealed on
+ *  block hover). Clicking opens a dropdown pre-scoped to the next
+ *  tag type in the grammar — Value tags include a freeform text
+ *  input, Operator/Conditional tags are picklists. Picking a value
+ *  emits it via `onAdd`, which the parent turns into a new tag. */
+function InlineAddCta({
+  tags,
+  onAdd,
+}: {
+  tags: Tag[];
+  onAdd: (value: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [draft, setDraft] = useState("");
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const type = nextTagType(tags.length);
+  const label = nextCtaLabel(tags);
+
+  useEffect(() => {
+    if (!open) return;
+    if (type === "value") {
+      inputRef.current?.focus();
+      inputRef.current?.select();
+    }
+    const onDoc = (e: MouseEvent) => {
+      if (!wrapRef.current?.contains(e.target as Node)) setOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("mousedown", onDoc);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDoc);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open, type]);
+
+  const options =
+    type === "operator"
+      ? OPERATOR_OPTIONS
+      : type === "conditional"
+      ? CONDITIONAL_OPTIONS
+      : VALUE_SUGGESTIONS;
+
+  const commit = (v: string) => {
+    if (!v) return;
+    onAdd(v);
+    setOpen(false);
+    setDraft("");
+  };
+
+  return (
+    <div className="rules-add-inline-wrap" ref={wrapRef}>
+      <button
+        type="button"
+        className="rules-add-inline"
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        onClick={() => setOpen((v) => !v)}
+      >
+        <span className="rules-add-inline-plus" aria-hidden>+</span>
+        <span>{label}</span>
+      </button>
+      {open ? (
+        <div className="rules-add-menu" role="listbox">
+          {type === "value" ? (
+            <input
+              ref={inputRef}
+              className="rules-add-input"
+              value={draft}
+              placeholder="Type any value"
+              onChange={(e) => setDraft(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") commit(draft);
+              }}
+              aria-label="Value"
+              spellCheck={false}
+            />
+          ) : null}
+          <div className="rules-add-options">
+            {options.map((o) => (
+              <button
+                key={o}
+                type="button"
+                role="option"
+                className="rules-add-option"
+                onClick={() => commit(o)}
+              >
+                {o}
+              </button>
+            ))}
+          </div>
         </div>
       ) : null}
     </div>

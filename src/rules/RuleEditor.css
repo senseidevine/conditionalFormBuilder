@@ -199,14 +199,19 @@
   white-space: nowrap;
 }
 
-/* Inline next-step CTA — sits after the last tag in the row and is
- * hidden until the block is hovered/focused. Kept as a low-key ghost
- * pill so the filled-in rule stays the visual focus. */
+/* Inline next-step CTA — a small primary white pill that sits after
+ * the last tag. Hidden until the block is hovered/focused (kept
+ * visible once its own dropdown is open so the user can move the
+ * cursor around without dismissing it). */
+.rules-add-inline-wrap {
+  position: relative;
+  display: inline-flex;
+}
 .rules-add-inline {
   appearance: none;
-  border: 1px dashed rgba(255, 255, 255, 0.2);
-  background: transparent;
-  color: var(--fg);
+  border: 0;
+  background: #ffffff;
+  color: #0a0b0e;
   padding: 4px 10px 4px 8px;
   border-radius: 9999px;
   display: inline-flex;
@@ -215,36 +220,101 @@
   font: inherit;
   font-family: var(--font-sans);
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.28);
   opacity: 0;
   transform: translateY(2px);
   pointer-events: none;
   transition: opacity var(--dur-1) var(--ease),
     transform var(--dur-1) var(--ease),
-    background var(--dur-1) var(--ease),
-    border-color var(--dur-1) var(--ease);
+    background var(--dur-1) var(--ease);
 }
 .rules-block:hover .rules-add-inline,
-.rules-block:focus-within .rules-add-inline {
+.rules-block:focus-within .rules-add-inline,
+.rules-add-inline[aria-expanded="true"] {
   opacity: 1;
   transform: translateY(0);
   pointer-events: auto;
 }
-.rules-add-inline:hover {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 255, 255, 0.32);
+.rules-add-inline:hover { background: #f2f2f4; }
+.rules-add-inline:active {
+  transform: scale(0.94);
+  transition: background 60ms linear, transform 60ms ease-out;
 }
 .rules-add-inline:focus-visible {
   outline: 2px solid var(--accent-focus);
   outline-offset: 2px;
 }
 .rules-add-inline-plus {
-  color: var(--fg-mute);
+  color: #0a0b0e;
   font-weight: 700;
   font-size: 13px;
   line-height: 1;
+  opacity: 0.7;
 }
+
+/* Dropdown attached to the CTA — the picker for the next tag's value.
+ * Value tags render a text input above the suggestion list so the
+ * user can commit any custom string; operator/conditional tags are
+ * pick-only. Mirrors the tag pill's own dropdown styling so both
+ * pickers read as the same control. */
+.rules-add-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 30;
+  min-width: 200px;
+  max-width: 320px;
+  background: #1c1d21;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+  font-family: var(--font-sans);
+}
+.rules-add-input {
+  appearance: none;
+  border: 0;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--fg);
+  padding: 8px 10px;
+  border-radius: 6px;
+  font: inherit;
+  font-size: 13px;
+  outline: none;
+  transition: background var(--dur-1) var(--ease),
+    box-shadow var(--dur-1) var(--ease);
+}
+.rules-add-input::placeholder { color: var(--fg-mute); }
+.rules-add-input:focus {
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.16);
+}
+.rules-add-options {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 240px;
+  overflow-y: auto;
+}
+.rules-add-option {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--fg);
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background var(--dur-1) var(--ease);
+}
+.rules-add-option:hover { background: rgba(255, 255, 255, 0.08); }
 
 /* Row-level trash — one button at the end of the tag flow that peels
  * the last tag off. Replaces the per-tag remove that used to sit on
