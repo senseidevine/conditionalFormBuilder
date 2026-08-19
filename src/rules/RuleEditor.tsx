@@ -56,7 +56,8 @@ export function RuleEditor() {
     );
   };
 
-  const addBlock = () => setBlocks((bs) => [...bs, makeBlock()]);
+  const addBlock = () =>
+    setBlocks((bs) => [...bs, makeBlock(bs.length === 0 ? "if" : "and")]);
 
   const removeBlock = (blockId: string) => {
     setBlocks((bs) =>

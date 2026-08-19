@@ -51,10 +51,12 @@ export function serializeValueList(values: string[]): string {
   return values.join(", ");
 }
 
-export function makeBlock(): RuleBlock {
-  /* Every block opens with an `if` operator so the CTA can immediately
-   * prompt the user for the first condition value. */
-  return { id: uid(), tags: [makeTag("operator", "if")] };
+export function makeBlock(startOperator = "if"): RuleBlock {
+  /* Every block opens with a leading operator so the CTA can
+   * immediately prompt the user for the first condition. The first
+   * block on the page starts with `if`; subsequent blocks default to
+   * `and` since they chain onto the previous rule. */
+  return { id: uid(), tags: [makeTag("operator", startOperator)] };
 }
 
 /** The block's sequence is fixed: after the initial `if`, tags cycle
