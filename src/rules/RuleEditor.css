@@ -106,42 +106,45 @@
   color: var(--fg);
 }
 
-/* + Group at the bottom of the editor — adds another block below. */
+/* + Block at the bottom of the editor — adds another block below.
+ * Uses the same solid-fill pill treatment as .apill (the Section /
+ * Group actions in the tree builder) so the two editors share one
+ * action vocabulary. */
 .rules-add-block {
   appearance: none;
-  border: 1px dashed rgba(255, 255, 255, 0.14);
-  background: transparent;
+  border: 0;
+  background: rgba(255, 255, 255, 0.14);
   color: var(--fg);
-  padding: 10px 16px;
-  border-radius: 12px;
+  padding: 7px 14px 7px 10px;
+  border-radius: 9999px;
   display: inline-flex;
   align-self: flex-start;
   align-items: center;
   gap: 8px;
   font: inherit;
+  font-family: var(--font-sans);
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
-  font-family: var(--font-sans);
   transition: background var(--dur-1) var(--ease),
-    border-color var(--dur-1) var(--ease),
     transform var(--dur-spring) var(--spring);
 }
-.rules-add-block:hover {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 255, 255, 0.28);
-}
+.rules-add-block:hover { background: rgba(255, 255, 255, 0.2); }
 .rules-add-block:active {
-  transform: scale(0.98);
+  transform: scale(0.94);
   transition: background 60ms linear, transform 60ms ease-out;
+}
+.rules-add-block:focus-visible {
+  outline: 2px solid var(--accent-focus);
+  outline-offset: 2px;
 }
 .rules-add-block-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 14px;
-  height: 14px;
-  color: var(--fg-mute);
+  width: 16px;
+  height: 16px;
+  color: #ffffff;
   font-weight: 700;
   font-size: 14px;
   line-height: 1;
