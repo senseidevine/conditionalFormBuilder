@@ -3,7 +3,10 @@
   min-height: 100dvh;
   display: flex;
   background: var(--bg);
-  overflow: hidden;
+  /* Note: no overflow: hidden — that would create a scroll container
+   * on .page and break the rail's position: sticky (sticky sticks to
+   * the nearest scroll ancestor). The glow that used to need clipping
+   * is now position: fixed so it doesn't overflow anything. */
   isolation: isolate;
   /* Global gate for the Smooth animations toggle. Descendants use
    * `var(--anim-dur)` as the duration of their soft layout transitions
