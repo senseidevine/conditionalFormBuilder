@@ -109,23 +109,21 @@ export default function App() {
           </p>
 
           <div className="content">
-            <div className="form-frame">
-              {activeStep === "s3" ? (
-                <RuleEditor />
-              ) : (
-                <Group
-                  group={activeTree}
-                  depth={1}
-                  variant="root"
-                  swapButtons={swapButtons}
-                  showLoneBracket={showLoneBracket}
-                  showBrackets={showBrackets}
-                  nestedBgDark={nestedBgDark}
-                  operatorMenu={operatorMenu}
-                  onMutate={onMutate}
-                />
-              )}
-            </div>
+            {activeStep === "s3" ? (
+              <RuleEditor />
+            ) : (
+              <Group
+                group={activeTree}
+                depth={1}
+                variant="root"
+                swapButtons={swapButtons}
+                showLoneBracket={showLoneBracket}
+                showBrackets={showBrackets}
+                nestedBgDark={nestedBgDark}
+                operatorMenu={operatorMenu}
+                onMutate={onMutate}
+              />
+            )}
           </div>
         </div>
       </main>

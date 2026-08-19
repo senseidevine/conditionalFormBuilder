@@ -102,17 +102,6 @@
 }
 .placeholder p { margin: 0; font-size: 14px; }
 
-/* Wraps the recursive Group builder inside the Configuration step.
- * The subtle white lift is what makes the black-15% cards inside read
- * as darker sections — otherwise they'd blend into the canvas. */
-.form-frame {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-}
-
 /* Continue CTA — fixed at the bottom-center of the viewport */
 .cta-dock {
   position: fixed;
