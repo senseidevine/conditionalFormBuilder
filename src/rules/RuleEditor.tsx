@@ -12,7 +12,7 @@ import {
   serializeValueList,
 } from "./types";
 import { TagPill } from "./TagPill";
-import { IconReturn, IconTrash } from "../components/Icons";
+import { IconTrash } from "../components/Icons";
 import "./RuleEditor.css";
 
 export function RuleEditor() {
@@ -78,10 +78,8 @@ export function RuleEditor() {
         />
       ))}
       <button type="button" className="rules-add-block" onClick={addBlock}>
-        <span className="rules-add-block-icon" aria-hidden>
-          <IconReturn />
-        </span>
-        <span>Group</span>
+        <span className="rules-add-block-icon" aria-hidden>+</span>
+        <span>Block</span>
       </button>
     </div>
   );

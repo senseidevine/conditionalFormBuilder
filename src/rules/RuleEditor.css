@@ -141,9 +141,11 @@
   justify-content: center;
   width: 14px;
   height: 14px;
-  color: var(--fg);
+  color: var(--fg-mute);
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1;
 }
-.rules-add-block-icon svg { width: 10px; height: 10px; }
 
 /* --- Tag pill ---------------------------------------------------- */
 
