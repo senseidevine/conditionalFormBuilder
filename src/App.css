@@ -16,9 +16,11 @@
   --anim-dur: 220ms;
 }
 
-/* Radial glow anchored at top-center of the canvas */
+/* Radial glow anchored at top-center of the viewport — pinned with
+ * position: fixed so scrolling the page keeps the glow parked at the
+ * top of the visible area instead of dragging it out of view. */
 .page-glow {
-  position: absolute;
+  position: fixed;
   inset: 0;
   z-index: -1;
   background: radial-gradient(
