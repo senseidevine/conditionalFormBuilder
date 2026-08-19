@@ -72,11 +72,13 @@ export function nextTagType(count: number): TagType {
 }
 
 /** Human-readable label for the single CTA — matches the tag type
- *  the CTA is about to add. */
+ *  the CTA is about to add. Note: the display copy diverges from the
+ *  internal type names — `operator` shows as "Connector",
+ *  `conditional` shows as "Operator", `condition` shows as "Field". */
 export function nextCtaLabel(tags: Tag[]): string {
   const next = nextTagType(tags.length);
-  if (next === "operator") return "Operator";
-  if (next === "conditional") return "Conditional";
-  if (next === "condition") return "Condition";
+  if (next === "operator") return "Connector";
+  if (next === "conditional") return "Operator";
+  if (next === "condition") return "Field";
   return "Value";
 }

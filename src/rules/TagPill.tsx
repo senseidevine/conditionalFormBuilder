@@ -15,10 +15,12 @@ interface TagPillProps {
   onChange: (value: string) => void;
 }
 
+/* Display labels for an empty tag. The copy diverges from the internal
+ * type names — see nextCtaLabel in types.ts for the mapping. */
 const TYPE_LABEL: Record<Tag["type"], string> = {
-  operator: "Operator",
-  condition: "Condition",
-  conditional: "Conditional",
+  operator: "Connector",
+  condition: "Field",
+  conditional: "Operator",
   value: "Value",
 };
 
