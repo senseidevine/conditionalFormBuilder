@@ -223,24 +223,11 @@
 }
 
 /* Inline next-step CTA — a small ghost pill with a dashed outline
- * that sits after the last tag. The whole wrap (button + attached
- * dropdown) fades in and out together on block hover/focus, and stays
- * up while the dropdown is open so the user can drift the cursor
- * around the picker without dismissing it. */
+ * that sits after the last tag. Always visible so the next-step
+ * option is discoverable without hovering the block. */
 .rules-add-inline-wrap {
   position: relative;
   display: inline-flex;
-  opacity: 0;
-  transform: translateY(2px);
-  pointer-events: none;
-  transition: opacity 180ms var(--ease), transform 180ms var(--ease);
-}
-.rules-block:hover .rules-add-inline-wrap,
-.rules-block:focus-within .rules-add-inline-wrap,
-.rules-add-inline-wrap:has(.rules-add-inline[aria-expanded="true"]) {
-  opacity: 1;
-  transform: translateY(0);
-  pointer-events: auto;
 }
 .rules-add-inline {
   appearance: none;
