@@ -102,31 +102,53 @@ function BlockView({
   onRemoveBlock: () => void;
 }) {
   const canRemoveTag = block.tags.length > 1;
+  /* Chunk the tags into rows of four — Connector + Field + Operator +
+   * Value forms one complete condition. When the last row is exactly
+   * full, an empty trailing row is added so the CTA (which lives in
+   * the last row) starts the next condition on a fresh line. */
+  const rows: Tag[][] = [];
+  for (let i = 0; i < block.tags.length; i += 4) {
+    rows.push(block.tags.slice(i, i + 4));
+  }
+  if (rows.length === 0 || rows[rows.length - 1].length === 4) {
+    rows.push([]);
+  }
   return (
     <div className="rules-block">
       <div className="rules-block-body">
-        {block.tags.map((t: Tag) => (
-          <TagPill
-            key={t.id}
-            tag={t}
-            onChange={(v) => onSetTagValue(t.id, v)}
-          />
-        ))}
-        {/* Inline next-step CTA — sits right after the last tag so the
-         * chain reads left-to-right; hidden by default and revealed
-         * when the block is hovered or focused, so the row stays clean
-         * once the rule is filled in. */}
-        <InlineAddCta tags={block.tags} onAdd={onAddNext} />
-        {canRemoveTag ? (
-          <button
-            type="button"
-            className="rules-row-remove"
-            aria-label="Remove last tag"
-            onClick={onRemoveLastTag}
-          >
-            <IconTrash />
-          </button>
-        ) : null}
+        {rows.map((row, i) => {
+          const isLast = i === rows.length - 1;
+          return (
+            <div className="rules-block-row" key={i}>
+              {row.map((t: Tag) => (
+                <TagPill
+                  key={t.id}
+                  tag={t}
+                  onChange={(v) => onSetTagValue(t.id, v)}
+                />
+              ))}
+              {isLast ? (
+                <>
+                  {/* Inline next-step CTA — sits after the last tag in
+                   * the current row; hidden by default and revealed on
+                   * block hover / focus so the row stays clean once
+                   * the rule is filled in. */}
+                  <InlineAddCta tags={block.tags} onAdd={onAddNext} />
+                  {canRemoveTag ? (
+                    <button
+                      type="button"
+                      className="rules-row-remove"
+                      aria-label="Remove last tag"
+                      onClick={onRemoveLastTag}
+                    >
+                      <IconTrash />
+                    </button>
+                  ) : null}
+                </>
+              ) : null}
+            </div>
+          );
+        })}
       </div>
       {canRemove ? (
         <div className="rules-block-actions">

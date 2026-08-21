@@ -26,6 +26,18 @@
 
 .rules-block-body {
   display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+  min-height: 30px;
+}
+
+/* One line of the rule — up to four tags: Connector + Field +
+ * Operator + Value. When that line fills, the CTA breaks to a new
+ * .rules-block-row below so the next Connector starts on a fresh
+ * visual line. */
+.rules-block-row {
+  display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 6px;
