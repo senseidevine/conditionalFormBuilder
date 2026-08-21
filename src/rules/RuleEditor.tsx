@@ -148,7 +148,7 @@ function BlockView({
           return (
             <div
               className="rules-block-row"
-              style={{ paddingLeft: depth * 20 }}
+              style={{ paddingLeft: depth * 40 }}
               key={i}
             >
               {row.map((t: Tag) => (
