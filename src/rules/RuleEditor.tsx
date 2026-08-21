@@ -162,12 +162,12 @@ function BlockView({
                 <>
                   {/* Inline next-step CTA — sits after the last tag in
                    * the current row. `canSubset` caps subset nesting
-                   * at three levels deep so users can't burrow past a
+                   * at two levels deep so users can't burrow past a
                    * legible indent. */}
                   <InlineAddCta
                     tags={block.tags}
                     onAdd={onAddNext}
-                    canSubset={depth < 3}
+                    canSubset={depth < 2}
                   />
                   {canRemoveTag ? (
                     <button
