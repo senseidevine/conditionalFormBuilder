@@ -55,15 +55,14 @@ export function RuleEditor() {
     );
   };
 
-  const removeLastTag = (blockId: string) => {
+  const removeRow = (blockId: string, startIdx: number, count: number) => {
     setBlocks((bs) =>
-      bs.map((b) =>
-        /* Keep the leading `if` — a block always opens with an operator
-         * so the guided CTA has a starting point. */
-        b.id === blockId && b.tags.length > 1
-          ? { ...b, tags: b.tags.slice(0, -1) }
-          : b
-      )
+      bs.map((b) => {
+        if (b.id !== blockId) return b;
+        const next = [...b.tags];
+        next.splice(startIdx, count);
+        return { ...b, tags: next };
+      })
     );
   };
 
@@ -85,7 +84,9 @@ export function RuleEditor() {
           canRemove={blocks.length > 1}
           onAddNext={(v, subset) => addNextTag(block.id, v, subset)}
           onSetTagValue={(tagId, v) => setTagValue(block.id, tagId, v)}
-          onRemoveLastTag={() => removeLastTag(block.id)}
+          onRemoveRow={(startIdx, count) =>
+            removeRow(block.id, startIdx, count)
+          }
           onRemoveBlock={() => removeBlock(block.id)}
         />
       ))}
@@ -102,17 +103,16 @@ function BlockView({
   canRemove,
   onAddNext,
   onSetTagValue,
-  onRemoveLastTag,
+  onRemoveRow,
   onRemoveBlock,
 }: {
   block: RuleBlock;
   canRemove: boolean;
   onAddNext: (value: string, subset?: boolean) => void;
   onSetTagValue: (tagId: string, v: string) => void;
-  onRemoveLastTag: () => void;
+  onRemoveRow: (startIdx: number, count: number) => void;
   onRemoveBlock: () => void;
 }) {
-  const canRemoveTag = block.tags.length > 1;
   /* Chunk the tags into rows of four — Connector + Field + Operator +
    * Value forms one complete condition. When the last row is exactly
    * full, an empty trailing row is added so the CTA (which lives in
@@ -145,6 +145,12 @@ function BlockView({
         {rows.map((row, i) => {
           const isLast = i === rows.length - 1;
           const depth = rowDepth(i);
+          /* Row-level delete drops the whole condition line at once.
+           * The first row holds the block's seed Connector and can't
+           * be removed on its own — the whole block's Remove control
+           * handles that. Empty trailing rows have nothing to delete. */
+          const canDeleteRow = i > 0 && row.length > 0;
+          const rowStartIdx = i * 4;
           return (
             <div
               className="rules-block-row"
@@ -159,27 +165,25 @@ function BlockView({
                 />
               ))}
               {isLast ? (
-                <>
-                  {/* Inline next-step CTA — sits after the last tag in
-                   * the current row. `canSubset` caps subset nesting
-                   * at two levels deep so users can't burrow past a
-                   * legible indent. */}
-                  <InlineAddCta
-                    tags={block.tags}
-                    onAdd={onAddNext}
-                    canSubset={depth < 2}
-                  />
-                  {canRemoveTag ? (
-                    <button
-                      type="button"
-                      className="rules-row-remove"
-                      aria-label="Remove last tag"
-                      onClick={onRemoveLastTag}
-                    >
-                      <IconTrash />
-                    </button>
-                  ) : null}
-                </>
+                /* Inline next-step CTA — sits after the last tag in
+                 * the current row. `canSubset` caps subset nesting at
+                 * two levels deep so users can't burrow past a
+                 * legible indent. */
+                <InlineAddCta
+                  tags={block.tags}
+                  onAdd={onAddNext}
+                  canSubset={depth < 2}
+                />
+              ) : null}
+              {canDeleteRow ? (
+                <button
+                  type="button"
+                  className="rules-row-remove"
+                  aria-label="Remove this condition"
+                  onClick={() => onRemoveRow(rowStartIdx, row.length)}
+                >
+                  <IconTrash />
+                </button>
               ) : null}
             </div>
           );

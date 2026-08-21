@@ -357,9 +357,9 @@
   cursor: not-allowed;
 }
 
-/* Row-level trash — one button at the end of the tag flow that peels
- * the last tag off. Replaces the per-tag remove that used to sit on
- * every pill and clutter the row. */
+/* Per-row trash — one button per condition row that removes the whole
+ * row's tags at once. Hidden by default; fades in when the user hovers
+ * (or tabs into) that row so idle rows stay uncluttered. */
 .rules-row-remove {
   appearance: none;
   border: 0;
@@ -374,15 +374,24 @@
   align-items: center;
   justify-content: center;
   padding: 0;
-  transition: background var(--dur-1) var(--ease),
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--dur-1) var(--ease),
+    background var(--dur-1) var(--ease),
     color var(--dur-1) var(--ease);
 }
 .rules-row-remove svg { width: 14px; height: 14px; }
+.rules-block-row:hover > .rules-row-remove,
+.rules-block-row:focus-within > .rules-row-remove {
+  opacity: 1;
+  pointer-events: auto;
+}
 .rules-row-remove:hover {
   background: rgba(255, 255, 255, 0.08);
   color: var(--fg);
 }
 .rules-row-remove:focus-visible {
+  opacity: 1;
   outline: 2px solid var(--accent-focus);
   outline-offset: 2px;
 }
