@@ -161,10 +161,14 @@ function BlockView({
               {isLast ? (
                 <>
                   {/* Inline next-step CTA — sits after the last tag in
-                   * the current row; hidden by default and revealed on
-                   * block hover / focus so the row stays clean once
-                   * the rule is filled in. */}
-                  <InlineAddCta tags={block.tags} onAdd={onAddNext} />
+                   * the current row. `canSubset` caps subset nesting
+                   * at three levels deep so users can't burrow past a
+                   * legible indent. */}
+                  <InlineAddCta
+                    tags={block.tags}
+                    onAdd={onAddNext}
+                    canSubset={depth < 3}
+                  />
                   {canRemoveTag ? (
                     <button
                       type="button"
@@ -205,9 +209,13 @@ function BlockView({
 function InlineAddCta({
   tags,
   onAdd,
+  canSubset,
 }: {
   tags: Tag[];
   onAdd: (value: string, subset?: boolean) => void;
+  /** When false, the +Subset CTA is hidden — used at max nesting
+   *  depth so users can't push subsets past three levels. */
+  canSubset: boolean;
 }) {
   const type = nextTagType(tags.length);
 
@@ -219,11 +227,13 @@ function InlineAddCta({
           options={OPERATOR_OPTIONS}
           onPick={(v) => onAdd(v, false)}
         />
-        <PickerCta
-          label="Subset"
-          options={OPERATOR_OPTIONS}
-          onPick={(v) => onAdd(v, true)}
-        />
+        {canSubset ? (
+          <PickerCta
+            label="Subset"
+            options={OPERATOR_OPTIONS}
+            onPick={(v) => onAdd(v, true)}
+          />
+        ) : null}
       </>
     );
   }
