@@ -4,6 +4,11 @@ export interface Tag {
   id: string;
   type: TagType;
   value: string;
+  /** Indent level for Connector tags — 0 for a sibling connector, 1+
+   *  for a subset nested that many levels under the previous line.
+   *  Only meaningful on `operator` tags (the first tag of each row);
+   *  the whole row inherits its leading Connector's depth. */
+  depth?: number;
 }
 
 export interface RuleBlock {
@@ -36,8 +41,10 @@ export const VALUE_SUGGESTIONS = [
 let __id = 0;
 export const uid = () => `t${++__id}`;
 
-export function makeTag(type: TagType, value = ""): Tag {
-  return { id: uid(), type, value };
+export function makeTag(type: TagType, value = "", depth?: number): Tag {
+  return depth !== undefined
+    ? { id: uid(), type, value, depth }
+    : { id: uid(), type, value };
 }
 
 /** Value tags may hold multiple picks; the tag stores them as a

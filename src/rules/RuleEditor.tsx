@@ -18,14 +18,25 @@ import "./RuleEditor.css";
 export function RuleEditor() {
   const [blocks, setBlocks] = useState<RuleBlock[]>(() => [makeBlock()]);
 
-  const addNextTag = (blockId: string, value: string) => {
+  const addNextTag = (blockId: string, value: string, subset = false) => {
     setBlocks((bs) => {
       const target = bs.find((b) => b.id === blockId);
       if (!target) return bs;
       const type = nextTagType(target.tags.length);
+      let depth: number | undefined;
+      if (type === "operator") {
+        /* A new Connector inherits the depth of the previous line's
+         * Connector; +Subset bumps that depth by one so its whole row
+         * indents 20 px further right of the parent. */
+        const prevOp = [...target.tags]
+          .reverse()
+          .find((t) => t.type === "operator");
+        const baseDepth = prevOp?.depth ?? 0;
+        depth = subset ? baseDepth + 1 : baseDepth;
+      }
       return bs.map((b) =>
         b.id === blockId
-          ? { ...b, tags: [...b.tags, makeTag(type, value)] }
+          ? { ...b, tags: [...b.tags, makeTag(type, value, depth)] }
           : b
       );
     });
@@ -72,7 +83,7 @@ export function RuleEditor() {
           key={block.id}
           block={block}
           canRemove={blocks.length > 1}
-          onAddNext={(v) => addNextTag(block.id, v)}
+          onAddNext={(v, subset) => addNextTag(block.id, v, subset)}
           onSetTagValue={(tagId, v) => setTagValue(block.id, tagId, v)}
           onRemoveLastTag={() => removeLastTag(block.id)}
           onRemoveBlock={() => removeBlock(block.id)}
@@ -96,7 +107,7 @@ function BlockView({
 }: {
   block: RuleBlock;
   canRemove: boolean;
-  onAddNext: (value: string) => void;
+  onAddNext: (value: string, subset?: boolean) => void;
   onSetTagValue: (tagId: string, v: string) => void;
   onRemoveLastTag: () => void;
   onRemoveBlock: () => void;
@@ -113,13 +124,33 @@ function BlockView({
   if (rows.length === 0 || rows[rows.length - 1].length === 4) {
     rows.push([]);
   }
+  /* Depth-lookup for row indent — a row's leading Connector holds
+   * its depth. Empty trailing rows carry the depth of the previous
+   * row so the CTA sits under the current chain instead of jumping
+   * back to the block's left edge. */
+  const rowDepth = (i: number): number => {
+    const row = rows[i];
+    if (row.length > 0 && row[0].type === "operator") return row[0].depth ?? 0;
+    for (let j = i - 1; j >= 0; j--) {
+      const prev = rows[j];
+      if (prev.length > 0 && prev[0].type === "operator") {
+        return prev[0].depth ?? 0;
+      }
+    }
+    return 0;
+  };
   return (
     <div className="rules-block">
       <div className="rules-block-body">
         {rows.map((row, i) => {
           const isLast = i === rows.length - 1;
+          const depth = rowDepth(i);
           return (
-            <div className="rules-block-row" key={i}>
+            <div
+              className="rules-block-row"
+              style={{ paddingLeft: depth * 20 }}
+              key={i}
+            >
               {row.map((t: Tag) => (
                 <TagPill
                   key={t.id}
@@ -166,40 +197,155 @@ function BlockView({
   );
 }
 
-/** Inline next-step CTA. Renders as a primary white pill (revealed on
- *  block hover). Clicking opens a dropdown pre-scoped to the next
- *  tag type in the grammar — Value tags include a freeform text
- *  input, Operator/Conditional tags are picklists. Picking a value
- *  emits it via `onAdd`, which the parent turns into a new tag. */
+/** Inline next-step CTA. Revealed on block hover. When the next tag
+ *  is a Connector it renders TWO CTAs — "+Connector" (same-level) and
+ *  "+Subset" (nested one deeper); otherwise a single CTA whose
+ *  dropdown is scoped to the next type. Value tags get multi-select
+ *  with a freeform text input; other types are pick-only. */
 function InlineAddCta({
   tags,
   onAdd,
 }: {
   tags: Tag[];
+  onAdd: (value: string, subset?: boolean) => void;
+}) {
+  const type = nextTagType(tags.length);
+
+  if (type === "operator") {
+    return (
+      <>
+        <PickerCta
+          label="Connector"
+          options={OPERATOR_OPTIONS}
+          onPick={(v) => onAdd(v, false)}
+        />
+        <PickerCta
+          label="Subset"
+          options={OPERATOR_OPTIONS}
+          onPick={(v) => onAdd(v, true)}
+        />
+      </>
+    );
+  }
+
+  return <FullCta tags={tags} type={type} onAdd={onAdd} />;
+}
+
+/** Small pick-only CTA — the pattern used for Connector, Subset,
+ *  Field, and Operator. Dropdown lists the options; picking commits
+ *  and closes. */
+function PickerCta({
+  label,
+  options,
+  onPick,
+}: {
+  label: string;
+  options: string[];
+  onPick: (value: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const wrapRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onDoc = (e: MouseEvent) => {
+      if (!wrapRef.current?.contains(e.target as Node)) setOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("mousedown", onDoc);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDoc);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
+  return (
+    <div className="rules-add-inline-wrap" ref={wrapRef}>
+      <button
+        type="button"
+        className="rules-add-inline"
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        onClick={() => setOpen((v) => !v)}
+      >
+        <span className="rules-add-inline-plus" aria-hidden>+</span>
+        <span>{label}</span>
+      </button>
+      {open ? (
+        <div className="rules-add-menu" role="listbox">
+          <div className="rules-add-options">
+            {options.map((o) => (
+              <button
+                key={o}
+                type="button"
+                role="option"
+                className="rules-add-option"
+                onClick={() => {
+                  onPick(o);
+                  setOpen(false);
+                }}
+              >
+                {o}
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+/** The Field / Operator / Value CTA. Field and Operator are pick-only
+ *  (delegated to PickerCta); Value carries the multi-select flow with
+ *  a freeform text input, chip preview and a Done commit. */
+function FullCta({
+  tags,
+  type,
+  onAdd,
+}: {
+  tags: Tag[];
+  type: ReturnType<typeof nextTagType>;
+  onAdd: (value: string) => void;
+}) {
+  const label = nextCtaLabel(tags);
+  const isValue = type === "value";
+
+  if (!isValue) {
+    const options =
+      type === "condition" ? CONDITION_OPTIONS : CONDITIONAL_OPTIONS;
+    return <PickerCta label={label} options={options} onPick={onAdd} />;
+  }
+
+  return <ValueCta label={label} onAdd={onAdd} />;
+}
+
+/** Value-tag CTA: multi-select from suggestions plus a freeform text
+ *  input. Picks commit together as a comma-separated tag on Done, on
+ *  Enter with an empty input, or on outside click. */
+function ValueCta({
+  label,
+  onAdd,
+}: {
+  label: string;
   onAdd: (value: string) => void;
 }) {
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState("");
-  /* Multi-select draft for Value tags. Suggestions toggle in/out and
-   * the text input appends custom entries; the whole set commits as
-   * one comma-separated tag when the user clicks Done or hits Enter
-   * on the text input while it's empty. */
   const [picks, setPicks] = useState<string[]>([]);
   const wrapRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const type = nextTagType(tags.length);
-  const label = nextCtaLabel(tags);
-  const isValue = type === "value";
-
   useEffect(() => {
     if (!open) return;
-    if (isValue) inputRef.current?.focus();
+    inputRef.current?.focus();
     const onDoc = (e: MouseEvent) => {
       if (!wrapRef.current?.contains(e.target as Node)) {
-        /* Commit any pending Value picks before dismissing so the user
+        /* Commit any pending picks before dismissing so the user
          * doesn't lose their selection to an accidental outside click. */
-        if (isValue && picks.length > 0) {
+        if (picks.length > 0) {
           onAdd(serializeValueList(picks));
           setPicks([]);
           setDraft("");
@@ -220,25 +366,9 @@ function InlineAddCta({
       document.removeEventListener("mousedown", onDoc);
       document.removeEventListener("keydown", onKey);
     };
-  }, [open, isValue, picks, onAdd]);
+  }, [open, picks, onAdd]);
 
-  const options =
-    type === "operator"
-      ? OPERATOR_OPTIONS
-      : type === "condition"
-      ? CONDITION_OPTIONS
-      : type === "conditional"
-      ? CONDITIONAL_OPTIONS
-      : VALUE_SUGGESTIONS;
-
-  /* Single-select commit — used by the three pick-only tag types.
-   * Adds the tag and closes the dropdown. */
-  const commitSingle = (v: string) => {
-    if (!v) return;
-    onAdd(v);
-    setOpen(false);
-    setDraft("");
-  };
+  const options = VALUE_SUGGESTIONS;
 
   const togglePick = (v: string) => {
     setPicks((ps) => (ps.includes(v) ? ps.filter((x) => x !== v) : [...ps, v]));
@@ -272,47 +402,43 @@ function InlineAddCta({
         <span>{label}</span>
       </button>
       {open ? (
-        <div className="rules-add-menu" role={isValue ? "group" : "listbox"}>
-          {isValue ? (
-            <>
-              {picks.length > 0 ? (
-                <div className="tagpill-chips">
-                  {picks.map((v) => (
-                    <span key={v} className="tagpill-chip">
-                      {v}
-                      <button
-                        type="button"
-                        className="tagpill-chip-x"
-                        aria-label={`Remove ${v}`}
-                        onClick={() => togglePick(v)}
-                      >
-                        ×
-                      </button>
-                    </span>
-                  ))}
-                </div>
-              ) : null}
-              <input
-                ref={inputRef}
-                className="rules-add-input"
-                value={draft}
-                placeholder="Type any value and press Enter"
-                onChange={(e) => setDraft(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    if (draft.trim()) appendDraft();
-                    else commitPicks();
-                  }
-                }}
-                aria-label="Value"
-                spellCheck={false}
-              />
-            </>
+        <div className="rules-add-menu" role="group">
+          {picks.length > 0 ? (
+            <div className="tagpill-chips">
+              {picks.map((v) => (
+                <span key={v} className="tagpill-chip">
+                  {v}
+                  <button
+                    type="button"
+                    className="tagpill-chip-x"
+                    aria-label={`Remove ${v}`}
+                    onClick={() => togglePick(v)}
+                  >
+                    ×
+                  </button>
+                </span>
+              ))}
+            </div>
           ) : null}
+          <input
+            ref={inputRef}
+            className="rules-add-input"
+            value={draft}
+            placeholder="Type any value and press Enter"
+            onChange={(e) => setDraft(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                if (draft.trim()) appendDraft();
+                else commitPicks();
+              }
+            }}
+            aria-label="Value"
+            spellCheck={false}
+          />
           <div className="rules-add-options">
             {options.map((o) => {
-              const selected = isValue ? picks.includes(o) : false;
+              const selected = picks.includes(o);
               return (
                 <button
                   key={o}
@@ -320,30 +446,24 @@ function InlineAddCta({
                   role="option"
                   aria-selected={selected}
                   className={`rules-add-option ${selected ? "is-selected" : ""}`}
-                  onClick={() =>
-                    isValue ? togglePick(o) : commitSingle(o)
-                  }
+                  onClick={() => togglePick(o)}
                 >
-                  {isValue ? (
-                    <span className="tagpill-check" aria-hidden>
-                      {selected ? "✓" : ""}
-                    </span>
-                  ) : null}
+                  <span className="tagpill-check" aria-hidden>
+                    {selected ? "✓" : ""}
+                  </span>
                   <span>{o}</span>
                 </button>
               );
             })}
           </div>
-          {isValue ? (
-            <button
-              type="button"
-              className="rules-add-done"
-              onClick={commitPicks}
-              disabled={picks.length === 0}
-            >
-              Done
-            </button>
-          ) : null}
+          <button
+            type="button"
+            className="rules-add-done"
+            onClick={commitPicks}
+            disabled={picks.length === 0}
+          >
+            Done
+          </button>
         </div>
       ) : null}
     </div>
