@@ -184,7 +184,7 @@
 .tagpill-wrap[data-type="condition"] .tagpill {
   background: rgba(255, 255, 255, 0.14);
   color: rgba(255, 255, 255, 0.85);
-  font-weight: 500;
+  font-weight: 700;
 }
 .tagpill-wrap[data-type="conditional"] .tagpill {
   background: rgba(255, 255, 255, 0.1);
@@ -192,7 +192,7 @@
 }
 .tagpill-wrap[data-type="value"] .tagpill {
   background: rgba(255, 255, 255, 0.14);
-  color: var(--fg);
+  color: #ffffff;
 }
 
 /* Color tag pills toggle ON — swap the neutral palette for the
