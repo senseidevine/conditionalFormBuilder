@@ -8,9 +8,9 @@ import { RuleEditor } from "./rules/RuleEditor";
 import "./App.css";
 
 const RAIL_STEPS = [
+  { id: "s3", label: "Build v2" },
   { id: "s1", label: "Build v1" },
   { id: "s2", label: "Case I" },
-  { id: "s3", label: "Build v2" },
   { id: "s4", label: "Case II" },
 ];
 
