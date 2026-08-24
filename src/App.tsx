@@ -17,7 +17,7 @@ const RAIL_STEPS = [
 export default function App() {
   const [treeS1, setTreeS1] = useState<GroupNode>(() => seedRoot());
   const [treeS2, setTreeS2] = useState<GroupNode>(() => seedSample());
-  const [activeStep, setActiveStep] = useState<string>("s1");
+  const [activeStep, setActiveStep] = useState<string>(RAIL_STEPS[0].id);
   const [swapButtons, setSwapButtons] = useState<boolean>(false);
   const [showLoneBracket, setShowLoneBracket] = useState<boolean>(true);
   const [showBrackets, setShowBrackets] = useState<boolean>(true);
