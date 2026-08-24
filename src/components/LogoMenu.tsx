@@ -21,6 +21,8 @@ interface LogoMenuProps {
   onToggleBracketDottedOr: (v: boolean) => void;
   bareCblocks: boolean;
   onToggleBareCblocks: (v: boolean) => void;
+  colorTagPills: boolean;
+  onToggleColorTagPills: (v: boolean) => void;
 }
 
 type Anchor = { top: number; left: number };
@@ -45,6 +47,8 @@ export function LogoMenu({
   onToggleBracketDottedOr,
   bareCblocks,
   onToggleBareCblocks,
+  colorTagPills,
+  onToggleColorTagPills,
 }: LogoMenuProps) {
   const [open, setOpen] = useState(false);
   const [anchor, setAnchor] = useState<Anchor>({ top: 0, left: 0 });
@@ -194,6 +198,26 @@ export function LogoMenu({
                   ariaLabel="Bare cblocks"
                   value={bareCblocks ? "on" : "off"}
                   onChange={(v) => onToggleBareCblocks(v === "on")}
+                  options={[
+                    { value: "off", label: "Off" },
+                    { value: "on", label: "On" },
+                  ]}
+                />
+              </div>
+
+              <div className="logomenu-row">
+                <div className="logomenu-row-text">
+                  <div className="logomenu-row-title">Color tag pills</div>
+                  <div className="logomenu-row-desc">
+                    On: Operator #FF5777 (coral), Condition #6790B8
+                    (steel-blue), Value white. Off: neutral white
+                    palette.
+                  </div>
+                </div>
+                <SegmentedTabs
+                  ariaLabel="Color tag pills"
+                  value={colorTagPills ? "on" : "off"}
+                  onChange={(v) => onToggleColorTagPills(v === "on")}
                   options={[
                     { value: "off", label: "Off" },
                     { value: "on", label: "On" },

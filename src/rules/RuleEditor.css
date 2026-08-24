@@ -195,6 +195,23 @@
   color: var(--fg);
 }
 
+/* Color tag pills toggle ON — swap the neutral palette for the
+ * branded one: coral operators, steel-blue conditions, solid white
+ * values. Conditionals stay on the neutral palette. */
+.page[data-color-tagpills="true"] .tagpill-wrap[data-type="operator"] .tagpill {
+  background: rgba(255, 87, 119, 0.18);
+  color: #ff5777;
+}
+.page[data-color-tagpills="true"] .tagpill-wrap[data-type="condition"] .tagpill {
+  background: rgba(103, 144, 184, 0.2);
+  color: #6790b8;
+  font-weight: 500;
+}
+.page[data-color-tagpills="true"] .tagpill-wrap[data-type="value"] .tagpill {
+  background: rgba(255, 255, 255, 0.14);
+  color: #ffffff;
+}
+
 .tagpill {
   appearance: none;
   border: 0;
