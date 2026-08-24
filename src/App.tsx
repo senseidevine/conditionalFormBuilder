@@ -26,7 +26,7 @@ export default function App() {
   const [operatorMenu, setOperatorMenu] = useState<boolean>(true);
   const [bracketDottedOr, setBracketDottedOr] = useState<boolean>(false);
   const [bareCblocks, setBareCblocks] = useState<boolean>(false);
-  const [colorTagPills, setColorTagPills] = useState<boolean>(false);
+  const [colorTagPills, setColorTagPills] = useState<boolean>(true);
 
   const activeTree = activeStep === "s2" ? treeS2 : treeS1;
   const setActiveTree = activeStep === "s2" ? setTreeS2 : setTreeS1;
