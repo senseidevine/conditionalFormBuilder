@@ -178,12 +178,12 @@
  * wash of the same colour so the category is legible at a glance
  * without shouting over the rule content. */
 .tagpill-wrap[data-type="operator"] .tagpill {
-  background: rgba(255, 87, 119, 0.18);
-  color: #ff5777;
-}
-.tagpill-wrap[data-type="condition"] .tagpill {
   background: rgba(103, 144, 184, 0.2);
   color: #6790b8;
+}
+.tagpill-wrap[data-type="condition"] .tagpill {
+  background: rgba(255, 87, 119, 0.18);
+  color: #ff5777;
 }
 .tagpill-wrap[data-type="conditional"] .tagpill {
   background: rgba(128, 92, 255, 0.2);
