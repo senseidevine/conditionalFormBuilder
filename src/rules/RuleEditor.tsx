@@ -137,16 +137,16 @@ function BlockView({
   const isNextOperator = nextType === "operator";
   const lastRowIdx = rows.length - 1;
   const currentDepth = lastRowIdx >= 0 ? rowDepth(lastRowIdx) : 0;
-  /* Every ancestor level up to (and including) currentDepth is
-   * reachable, plus one level deeper — capped at MAX_DEPTH so
-   * nesting never runs past a legible indent. Rendered deepest-first
-   * so the CTA closest to the current chain continues at the same
-   * depth and each next row steps back one level. */
-  const maxCtaDepth = Math.min(currentDepth + 1, MAX_DEPTH);
-  const connectorDepths = Array.from(
-    { length: maxCtaDepth + 1 },
-    (_, k) => maxCtaDepth - k
-  );
+  /* Two Connector CTAs: `Subset` at currentDepth + 1 (when allowed by
+   * the MAX_DEPTH cap) and `Connector` at the current depth. Deeper
+   * pill is rendered first so it sits closest to the current chain
+   * and each next row steps back one level. */
+  const canSubset = currentDepth < MAX_DEPTH;
+  const connectorCtas: { label: string; depth: number }[] = [];
+  if (canSubset) {
+    connectorCtas.push({ label: "Subset", depth: currentDepth + 1 });
+  }
+  connectorCtas.push({ label: "Connector", depth: currentDepth });
   return (
     <div className="rules-block">
       <div className="rules-block-body">
@@ -191,18 +191,18 @@ function BlockView({
             </div>
           );
         })}
-        {/* Connector CTAs — one row per available depth. Each pill
-         * sits on its own line, indented to its target depth, so the
-         * pill visually previews where its new row will land. */}
+        {/* Connector / Subset CTAs — each on its own line, indented
+         * to its target depth so the pill visually previews where its
+         * new row will land. */}
         {isNextOperator
-          ? connectorDepths.map((d) => (
+          ? connectorCtas.map(({ label, depth: d }) => (
               <div
                 className="rules-block-row rules-block-row--cta"
                 style={{ paddingLeft: d * 40 }}
-                key={`cta-${d}`}
+                key={`cta-${label}`}
               >
                 <PickerCta
-                  label="Connector"
+                  label={label}
                   options={OPERATOR_OPTIONS}
                   onPick={(v) => onAddNext(v, d)}
                 />
