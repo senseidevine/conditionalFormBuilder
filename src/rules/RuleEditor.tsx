@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import type { RuleBlock, Tag } from "./types";
+import type { RuleBlock, Tag, TagType } from "./types";
 import {
   CONDITION_OPTIONS,
   CONDITIONAL_OPTIONS,
@@ -15,7 +15,11 @@ import { TagPill } from "./TagPill";
 import { IconTrash } from "../components/Icons";
 import "./RuleEditor.css";
 
-export function RuleEditor() {
+export function RuleEditor({
+  alwaysShowCtas,
+}: {
+  alwaysShowCtas: boolean;
+}) {
   const [blocks, setBlocks] = useState<RuleBlock[]>(() => [makeBlock()]);
 
   const addNextTag = (
@@ -26,22 +30,36 @@ export function RuleEditor() {
     setBlocks((bs) => {
       const target = bs.find((b) => b.id === blockId);
       if (!target) return bs;
-      const type = nextTagType(target.tags.length);
-      let depth: number | undefined;
-      if (type === "operator") {
-        /* Every Connector CTA is pinned to an explicit depth — the
-         * pill list under the current row offers one per available
-         * level (0 through currentDepth + 1, capped at MAX_DEPTH).
-         * Fall back to the previous row's depth if no explicit target
-         * was given. */
-        const prevOp = [...target.tags]
-          .reverse()
-          .find((t) => t.type === "operator");
-        depth = atDepth ?? prevOp?.depth ?? 0;
+
+      /* An explicit depth means the user clicked a +Connector /
+       * +Subset CTA. That may fire while the current row is only
+       * half-built, so pad the partial row up to a Connector
+       * boundary with empty typed tags before appending the new
+       * Connector — keeps the row-of-4 chunking invariant intact. */
+      if (atDepth !== undefined) {
+        const padTypesByPosition: TagType[] = [
+          "condition",
+          "conditional",
+          "value",
+        ];
+        const padded = [...target.tags];
+        let remainder = padded.length % 4;
+        while (remainder !== 0) {
+          padded.push(makeTag(padTypesByPosition[remainder - 1], ""));
+          remainder = padded.length % 4;
+        }
+        padded.push(makeTag("operator", value, atDepth));
+        return bs.map((b) =>
+          b.id === blockId ? { ...b, tags: padded } : b
+        );
       }
+
+      /* No depth passed — this is a Field / Operator / Value pick
+       * for the currently building row. */
+      const type = nextTagType(target.tags.length);
       return bs.map((b) =>
         b.id === blockId
-          ? { ...b, tags: [...b.tags, makeTag(type, value, depth)] }
+          ? { ...b, tags: [...b.tags, makeTag(type, value)] }
           : b
       );
     });
@@ -87,6 +105,7 @@ export function RuleEditor() {
           key={block.id}
           block={block}
           canRemove={blocks.length > 1}
+          alwaysShowCtas={alwaysShowCtas}
           onAddNext={(v, atDepth) => addNextTag(block.id, v, atDepth)}
           onSetTagValue={(tagId, v) => setTagValue(block.id, tagId, v)}
           onRemoveRow={(startIdx, count) =>
@@ -108,6 +127,7 @@ const MAX_DEPTH = 2;
 function BlockView({
   block,
   canRemove,
+  alwaysShowCtas,
   onAddNext,
   onSetTagValue,
   onRemoveRow,
@@ -115,6 +135,7 @@ function BlockView({
 }: {
   block: RuleBlock;
   canRemove: boolean;
+  alwaysShowCtas: boolean;
   onAddNext: (value: string, atDepth?: number) => void;
   onSetTagValue: (tagId: string, v: string) => void;
   onRemoveRow: (startIdx: number, count: number) => void;
@@ -191,8 +212,13 @@ function BlockView({
          * level deeper, when the depth cap allows). Below it, one
          * extra row per ancestor level offers a +Connector aligned to
          * that parent's depth so users can add a sibling at any
-         * outer chain without losing the option to nest first. */}
-        {isNextOperator ? (
+         * outer chain without losing the option to nest first.
+         *
+         * When Always show CTAs is on the rows render even while a
+         * chain is still being built; clicking one pads the current
+         * partial row with empty tags first (see addNextTag) so the
+         * row-of-4 chunking stays intact. */}
+        {isNextOperator || alwaysShowCtas ? (
           <>
             <div
               className="rules-block-row rules-block-row--cta"

@@ -119,7 +119,7 @@ export default function App() {
 
           <div className="content">
             {activeStep === "s3" ? (
-              <RuleEditor />
+              <RuleEditor alwaysShowCtas={alwaysShowCtas} />
             ) : (
               <Group
                 group={activeTree}
