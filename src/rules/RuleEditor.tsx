@@ -18,21 +18,26 @@ import "./RuleEditor.css";
 export function RuleEditor() {
   const [blocks, setBlocks] = useState<RuleBlock[]>(() => [makeBlock()]);
 
-  const addNextTag = (blockId: string, value: string, subset = false) => {
+  const addNextTag = (
+    blockId: string,
+    value: string,
+    atDepth?: number
+  ) => {
     setBlocks((bs) => {
       const target = bs.find((b) => b.id === blockId);
       if (!target) return bs;
       const type = nextTagType(target.tags.length);
       let depth: number | undefined;
       if (type === "operator") {
-        /* A new Connector inherits the depth of the previous line's
-         * Connector; +Subset bumps that depth by one so its whole row
-         * indents 20 px further right of the parent. */
+        /* Every Connector CTA is pinned to an explicit depth — the
+         * pill list under the current row offers one per available
+         * level (0 through currentDepth + 1, capped at MAX_DEPTH).
+         * Fall back to the previous row's depth if no explicit target
+         * was given. */
         const prevOp = [...target.tags]
           .reverse()
           .find((t) => t.type === "operator");
-        const baseDepth = prevOp?.depth ?? 0;
-        depth = subset ? baseDepth + 1 : baseDepth;
+        depth = atDepth ?? prevOp?.depth ?? 0;
       }
       return bs.map((b) =>
         b.id === blockId
@@ -82,7 +87,7 @@ export function RuleEditor() {
           key={block.id}
           block={block}
           canRemove={blocks.length > 1}
-          onAddNext={(v, subset) => addNextTag(block.id, v, subset)}
+          onAddNext={(v, atDepth) => addNextTag(block.id, v, atDepth)}
           onSetTagValue={(tagId, v) => setTagValue(block.id, tagId, v)}
           onRemoveRow={(startIdx, count) =>
             removeRow(block.id, startIdx, count)
@@ -98,6 +103,8 @@ export function RuleEditor() {
   );
 }
 
+const MAX_DEPTH = 2;
+
 function BlockView({
   block,
   canRemove,
@@ -108,7 +115,7 @@ function BlockView({
 }: {
   block: RuleBlock;
   canRemove: boolean;
-  onAddNext: (value: string, subset?: boolean) => void;
+  onAddNext: (value: string, atDepth?: number) => void;
   onSetTagValue: (tagId: string, v: string) => void;
   onRemoveRow: (startIdx: number, count: number) => void;
   onRemoveBlock: () => void;
@@ -166,13 +173,18 @@ function BlockView({
               ))}
               {isLast ? (
                 /* Inline next-step CTA — sits after the last tag in
-                 * the current row. `canSubset` caps subset nesting at
-                 * two levels deep so users can't burrow past a
-                 * legible indent. */
+                 * the current row. When the next tag is a Connector,
+                 * the CTA fans out into one pill per available depth
+                 * (0 through currentDepth + 1, capped at MAX_DEPTH)
+                 * so users can jump straight to any parent level or
+                 * nest one deeper. */
                 <InlineAddCta
                   tags={block.tags}
                   onAdd={onAddNext}
-                  canSubset={depth < 2}
+                  connectorDepths={Array.from(
+                    { length: Math.min(depth + 1, MAX_DEPTH) + 1 },
+                    (_, k) => k
+                  )}
                 />
               ) : null}
               {canDeleteRow ? (
@@ -205,39 +217,36 @@ function BlockView({
   );
 }
 
-/** Inline next-step CTA. Revealed on block hover. When the next tag
- *  is a Connector it renders TWO CTAs — "+Connector" (same-level) and
- *  "+Subset" (nested one deeper); otherwise a single CTA whose
- *  dropdown is scoped to the next type. Value tags get multi-select
- *  with a freeform text input; other types are pick-only. */
+/** Inline next-step CTA. When the next tag is a Connector it fans out
+ *  into one +Connector pill per available depth (0 through the parent
+ *  chain's depth + 1, capped at MAX_DEPTH) so users can add a sibling
+ *  at any ancestor level or nest one deeper. Value tags get
+ *  multi-select with a freeform text input; other types are pick-only. */
 function InlineAddCta({
   tags,
   onAdd,
-  canSubset,
+  connectorDepths,
 }: {
   tags: Tag[];
-  onAdd: (value: string, subset?: boolean) => void;
-  /** When false, the +Subset CTA is hidden — used at max nesting
-   *  depth so users can't push subsets past three levels. */
-  canSubset: boolean;
+  onAdd: (value: string, atDepth?: number) => void;
+  /** Depths to offer a +Connector for, in ascending order. Only used
+   *  when the next tag is a Connector. */
+  connectorDepths: number[];
 }) {
   const type = nextTagType(tags.length);
 
   if (type === "operator") {
     return (
       <>
-        <PickerCta
-          label="Connector"
-          options={OPERATOR_OPTIONS}
-          onPick={(v) => onAdd(v, false)}
-        />
-        {canSubset ? (
+        {connectorDepths.map((d) => (
           <PickerCta
-            label="Subset"
+            key={d}
+            label="Connector"
+            indent={d}
             options={OPERATOR_OPTIONS}
-            onPick={(v) => onAdd(v, true)}
+            onPick={(v) => onAdd(v, d)}
           />
-        ) : null}
+        ))}
       </>
     );
   }
@@ -245,17 +254,20 @@ function InlineAddCta({
   return <FullCta tags={tags} type={type} onAdd={onAdd} />;
 }
 
-/** Small pick-only CTA — the pattern used for Connector, Subset,
- *  Field, and Operator. Dropdown lists the options; picking commits
- *  and closes. */
+/** Small pick-only CTA — the pattern used for Connector, Field, and
+ *  Operator. Dropdown lists the options; picking commits and closes.
+ *  `indent` renders leading tree-marker bars before the `+` so a row
+ *  of Connector pills reads as a set of depth choices. */
 function PickerCta({
   label,
   options,
   onPick,
+  indent = 0,
 }: {
   label: string;
   options: string[];
   onPick: (value: string) => void;
+  indent?: number;
 }) {
   const [open, setOpen] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -285,6 +297,13 @@ function PickerCta({
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
       >
+        {indent > 0 ? (
+          <span className="rules-add-inline-guides" aria-hidden>
+            {Array.from({ length: indent }).map((_, i) => (
+              <span key={i} />
+            ))}
+          </span>
+        ) : null}
         <span className="rules-add-inline-plus" aria-hidden>+</span>
         <span>{label}</span>
       </button>

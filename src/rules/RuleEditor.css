@@ -285,6 +285,23 @@
   line-height: 1;
 }
 
+/* Leading tree-marker bars on a +Connector pill. One vertical bar per
+ * indent level so a row of Connector CTAs reads as a set of depth
+ * choices — the leftmost is root, each next one steps in one level. */
+.rules-add-inline-guides {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-right: 2px;
+}
+.rules-add-inline-guides > span {
+  display: block;
+  width: 2px;
+  height: 10px;
+  background: rgba(255, 255, 255, 0.4);
+  border-radius: 1px;
+}
+
 /* Dropdown attached to the CTA — the picker for the next tag's value.
  * Value tags render a text input above the suggestion list so the
  * user can commit any custom string; operator/conditional tags are
