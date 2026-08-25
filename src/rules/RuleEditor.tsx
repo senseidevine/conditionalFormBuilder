@@ -137,16 +137,11 @@ function BlockView({
   const isNextOperator = nextType === "operator";
   const lastRowIdx = rows.length - 1;
   const currentDepth = lastRowIdx >= 0 ? rowDepth(lastRowIdx) : 0;
-  /* Two Connector CTAs: `Subset` at currentDepth + 1 (when allowed by
-   * the MAX_DEPTH cap) and `Connector` at the current depth. Deeper
-   * pill is rendered first so it sits closest to the current chain
-   * and each next row steps back one level. */
+  /* Two Connector CTAs sit side-by-side on one line: `Connector` at
+   * the current depth and (when the MAX_DEPTH cap allows) `Subset` at
+   * currentDepth + 1. The whole row is indented to the current depth
+   * so +Connector lines up with the parent chain's left edge. */
   const canSubset = currentDepth < MAX_DEPTH;
-  const connectorCtas: { label: string; depth: number }[] = [];
-  if (canSubset) {
-    connectorCtas.push({ label: "Subset", depth: currentDepth + 1 });
-  }
-  connectorCtas.push({ label: "Connector", depth: currentDepth });
   return (
     <div className="rules-block">
       <div className="rules-block-body">
@@ -191,24 +186,28 @@ function BlockView({
             </div>
           );
         })}
-        {/* Connector / Subset CTAs — each on its own line, indented
-         * to its target depth so the pill visually previews where its
-         * new row will land. */}
-        {isNextOperator
-          ? connectorCtas.map(({ label, depth: d }) => (
-              <div
-                className="rules-block-row rules-block-row--cta"
-                style={{ paddingLeft: d * 40 }}
-                key={`cta-${label}`}
-              >
-                <PickerCta
-                  label={label}
-                  options={OPERATOR_OPTIONS}
-                  onPick={(v) => onAddNext(v, d)}
-                />
-              </div>
-            ))
-          : null}
+        {/* Connector / Subset CTAs — side-by-side on one row indented
+         * to the current chain's depth so the +Connector pill lines
+         * up with the parent's left edge. */}
+        {isNextOperator ? (
+          <div
+            className="rules-block-row rules-block-row--cta"
+            style={{ paddingLeft: currentDepth * 40 }}
+          >
+            <PickerCta
+              label="Connector"
+              options={OPERATOR_OPTIONS}
+              onPick={(v) => onAddNext(v, currentDepth)}
+            />
+            {canSubset ? (
+              <PickerCta
+                label="Subset"
+                options={OPERATOR_OPTIONS}
+                onPick={(v) => onAddNext(v, currentDepth + 1)}
+              />
+            ) : null}
+          </div>
+        ) : null}
       </div>
       {canRemove ? (
         <div className="rules-block-actions">
