@@ -121,41 +121,39 @@ function BlockView({
   onRemoveBlock: () => void;
 }) {
   /* Chunk the tags into rows of four — Connector + Field + Operator +
-   * Value forms one complete condition. When the last row is exactly
-   * full, an empty trailing row is added so the CTA (which lives in
-   * the last row) starts the next condition on a fresh line. */
+   * Value forms one complete condition. */
   const rows: Tag[][] = [];
   for (let i = 0; i < block.tags.length; i += 4) {
     rows.push(block.tags.slice(i, i + 4));
   }
-  if (rows.length === 0 || rows[rows.length - 1].length === 4) {
-    rows.push([]);
-  }
   /* Depth-lookup for row indent — a row's leading Connector holds
-   * its depth. Empty trailing rows carry the depth of the previous
-   * row so the CTA sits under the current chain instead of jumping
-   * back to the block's left edge. */
-  const rowDepth = (i: number): number => {
-    const row = rows[i];
+   * its depth. */
+  const rowDepth = (rowIdx: number): number => {
+    const row = rows[rowIdx];
     if (row.length > 0 && row[0].type === "operator") return row[0].depth ?? 0;
-    for (let j = i - 1; j >= 0; j--) {
-      const prev = rows[j];
-      if (prev.length > 0 && prev[0].type === "operator") {
-        return prev[0].depth ?? 0;
-      }
-    }
     return 0;
   };
+  const nextType = nextTagType(block.tags.length);
+  const isNextOperator = nextType === "operator";
+  const lastRowIdx = rows.length - 1;
+  const currentDepth = lastRowIdx >= 0 ? rowDepth(lastRowIdx) : 0;
+  /* Every ancestor level up to (and including) currentDepth is
+   * reachable, plus one level deeper — capped at MAX_DEPTH so
+   * nesting never runs past a legible indent. */
+  const connectorDepths = Array.from(
+    { length: Math.min(currentDepth + 1, MAX_DEPTH) + 1 },
+    (_, k) => k
+  );
   return (
     <div className="rules-block">
       <div className="rules-block-body">
         {rows.map((row, i) => {
-          const isLast = i === rows.length - 1;
+          const isLast = i === lastRowIdx;
           const depth = rowDepth(i);
           /* Row-level delete drops the whole condition line at once.
            * The first row holds the block's seed Connector and can't
            * be removed on its own — the whole block's Remove control
-           * handles that. Empty trailing rows have nothing to delete. */
+           * handles that. */
           const canDeleteRow = i > 0 && row.length > 0;
           const rowStartIdx = i * 4;
           return (
@@ -171,21 +169,11 @@ function BlockView({
                   onChange={(v) => onSetTagValue(t.id, v)}
                 />
               ))}
-              {isLast ? (
-                /* Inline next-step CTA — sits after the last tag in
-                 * the current row. When the next tag is a Connector,
-                 * the CTA fans out into one pill per available depth
-                 * (0 through currentDepth + 1, capped at MAX_DEPTH)
-                 * so users can jump straight to any parent level or
-                 * nest one deeper. */
-                <InlineAddCta
-                  tags={block.tags}
-                  onAdd={onAddNext}
-                  connectorDepths={Array.from(
-                    { length: Math.min(depth + 1, MAX_DEPTH) + 1 },
-                    (_, k) => k
-                  )}
-                />
+              {/* Non-operator CTAs sit inline at the end of the row
+               * still being filled so the condition reads left to
+               * right. Operator CTAs move to their own rows below. */}
+              {isLast && !isNextOperator ? (
+                <InlineAddCta tags={block.tags} onAdd={onAddNext} />
               ) : null}
               {canDeleteRow ? (
                 <button
@@ -200,6 +188,24 @@ function BlockView({
             </div>
           );
         })}
+        {/* Connector CTAs — one row per available depth. Each pill
+         * sits on its own line, indented to its target depth, so the
+         * pill visually previews where its new row will land. */}
+        {isNextOperator
+          ? connectorDepths.map((d) => (
+              <div
+                className="rules-block-row rules-block-row--cta"
+                style={{ paddingLeft: d * 40 }}
+                key={`cta-${d}`}
+              >
+                <PickerCta
+                  label="Connector"
+                  options={OPERATOR_OPTIONS}
+                  onPick={(v) => onAddNext(v, d)}
+                />
+              </div>
+            ))
+          : null}
       </div>
       {canRemove ? (
         <div className="rules-block-actions">
@@ -217,40 +223,19 @@ function BlockView({
   );
 }
 
-/** Inline next-step CTA. When the next tag is a Connector it fans out
- *  into one +Connector pill per available depth (0 through the parent
- *  chain's depth + 1, capped at MAX_DEPTH) so users can add a sibling
- *  at any ancestor level or nest one deeper. Value tags get
- *  multi-select with a freeform text input; other types are pick-only. */
+/** Inline next-step CTA for Field / Operator / Value slots — sits at
+ *  the end of the row currently being built. Connector CTAs render
+ *  outside this component (one per depth, on their own rows) so this
+ *  path only handles the three non-operator types. */
 function InlineAddCta({
   tags,
   onAdd,
-  connectorDepths,
 }: {
   tags: Tag[];
   onAdd: (value: string, atDepth?: number) => void;
-  /** Depths to offer a +Connector for, in ascending order. Only used
-   *  when the next tag is a Connector. */
-  connectorDepths: number[];
 }) {
   const type = nextTagType(tags.length);
-
-  if (type === "operator") {
-    return (
-      <>
-        {connectorDepths.map((d) => (
-          <PickerCta
-            key={d}
-            label="Connector"
-            indent={d}
-            options={OPERATOR_OPTIONS}
-            onPick={(v) => onAdd(v, d)}
-          />
-        ))}
-      </>
-    );
-  }
-
+  if (type === "operator") return null;
   return <FullCta tags={tags} type={type} onAdd={onAdd} />;
 }
 
