@@ -85,6 +85,7 @@ export default function App() {
         activeId={activeStep}
         completedIds={[]}
         onSelect={setActiveStep}
+        activeStep={activeStep}
         swapButtons={swapButtons}
         onToggleSwapButtons={setSwapButtons}
         showLoneBracket={showLoneBracket}

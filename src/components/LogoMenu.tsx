@@ -5,6 +5,10 @@ import { SegmentedTabs } from "./SegmentedTabs";
 import "./LogoMenu.css";
 
 interface LogoMenuProps {
+  /** Currently visible view — scopes the popover rows so only toggles
+   *  relevant to the active view are shown. `s3` is the rules editor
+   *  (Build v2); everything else uses the recursive Group builder. */
+  activeStep: string;
   swapButtons: boolean;
   onToggleSwapButtons: (v: boolean) => void;
   showLoneBracket: boolean;
@@ -31,6 +35,7 @@ type Anchor = { top: number; left: number };
  *  document.body via a portal + fixed positioning so it's never clipped
  *  by a parent stacking context. */
 export function LogoMenu({
+  activeStep,
   swapButtons,
   onToggleSwapButtons,
   showLoneBracket,
@@ -112,6 +117,10 @@ export function LogoMenu({
             >
               <div className="logomenu-title">Form configuration</div>
 
+              {/* Group-builder toggles — visible on every step except
+               * the rules editor (Build v2, s3). */}
+              {activeStep !== "s3" ? (
+                <>
               <div className="logomenu-row">
                 <div className="logomenu-row-text">
                   <div className="logomenu-row-title">Swap buttons</div>
@@ -207,26 +216,6 @@ export function LogoMenu({
 
               <div className="logomenu-row">
                 <div className="logomenu-row-text">
-                  <div className="logomenu-row-title">Color tag pills</div>
-                  <div className="logomenu-row-desc">
-                    On: Operator #FF5777 (coral), Condition #6790B8
-                    (steel-blue), Value white. Off: neutral white
-                    palette.
-                  </div>
-                </div>
-                <SegmentedTabs
-                  ariaLabel="Color tag pills"
-                  value={colorTagPills ? "on" : "off"}
-                  onChange={(v) => onToggleColorTagPills(v === "on")}
-                  options={[
-                    { value: "off", label: "Off" },
-                    { value: "on", label: "On" },
-                  ]}
-                />
-              </div>
-
-              <div className="logomenu-row">
-                <div className="logomenu-row-text">
                   <div className="logomenu-row-title">Nested background</div>
                   <div className="logomenu-row-desc">
                     Off: 10 % white. On: 15 % black.
@@ -280,6 +269,32 @@ export function LogoMenu({
                   ]}
                 />
               </div>
+                </>
+              ) : null}
+
+              {/* Rules-editor toggles — visible only on the rules
+               * editor (Build v2, s3). */}
+              {activeStep === "s3" ? (
+                <div className="logomenu-row">
+                  <div className="logomenu-row-text">
+                    <div className="logomenu-row-title">Color tag pills</div>
+                    <div className="logomenu-row-desc">
+                      On: Operator #FF5777 (coral), Condition #6790B8
+                      (steel-blue), Value white. Off: neutral white
+                      palette.
+                    </div>
+                  </div>
+                  <SegmentedTabs
+                    ariaLabel="Color tag pills"
+                    value={colorTagPills ? "on" : "off"}
+                    onChange={(v) => onToggleColorTagPills(v === "on")}
+                    options={[
+                      { value: "off", label: "Off" },
+                      { value: "on", label: "On" },
+                    ]}
+                  />
+                </div>
+              ) : null}
             </div>,
             document.body
           )

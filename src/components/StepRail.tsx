@@ -7,6 +7,9 @@ interface StepRailProps {
   activeId: string;
   completedIds: string[];
   onSelect?: (id: string) => void;
+  /** Which step is currently open — used to scope the config popover
+   *  down to the toggles that apply to the visible view. */
+  activeStep: string;
   swapButtons: boolean;
   onToggleSwapButtons: (v: boolean) => void;
   showLoneBracket: boolean;
@@ -32,6 +35,7 @@ export function StepRail({
   activeId,
   completedIds,
   onSelect,
+  activeStep,
   swapButtons,
   onToggleSwapButtons,
   showLoneBracket,
@@ -54,6 +58,7 @@ export function StepRail({
   return (
     <aside className="rail" aria-label="Wizard steps">
       <LogoMenu
+        activeStep={activeStep}
         swapButtons={swapButtons}
         onToggleSwapButtons={onToggleSwapButtons}
         showLoneBracket={showLoneBracket}
