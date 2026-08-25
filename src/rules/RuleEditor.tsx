@@ -139,10 +139,13 @@ function BlockView({
   const currentDepth = lastRowIdx >= 0 ? rowDepth(lastRowIdx) : 0;
   /* Every ancestor level up to (and including) currentDepth is
    * reachable, plus one level deeper — capped at MAX_DEPTH so
-   * nesting never runs past a legible indent. */
+   * nesting never runs past a legible indent. Rendered deepest-first
+   * so the CTA closest to the current chain continues at the same
+   * depth and each next row steps back one level. */
+  const maxCtaDepth = Math.min(currentDepth + 1, MAX_DEPTH);
   const connectorDepths = Array.from(
-    { length: Math.min(currentDepth + 1, MAX_DEPTH) + 1 },
-    (_, k) => k
+    { length: maxCtaDepth + 1 },
+    (_, k) => maxCtaDepth - k
   );
   return (
     <div className="rules-block">
