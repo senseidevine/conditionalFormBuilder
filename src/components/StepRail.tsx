@@ -28,6 +28,8 @@ interface StepRailProps {
   onToggleBareCblocks: (v: boolean) => void;
   colorTagPills: boolean;
   onToggleColorTagPills: (v: boolean) => void;
+  alwaysShowCtas: boolean;
+  onToggleAlwaysShowCtas: (v: boolean) => void;
 }
 
 export function StepRail({
@@ -54,6 +56,8 @@ export function StepRail({
   onToggleBareCblocks,
   colorTagPills,
   onToggleColorTagPills,
+  alwaysShowCtas,
+  onToggleAlwaysShowCtas,
 }: StepRailProps) {
   return (
     <aside className="rail" aria-label="Wizard steps">
@@ -77,6 +81,8 @@ export function StepRail({
         onToggleBareCblocks={onToggleBareCblocks}
         colorTagPills={colorTagPills}
         onToggleColorTagPills={onToggleColorTagPills}
+        alwaysShowCtas={alwaysShowCtas}
+        onToggleAlwaysShowCtas={onToggleAlwaysShowCtas}
       />
       <ul className="rail-list">
         {steps.map((s) => {

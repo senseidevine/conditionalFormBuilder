@@ -27,6 +27,7 @@ export default function App() {
   const [bracketDottedOr, setBracketDottedOr] = useState<boolean>(false);
   const [bareCblocks, setBareCblocks] = useState<boolean>(false);
   const [colorTagPills, setColorTagPills] = useState<boolean>(true);
+  const [alwaysShowCtas, setAlwaysShowCtas] = useState<boolean>(true);
 
   const activeTree = activeStep === "s2" ? treeS2 : treeS1;
   const setActiveTree = activeStep === "s2" ? setTreeS2 : setTreeS1;
@@ -77,6 +78,7 @@ export default function App() {
       data-bracket-dotted-or={bracketDottedOr}
       data-bare-cblocks={bareCblocks}
       data-color-tagpills={colorTagPills}
+      data-always-show-ctas={alwaysShowCtas}
     >
       <div className="page-glow" aria-hidden />
 
@@ -104,6 +106,8 @@ export default function App() {
         onToggleBareCblocks={setBareCblocks}
         colorTagPills={colorTagPills}
         onToggleColorTagPills={setColorTagPills}
+        alwaysShowCtas={alwaysShowCtas}
+        onToggleAlwaysShowCtas={setAlwaysShowCtas}
       />
 
       <main className="main">

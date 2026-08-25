@@ -247,6 +247,21 @@
   position: relative;
   display: inline-flex;
 }
+
+/* Optional hover reveal for the dedicated CTA rows (+Connector /
+ * +Subset and their ancestor siblings). When the "Always show CTAs"
+ * toggle is off, the rows fade in only while the block is hovered or
+ * focused so idle blocks stay compact. */
+.page[data-always-show-ctas="false"] .rules-block-row--cta {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 180ms var(--ease);
+}
+.page[data-always-show-ctas="false"] .rules-block:hover .rules-block-row--cta,
+.page[data-always-show-ctas="false"] .rules-block:focus-within .rules-block-row--cta {
+  opacity: 1;
+  pointer-events: auto;
+}
 .rules-add-inline {
   appearance: none;
   border: 1px dashed rgba(255, 255, 255, 0.32);
