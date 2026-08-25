@@ -186,27 +186,48 @@ function BlockView({
             </div>
           );
         })}
-        {/* Connector / Subset CTAs — side-by-side on one row indented
-         * to the current chain's depth so the +Connector pill lines
-         * up with the parent's left edge. */}
+        {/* Connector / Subset CTAs — the current-depth row carries
+         * +Connector (sibling at the current level) and +Subset (one
+         * level deeper, when the depth cap allows). Below it, one
+         * extra row per ancestor level offers a +Connector aligned to
+         * that parent's depth so users can add a sibling at any
+         * outer chain without losing the option to nest first. */}
         {isNextOperator ? (
-          <div
-            className="rules-block-row rules-block-row--cta"
-            style={{ paddingLeft: currentDepth * 40 }}
-          >
-            <PickerCta
-              label="Connector"
-              options={OPERATOR_OPTIONS}
-              onPick={(v) => onAddNext(v, currentDepth)}
-            />
-            {canSubset ? (
+          <>
+            <div
+              className="rules-block-row rules-block-row--cta"
+              style={{ paddingLeft: currentDepth * 40 }}
+            >
               <PickerCta
-                label="Subset"
+                label="Connector"
                 options={OPERATOR_OPTIONS}
-                onPick={(v) => onAddNext(v, currentDepth + 1)}
+                onPick={(v) => onAddNext(v, currentDepth)}
               />
-            ) : null}
-          </div>
+              {canSubset ? (
+                <PickerCta
+                  label="Subset"
+                  options={OPERATOR_OPTIONS}
+                  onPick={(v) => onAddNext(v, currentDepth + 1)}
+                />
+              ) : null}
+            </div>
+            {Array.from(
+              { length: currentDepth },
+              (_, k) => currentDepth - 1 - k
+            ).map((d) => (
+              <div
+                className="rules-block-row rules-block-row--cta"
+                style={{ paddingLeft: d * 40 }}
+                key={`parent-${d}`}
+              >
+                <PickerCta
+                  label="Connector"
+                  options={OPERATOR_OPTIONS}
+                  onPick={(v) => onAddNext(v, d)}
+                />
+              </div>
+            ))}
+          </>
         ) : null}
       </div>
       {canRemove ? (
