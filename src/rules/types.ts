@@ -13,10 +13,13 @@ export interface Tag {
 
 export interface RuleBlock {
   id: string;
+  /** Heading rendered above the block's rows — replaces the leading
+   *  `if` / `then` connector that used to sit as an inline tag. */
+  title: string;
   tags: Tag[];
 }
 
-export const OPERATOR_OPTIONS = ["and", "or", "not", "nor", "if", "then"];
+export const OPERATOR_OPTIONS = ["and", "or", "not", "nor"];
 export const CONDITION_OPTIONS = [
   "String",
   "Trade Sweep",
@@ -58,12 +61,12 @@ export function serializeValueList(values: string[]): string {
   return values.join(", ");
 }
 
-export function makeBlock(startOperator = "if"): RuleBlock {
-  /* Every block opens with a leading operator so the CTA can
-   * immediately prompt the user for the first condition. The first
-   * block on the page starts with `if`; subsequent blocks default to
-   * `and` since they chain onto the previous rule. */
-  return { id: uid(), tags: [makeTag("operator", startOperator)] };
+export function makeBlock(title = "if"): RuleBlock {
+  /* Every block still seeds with a leading operator so the row-of-4
+   * chunking stays intact, but the seed value is empty and hidden
+   * from the row inline — the block's `title` (if / then / …)
+   * replaces it as the block's heading. */
+  return { id: uid(), title, tags: [makeTag("operator", "", 0)] };
 }
 
 /** The block's sequence is fixed: after the initial `if`, tags cycle

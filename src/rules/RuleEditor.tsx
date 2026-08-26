@@ -90,7 +90,7 @@ export function RuleEditor({
   };
 
   const addBlock = () =>
-    setBlocks((bs) => [...bs, makeBlock(bs.length === 0 ? "if" : "and")]);
+    setBlocks((bs) => [...bs, makeBlock(bs.length === 0 ? "if" : "then")]);
 
   const removeBlock = (blockId: string) => {
     setBlocks((bs) =>
@@ -165,6 +165,7 @@ function BlockView({
   const canSubset = currentDepth < MAX_DEPTH;
   return (
     <div className="rules-block">
+      <div className="rules-block-title">{block.title}</div>
       <div className="rules-block-body">
         {rows.map((row, i) => {
           const isLast = i === lastRowIdx;
@@ -175,13 +176,18 @@ function BlockView({
            * handles that. */
           const canDeleteRow = i > 0 && row.length > 0;
           const rowStartIdx = i * 4;
+          /* The first row's leading Connector is the block's seed —
+           * we don't render it inline; the block's title above the
+           * rows takes its place. Subsequent rows still show their
+           * leading Connector as an inline pill. */
+          const renderedTags = i === 0 ? row.slice(1) : row;
           return (
             <div
               className="rules-block-row"
               style={{ paddingLeft: depth * 40 }}
               key={i}
             >
-              {row.map((t: Tag) => (
+              {renderedTags.map((t: Tag) => (
                 <TagPill
                   key={t.id}
                   tag={t}

@@ -24,6 +24,18 @@
   border-color: rgba(255, 255, 255, 0.1);
 }
 
+/* Block heading — `if` on the first block, `then` on subsequent
+ * ones. Replaces the leading `if`/`then` connector that used to sit
+ * inline at the start of the block's first row. */
+.rules-block-title {
+  color: var(--fg);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  text-transform: lowercase;
+}
+
 .rules-block-body {
   display: flex;
   flex-direction: column;
