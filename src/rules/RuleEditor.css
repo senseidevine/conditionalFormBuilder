@@ -300,6 +300,13 @@
   line-height: 1;
 }
 
+/* Icon-only pill — used for ancestor Connector CTAs when the row is
+ * collapsed to a single inline line. Drops the label text and pads
+ * evenly so the `+` sits centered. */
+.rules-add-inline.is-icon-only {
+  padding: 3px 8px;
+}
+
 /* Leading tree-marker bars on a +Connector pill. One vertical bar per
  * indent level so a row of Connector CTAs reads as a set of depth
  * choices — the leftmost is root, each next one steps in one level. */

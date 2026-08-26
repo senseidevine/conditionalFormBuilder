@@ -207,53 +207,41 @@ function BlockView({
             </div>
           );
         })}
-        {/* Connector / Subset CTAs — the current-depth row carries
-         * +Connector (sibling at the current level) and +Subset (one
-         * level deeper, when the depth cap allows). Below it, one
-         * extra row per ancestor level offers a +Connector aligned to
-         * that parent's depth so users can add a sibling at any
-         * outer chain without losing the option to nest first.
+        {/* Connector / Subset CTAs — all on ONE row now. Ancestor
+         * levels render as icon-only "+" pills; the current-depth
+         * pill carries the full "+ Connector" label; a final "+
+         * Subset" pill (when the depth cap allows) sits on the right
+         * for nesting one deeper. Order reads left-to-right root →
+         * current → subset.
          *
-         * When Always show CTAs is on the rows render even while a
-         * chain is still being built; clicking one pads the current
-         * partial row with empty tags first (see addNextTag) so the
-         * row-of-4 chunking stays intact. */}
+         * When Always show CTAs is on the row renders even while a
+         * chain is still being built; clicking any pill pads the
+         * partial row first (see addNextTag) so the row-of-4
+         * chunking stays intact. */}
         {isNextOperator || alwaysShowCtas ? (
-          <>
-            <div
-              className="rules-block-row rules-block-row--cta"
-              style={{ paddingLeft: currentDepth * 40 }}
-            >
+          <div className="rules-block-row rules-block-row--cta">
+            {Array.from({ length: currentDepth }, (_, d) => d).map((d) => (
               <PickerCta
+                key={`ancestor-${d}`}
                 label="Connector"
+                iconOnly
                 options={OPERATOR_OPTIONS}
-                onPick={(v) => onAddNext(v, currentDepth)}
+                onPick={(v) => onAddNext(v, d)}
               />
-              {canSubset ? (
-                <PickerCta
-                  label="Subset"
-                  options={OPERATOR_OPTIONS}
-                  onPick={(v) => onAddNext(v, currentDepth + 1)}
-                />
-              ) : null}
-            </div>
-            {Array.from(
-              { length: currentDepth },
-              (_, k) => currentDepth - 1 - k
-            ).map((d) => (
-              <div
-                className="rules-block-row rules-block-row--cta"
-                style={{ paddingLeft: d * 40 }}
-                key={`parent-${d}`}
-              >
-                <PickerCta
-                  label="Connector"
-                  options={OPERATOR_OPTIONS}
-                  onPick={(v) => onAddNext(v, d)}
-                />
-              </div>
             ))}
-          </>
+            <PickerCta
+              label="Connector"
+              options={OPERATOR_OPTIONS}
+              onPick={(v) => onAddNext(v, currentDepth)}
+            />
+            {canSubset ? (
+              <PickerCta
+                label="Subset"
+                options={OPERATOR_OPTIONS}
+                onPick={(v) => onAddNext(v, currentDepth + 1)}
+              />
+            ) : null}
+          </div>
         ) : null}
       </div>
       {canRemove ? (
@@ -291,17 +279,20 @@ function InlineAddCta({
 /** Small pick-only CTA — the pattern used for Connector, Field, and
  *  Operator. Dropdown lists the options; picking commits and closes.
  *  `indent` renders leading tree-marker bars before the `+` so a row
- *  of Connector pills reads as a set of depth choices. */
+ *  of Connector pills reads as a set of depth choices. `iconOnly`
+ *  drops the label text so the pill collapses to just a `+`. */
 function PickerCta({
   label,
   options,
   onPick,
   indent = 0,
+  iconOnly = false,
 }: {
   label: string;
   options: string[];
   onPick: (value: string) => void;
   indent?: number;
+  iconOnly?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -326,9 +317,10 @@ function PickerCta({
     <div className="rules-add-inline-wrap" ref={wrapRef}>
       <button
         type="button"
-        className="rules-add-inline"
+        className={`rules-add-inline ${iconOnly ? "is-icon-only" : ""}`}
         aria-haspopup="listbox"
         aria-expanded={open}
+        aria-label={iconOnly ? `Add ${label}` : undefined}
         onClick={() => setOpen((v) => !v)}
       >
         {indent > 0 ? (
@@ -339,7 +331,7 @@ function PickerCta({
           </span>
         ) : null}
         <span className="rules-add-inline-plus" aria-hidden>+</span>
-        <span>{label}</span>
+        {iconOnly ? null : <span>{label}</span>}
       </button>
       {open ? (
         <div className="rules-add-menu" role="listbox">
