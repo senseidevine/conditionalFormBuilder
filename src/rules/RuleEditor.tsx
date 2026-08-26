@@ -207,40 +207,18 @@ function BlockView({
             </div>
           );
         })}
-        {/* Connector / Subset CTAs.
+        {/* Connector / Subset CTAs — the current-depth row carries
+         * +Connector (sibling at the current level) and +Subset (one
+         * level deeper, when the depth cap allows). Below it, one
+         * extra row per ancestor level offers a +Connector aligned to
+         * that parent's depth so users can add a sibling at any
+         * outer chain without losing the option to nest first.
          *
-         * Always show CTAs OFF (default): the current-depth row
-         * carries +Connector and +Subset side-by-side, with one
-         * extra +Connector row per ancestor level below so users can
-         * still add a sibling at any outer chain.
-         *
-         * Always show CTAs ON: instead of that depth-dependent set,
-         * we always render a fixed rail of +Connector rows for every
-         * depth 0 through MAX_DEPTH (deepest first, root last) — the
-         * set doesn't shrink when the current chain moves up a level
-         * after a sibling / ancestor jump, so the buttons stay put.
-         * Clicking mid-chain pads the partial row with empty typed
-         * tags first (see addNextTag). */}
-        {alwaysShowCtas ? (
-          <>
-            {Array.from(
-              { length: MAX_DEPTH + 1 },
-              (_, k) => MAX_DEPTH - k
-            ).map((d) => (
-              <div
-                className="rules-block-row rules-block-row--cta"
-                style={{ paddingLeft: d * 40 }}
-                key={`always-${d}`}
-              >
-                <PickerCta
-                  label="Connector"
-                  options={OPERATOR_OPTIONS}
-                  onPick={(v) => onAddNext(v, d)}
-                />
-              </div>
-            ))}
-          </>
-        ) : isNextOperator ? (
+         * When Always show CTAs is on the rows render even while a
+         * chain is still being built; clicking one pads the current
+         * partial row with empty tags first (see addNextTag) so the
+         * row-of-4 chunking stays intact. */}
+        {isNextOperator || alwaysShowCtas ? (
           <>
             <div
               className="rules-block-row rules-block-row--cta"
