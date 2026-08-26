@@ -294,7 +294,7 @@
   outline-offset: 2px;
 }
 .rules-add-inline-plus {
-  color: var(--fg-mute);
+  color: rgba(255, 255, 255, 0.89);
   font-weight: 700;
   font-size: 13px;
   line-height: 1;
