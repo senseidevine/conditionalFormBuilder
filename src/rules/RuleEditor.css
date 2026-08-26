@@ -32,16 +32,46 @@
   min-height: 30px;
 }
 
-/* One line of the rule — up to four tags: Connector + Field +
- * Operator + Value. When that line fills, the CTA breaks to a new
- * .rules-block-row below so the next Connector starts on a fresh
- * visual line. */
+/* One line of the rule — Field + Operator + Value (the leading
+ * Connector no longer renders inline; it becomes a join separator
+ * above the row instead). */
 .rules-block-row {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 6px;
   min-height: 30px;
+}
+
+/* Join separator — a small row that sits between two conditions in
+ * the same subgroup and holds the connector chip (and / or / not /
+ * nor). Reads as "these two are joined by this operator", not as
+ * "this operator prefixes the row below it". */
+.rules-block-join {
+  display: flex;
+  align-items: center;
+  min-height: 22px;
+  padding: 2px 0;
+}
+
+/* NOT decoration — the small red chip on rows whose Connector value
+ * is `not` or `nor`, so negation scopes visibly to just the row it
+ * decorates rather than reading like it continues down the tree. */
+.rules-not-decor {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: rgba(255, 87, 119, 0.2);
+  color: #ff8fa2;
+  font-family: var(--font-sans);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  line-height: 1;
+  flex-shrink: 0;
 }
 
 .rules-empty {

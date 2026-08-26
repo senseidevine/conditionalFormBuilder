@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import type { RuleBlock, Tag, TagType } from "./types";
 import {
   CONDITION_OPTIONS,
@@ -169,42 +169,70 @@ function BlockView({
         {rows.map((row, i) => {
           const isLast = i === lastRowIdx;
           const depth = rowDepth(i);
-          /* Row-level delete drops the whole condition line at once.
-           * The first row holds the block's seed Connector and can't
-           * be removed on its own — the whole block's Remove control
-           * handles that. */
           const canDeleteRow = i > 0 && row.length > 0;
           const rowStartIdx = i * 4;
+          /* Leading Connector no longer renders inline at the start
+           * of the row; it either becomes a join separator above the
+           * row (when this row continues a subgroup at the same
+           * depth as its predecessor) or contributes only its NOT
+           * decoration when the value negates the row. */
+          const [connector, ...content] = row;
+          const prevDepth = i > 0 ? rowDepth(i - 1) : null;
+          const isFirstInSubgroup = i === 0 || depth !== prevDepth;
+          const cValue = (connector?.value ?? "").toLowerCase();
+          const negated = cValue === "not" || cValue === "nor";
           return (
-            <div
-              className="rules-block-row"
-              style={{ paddingLeft: depth * 40 }}
-              key={i}
-            >
-              {row.map((t: Tag) => (
-                <TagPill
-                  key={t.id}
-                  tag={t}
-                  onChange={(v) => onSetTagValue(t.id, v)}
-                />
-              ))}
-              {/* Non-operator CTAs sit inline at the end of the row
-               * still being filled so the condition reads left to
-               * right. Operator CTAs move to their own rows below. */}
-              {isLast && !isNextOperator ? (
-                <InlineAddCta tags={block.tags} onAdd={onAddNext} />
-              ) : null}
-              {canDeleteRow ? (
-                <button
-                  type="button"
-                  className="rules-row-remove"
-                  aria-label="Remove this condition"
-                  onClick={() => onRemoveRow(rowStartIdx, row.length)}
+            <React.Fragment key={i}>
+              {!isFirstInSubgroup && connector ? (
+                <div
+                  className="rules-block-join"
+                  style={{ paddingLeft: depth * 40 }}
                 >
-                  <IconTrash />
-                </button>
+                  <TagPill
+                    tag={connector}
+                    onChange={(v) => onSetTagValue(connector.id, v)}
+                  />
+                </div>
               ) : null}
-            </div>
+              <div
+                className="rules-block-row"
+                style={{ paddingLeft: depth * 40 }}
+              >
+                {negated ? (
+                  <span
+                    className="rules-not-decor"
+                    title="Row is negated"
+                    aria-label="NOT"
+                  >
+                    NOT
+                  </span>
+                ) : null}
+                {content.map((t: Tag) => (
+                  <TagPill
+                    key={t.id}
+                    tag={t}
+                    onChange={(v) => onSetTagValue(t.id, v)}
+                  />
+                ))}
+                {/* Non-operator CTAs sit inline at the end of the
+                 * row still being filled so the condition reads left
+                 * to right. Operator CTAs move to their own rows
+                 * below. */}
+                {isLast && !isNextOperator ? (
+                  <InlineAddCta tags={block.tags} onAdd={onAddNext} />
+                ) : null}
+                {canDeleteRow ? (
+                  <button
+                    type="button"
+                    className="rules-row-remove"
+                    aria-label="Remove this condition"
+                    onClick={() => onRemoveRow(rowStartIdx, row.length)}
+                  >
+                    <IconTrash />
+                  </button>
+                ) : null}
+              </div>
+            </React.Fragment>
           );
         })}
         {/* Connector / Subset CTAs — all on ONE row now. Ancestor
