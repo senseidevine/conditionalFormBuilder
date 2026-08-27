@@ -29,6 +29,8 @@ interface LogoMenuProps {
   onToggleColorTagPills: (v: boolean) => void;
   alwaysShowCtas: boolean;
   onToggleAlwaysShowCtas: (v: boolean) => void;
+  showAddBlock: boolean;
+  onToggleShowAddBlock: (v: boolean) => void;
 }
 
 type Anchor = { top: number; left: number };
@@ -58,6 +60,8 @@ export function LogoMenu({
   onToggleColorTagPills,
   alwaysShowCtas,
   onToggleAlwaysShowCtas,
+  showAddBlock,
+  onToggleShowAddBlock,
 }: LogoMenuProps) {
   const [open, setOpen] = useState(false);
   const [anchor, setAnchor] = useState<Anchor>({ top: 0, left: 0 });
@@ -313,6 +317,27 @@ export function LogoMenu({
                       ariaLabel="Always show CTAs"
                       value={alwaysShowCtas ? "on" : "off"}
                       onChange={(v) => onToggleAlwaysShowCtas(v === "on")}
+                      options={[
+                        { value: "off", label: "Off" },
+                        { value: "on", label: "On" },
+                      ]}
+                    />
+                  </div>
+
+                  <div className="logomenu-row">
+                    <div className="logomenu-row-text">
+                      <div className="logomenu-row-title">Show +Block</div>
+                      <div className="logomenu-row-desc">
+                        On: expose the +Block CTA between the `if`
+                        and `then` frames so users can add extra
+                        intermediate blocks. Off: hide it, keeping the
+                        rule to just the if / then pair.
+                      </div>
+                    </div>
+                    <SegmentedTabs
+                      ariaLabel="Show plus Block"
+                      value={showAddBlock ? "on" : "off"}
+                      onChange={(v) => onToggleShowAddBlock(v === "on")}
                       options={[
                         { value: "off", label: "Off" },
                         { value: "on", label: "On" },

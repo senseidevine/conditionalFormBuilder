@@ -24,11 +24,11 @@
   border-color: rgba(255, 255, 255, 0.1);
 }
 
-/* Block heading — `if` on the first block, `then` on subsequent
- * ones. Replaces the leading `if`/`then` connector that used to sit
+/* Block heading — `if` on the first block, `then` on the trailing
+ * block. Replaces the leading if/then connector that used to sit
  * inline at the start of the block's first row. */
 .rules-block-title {
-  color: var(--fg);
+  color: rgba(255, 255, 255, 0.6);
   font-family: var(--font-sans);
   font-size: 13px;
   font-weight: 700;
@@ -215,8 +215,8 @@
   color: #ff5777;
 }
 .page[data-color-tagpills="true"] .tagpill-wrap[data-type="condition"] .tagpill {
-  background: rgba(103, 144, 184, 0.2);
-  color: #6790b8;
+  background: rgba(82, 138, 193, 0.2);
+  color: #528ac1;
   font-weight: 500;
 }
 .page[data-color-tagpills="true"] .tagpill-wrap[data-type="value"] .tagpill {

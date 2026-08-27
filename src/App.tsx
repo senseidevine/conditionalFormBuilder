@@ -28,6 +28,7 @@ export default function App() {
   const [bareCblocks, setBareCblocks] = useState<boolean>(false);
   const [colorTagPills, setColorTagPills] = useState<boolean>(true);
   const [alwaysShowCtas, setAlwaysShowCtas] = useState<boolean>(false);
+  const [showAddBlock, setShowAddBlock] = useState<boolean>(false);
 
   const activeTree = activeStep === "s2" ? treeS2 : treeS1;
   const setActiveTree = activeStep === "s2" ? setTreeS2 : setTreeS1;
@@ -108,6 +109,8 @@ export default function App() {
         onToggleColorTagPills={setColorTagPills}
         alwaysShowCtas={alwaysShowCtas}
         onToggleAlwaysShowCtas={setAlwaysShowCtas}
+        showAddBlock={showAddBlock}
+        onToggleShowAddBlock={setShowAddBlock}
       />
 
       <main className="main">
@@ -119,7 +122,10 @@ export default function App() {
 
           <div className="content">
             {activeStep === "s3" ? (
-              <RuleEditor alwaysShowCtas={alwaysShowCtas} />
+              <RuleEditor
+                alwaysShowCtas={alwaysShowCtas}
+                showAddBlock={showAddBlock}
+              />
             ) : (
               <Group
                 group={activeTree}

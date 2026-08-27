@@ -17,8 +17,10 @@ import "./RuleEditor.css";
 
 export function RuleEditor({
   alwaysShowCtas,
+  showAddBlock,
 }: {
   alwaysShowCtas: boolean;
+  showAddBlock: boolean;
 }) {
   /* The editor is always framed by two fixed blocks — `if` at the top
    * and `then` at the bottom. +Block inserts a new untitled block
@@ -136,10 +138,12 @@ export function RuleEditor({
   return (
     <div className="rules">
       {leading.map(renderBlock)}
-      <button type="button" className="rules-add-block" onClick={addBlock}>
-        <span className="rules-add-block-icon" aria-hidden>+</span>
-        <span>Block</span>
-      </button>
+      {showAddBlock ? (
+        <button type="button" className="rules-add-block" onClick={addBlock}>
+          <span className="rules-add-block-icon" aria-hidden>+</span>
+          <span>Block</span>
+        </button>
+      ) : null}
       {renderBlock(trailing)}
     </div>
   );
