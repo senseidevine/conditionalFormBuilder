@@ -215,8 +215,8 @@
   color: #ff5777;
 }
 .page[data-color-tagpills="true"] .tagpill-wrap[data-type="condition"] .tagpill {
-  background: rgba(82, 138, 193, 0.2);
-  color: #528ac1;
+  background: rgba(103, 144, 184, 0.2);
+  color: #6790b8;
   font-weight: 500;
 }
 .page[data-color-tagpills="true"] .tagpill-wrap[data-type="value"] .tagpill {
