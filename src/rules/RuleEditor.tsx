@@ -251,10 +251,12 @@ function BlockView({
          * current → subset.
          *
          * When Always show CTAs is on the row renders even while a
-         * chain is still being built; clicking any pill pads the
-         * partial row first (see addNextTag) so the row-of-4
-         * chunking stays intact. */}
-        {isNextOperator || alwaysShowCtas ? (
+         * later chain is still being built; the initial condition
+         * (Field + Operator + Value) still has to be completed once
+         * — the CTAs only appear once the first row hits four tags.
+         * Clicking a pill mid-chain pads the partial row first (see
+         * addNextTag). */}
+        {isNextOperator || (alwaysShowCtas && block.tags.length >= 4) ? (
           <div className="rules-block-row rules-block-row--cta">
             {Array.from({ length: currentDepth }, (_, d) => d).map((d) => (
               <PickerCta
