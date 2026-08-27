@@ -31,7 +31,20 @@ export const CONDITION_OPTIONS = [
   "COLLATERAL",
   "Exactly",
 ];
-export const CONDITIONAL_OPTIONS = ["Is", "Is not", "In", "Not in", "Not"];
+export const CONDITIONAL_OPTIONS = [
+  "is",
+  "is not",
+  "in",
+  "not in",
+  "not",
+  ">",
+  ">=",
+  "<",
+  "<=",
+  "between",
+  "with",
+  "contains",
+];
 /** Suggestions shown for Value tags — the input itself is freeform so
  *  the user can type any custom value, but these seed the dropdown. */
 export const VALUE_SUGGESTIONS = [
