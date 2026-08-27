@@ -13,9 +13,11 @@ export interface Tag {
 
 export interface RuleBlock {
   id: string;
-  /** Heading rendered above the block's rows — replaces the leading
-   *  `if` / `then` connector that used to sit as an inline tag. */
-  title: string;
+  /** Optional heading rendered above the block's rows — used for the
+   *  fixed `if` and `then` blocks. Untitled blocks (added via
+   *  +Block) skip the heading and show their leading Connector as an
+   *  inline `and` pill instead. */
+  title?: string;
   tags: Tag[];
 }
 
@@ -61,12 +63,21 @@ export function serializeValueList(values: string[]): string {
   return values.join(", ");
 }
 
-export function makeBlock(title = "if"): RuleBlock {
-  /* Every block still seeds with a leading operator so the row-of-4
-   * chunking stays intact, but the seed value is empty and hidden
-   * from the row inline — the block's `title` (if / then / …)
-   * replaces it as the block's heading. */
-  return { id: uid(), title, tags: [makeTag("operator", "", 0)] };
+export function makeBlock(
+  opts: { title?: string; seedValue?: string } = {}
+): RuleBlock {
+  /* Every block seeds with a leading operator so the row-of-4
+   * chunking stays intact. Titled blocks (if / then) hide their
+   * seed inline and lift the label into a heading; untitled blocks
+   * (added via +Block) show it as a normal Connector pill with the
+   * `seedValue` (usually "and") already picked. */
+  const { title, seedValue = "" } = opts;
+  const block: RuleBlock = {
+    id: uid(),
+    tags: [makeTag("operator", seedValue, 0)],
+  };
+  if (title !== undefined) block.title = title;
+  return block;
 }
 
 /** The block's sequence is fixed: after the initial `if`, tags cycle

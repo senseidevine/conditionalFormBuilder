@@ -20,7 +20,14 @@ export function RuleEditor({
 }: {
   alwaysShowCtas: boolean;
 }) {
-  const [blocks, setBlocks] = useState<RuleBlock[]>(() => [makeBlock()]);
+  /* The editor is always framed by two fixed blocks — `if` at the top
+   * and `then` at the bottom. +Block inserts a new untitled block
+   * between them; the untitled ones open with an inline `and`
+   * Connector pill instead of a heading. */
+  const [blocks, setBlocks] = useState<RuleBlock[]>(() => [
+    makeBlock({ title: "if" }),
+    makeBlock({ title: "then" }),
+  ]);
 
   const addNextTag = (
     blockId: string,
@@ -90,34 +97,50 @@ export function RuleEditor({
   };
 
   const addBlock = () =>
-    setBlocks((bs) => [...bs, makeBlock(bs.length === 0 ? "if" : "then")]);
+    setBlocks((bs) => {
+      /* Splice a new untitled `and` block in just before the trailing
+       * `then` block so the two headings stay pinned at top and
+       * bottom. */
+      const untitled = makeBlock({ seedValue: "and" });
+      return [...bs.slice(0, -1), untitled, bs[bs.length - 1]];
+    });
 
   const removeBlock = (blockId: string) => {
-    setBlocks((bs) =>
-      bs.length > 1 ? bs.filter((b) => b.id !== blockId) : bs
-    );
+    setBlocks((bs) => {
+      /* The `if` and `then` blocks are permanent frame; only the
+       * user-added untitled blocks in between can be removed. */
+      return bs.filter((b) => b.id !== blockId || b.title !== undefined);
+    });
   };
 
+  /* The trailing `then` block always sits UNDER the +Block CTA; each
+   * of the leading blocks (the `if` heading and any user-added
+   * untitled blocks) render above the CTA. Untitled blocks are the
+   * only ones that can be removed on their own. */
+  const trailing = blocks[blocks.length - 1];
+  const leading = blocks.slice(0, -1);
+  const renderBlock = (block: RuleBlock) => (
+    <BlockView
+      key={block.id}
+      block={block}
+      canRemove={block.title === undefined}
+      alwaysShowCtas={alwaysShowCtas}
+      onAddNext={(v, atDepth) => addNextTag(block.id, v, atDepth)}
+      onSetTagValue={(tagId, v) => setTagValue(block.id, tagId, v)}
+      onRemoveRow={(startIdx, count) =>
+        removeRow(block.id, startIdx, count)
+      }
+      onRemoveBlock={() => removeBlock(block.id)}
+    />
+  );
   return (
     <div className="rules">
-      {blocks.map((block) => (
-        <BlockView
-          key={block.id}
-          block={block}
-          canRemove={blocks.length > 1}
-          alwaysShowCtas={alwaysShowCtas}
-          onAddNext={(v, atDepth) => addNextTag(block.id, v, atDepth)}
-          onSetTagValue={(tagId, v) => setTagValue(block.id, tagId, v)}
-          onRemoveRow={(startIdx, count) =>
-            removeRow(block.id, startIdx, count)
-          }
-          onRemoveBlock={() => removeBlock(block.id)}
-        />
-      ))}
+      {leading.map(renderBlock)}
       <button type="button" className="rules-add-block" onClick={addBlock}>
         <span className="rules-add-block-icon" aria-hidden>+</span>
         <span>Block</span>
       </button>
+      {renderBlock(trailing)}
     </div>
   );
 }
@@ -165,7 +188,9 @@ function BlockView({
   const canSubset = currentDepth < MAX_DEPTH;
   return (
     <div className="rules-block">
-      <div className="rules-block-title">{block.title}</div>
+      {block.title ? (
+        <div className="rules-block-title">{block.title}</div>
+      ) : null}
       <div className="rules-block-body">
         {rows.map((row, i) => {
           const isLast = i === lastRowIdx;
@@ -176,11 +201,12 @@ function BlockView({
            * handles that. */
           const canDeleteRow = i > 0 && row.length > 0;
           const rowStartIdx = i * 4;
-          /* The first row's leading Connector is the block's seed —
-           * we don't render it inline; the block's title above the
-           * rows takes its place. Subsequent rows still show their
-           * leading Connector as an inline pill. */
-          const renderedTags = i === 0 ? row.slice(1) : row;
+          /* Titled blocks (`if` / `then`) hide the first row's
+           * leading Connector — the heading above the rows already
+           * fills that slot. Untitled blocks show it inline as an
+           * `and` pill on the first row. */
+          const renderedTags =
+            i === 0 && block.title !== undefined ? row.slice(1) : row;
           return (
             <div
               className="rules-block-row"
