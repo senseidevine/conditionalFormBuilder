@@ -1,9 +1,4 @@
-export type TagType =
-  | "operator"
-  | "scope"
-  | "condition"
-  | "conditional"
-  | "value";
+export type TagType = "operator" | "condition" | "conditional" | "value";
 
 export interface Tag {
   id: string;
@@ -27,7 +22,6 @@ export interface RuleBlock {
 }
 
 export const OPERATOR_OPTIONS = ["and", "or", "not", "nor"];
-export const SCOPE_OPTIONS = ["Side", "Opposite"];
 export const CONDITION_OPTIONS = [
   "String",
   "Trade Sweep",
@@ -86,18 +80,17 @@ export function makeBlock(
   return block;
 }
 
-/** The block's sequence is now Connector -> Scope -> Field ->
- *  Operator -> Value -> Connector -> ... — Scope lets each
- *  condition target the current side, the opposite side, or a
- *  future scope (`Side · TradeType is X`). Given the current tag
- *  count, this returns the type the next CTA should add. */
+/** The block's sequence is fixed: after the initial `if`, tags cycle
+ *  Condition -> Conditional -> Value -> Operator -> ... so the editor
+ *  can hand-hold a rule like `if Transaction type is UUID and Amount
+ *  is 100`. Given the current tag count, this returns the type the
+ *  next CTA should add. */
 export function nextTagType(count: number): TagType {
   if (count === 0) return "operator";
-  const offset = (count - 1) % 5;
-  if (offset === 0) return "scope";
-  if (offset === 1) return "condition";
-  if (offset === 2) return "conditional";
-  if (offset === 3) return "value";
+  const offset = (count - 1) % 4;
+  if (offset === 0) return "condition";
+  if (offset === 1) return "conditional";
+  if (offset === 2) return "value";
   return "operator";
 }
 
@@ -108,7 +101,6 @@ export function nextTagType(count: number): TagType {
 export function nextCtaLabel(tags: Tag[]): string {
   const next = nextTagType(tags.length);
   if (next === "operator") return "Connector";
-  if (next === "scope") return "Scope";
   if (next === "conditional") return "Operator";
   if (next === "condition") return "Field";
   return "Value";

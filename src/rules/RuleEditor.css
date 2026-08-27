@@ -193,10 +193,6 @@
   background: rgba(103, 144, 184, 0.2);
   color: #6790b8;
 }
-.tagpill-wrap[data-type="scope"] .tagpill {
-  background: rgba(255, 191, 105, 0.18);
-  color: #ffbf69;
-}
 .tagpill-wrap[data-type="condition"] .tagpill {
   background: rgba(255, 255, 255, 0.14);
   color: rgba(255, 255, 255, 0.85);

@@ -4,7 +4,6 @@ import {
   CONDITION_OPTIONS,
   CONDITIONAL_OPTIONS,
   OPERATOR_OPTIONS,
-  SCOPE_OPTIONS,
   VALUE_SUGGESTIONS,
   makeBlock,
   makeTag,
@@ -45,19 +44,18 @@ export function RuleEditor({
        * +Subset CTA. That may fire while the current row is only
        * half-built, so pad the partial row up to a Connector
        * boundary with empty typed tags before appending the new
-       * Connector — keeps the row-of-5 chunking invariant intact. */
+       * Connector — keeps the row-of-4 chunking invariant intact. */
       if (atDepth !== undefined) {
         const padTypesByPosition: TagType[] = [
-          "scope",
           "condition",
           "conditional",
           "value",
         ];
         const padded = [...target.tags];
-        let remainder = padded.length % 5;
+        let remainder = padded.length % 4;
         while (remainder !== 0) {
           padded.push(makeTag(padTypesByPosition[remainder - 1], ""));
-          remainder = padded.length % 5;
+          remainder = padded.length % 4;
         }
         padded.push(makeTag("operator", value, atDepth));
         return bs.map((b) =>
@@ -170,12 +168,11 @@ function BlockView({
   onRemoveRow: (startIdx: number, count: number) => void;
   onRemoveBlock: () => void;
 }) {
-  /* Chunk the tags into rows of five — Connector + Scope + Field +
-   * Operator + Value forms one complete condition (Scope targets the
-   * current side, opposite side, etc.). */
+  /* Chunk the tags into rows of four — Connector + Field + Operator +
+   * Value forms one complete condition. */
   const rows: Tag[][] = [];
-  for (let i = 0; i < block.tags.length; i += 5) {
-    rows.push(block.tags.slice(i, i + 5));
+  for (let i = 0; i < block.tags.length; i += 4) {
+    rows.push(block.tags.slice(i, i + 4));
   }
   /* Depth-lookup for row indent — a row's leading Connector holds
    * its depth. */
@@ -207,7 +204,7 @@ function BlockView({
            * be removed on its own — the whole block's Remove control
            * handles that. */
           const canDeleteRow = i > 0 && row.length > 0;
-          const rowStartIdx = i * 5;
+          const rowStartIdx = i * 4;
           /* Titled blocks (`if` / `then`) hide the first row's
            * leading Connector — the heading above the rows already
            * fills that slot. Untitled blocks show it inline as an
@@ -413,11 +410,7 @@ function FullCta({
 
   if (!isValue) {
     const options =
-      type === "scope"
-        ? SCOPE_OPTIONS
-        : type === "condition"
-        ? CONDITION_OPTIONS
-        : CONDITIONAL_OPTIONS;
+      type === "condition" ? CONDITION_OPTIONS : CONDITIONAL_OPTIONS;
     return <PickerCta label={label} options={options} onPick={onAdd} />;
   }
 

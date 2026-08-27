@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import type { Tag } from "./types";
 import {
   OPERATOR_OPTIONS,
-  SCOPE_OPTIONS,
   CONDITION_OPTIONS,
   CONDITIONAL_OPTIONS,
   VALUE_SUGGESTIONS,
@@ -20,7 +19,6 @@ interface TagPillProps {
  * type names — see nextCtaLabel in types.ts for the mapping. */
 const TYPE_LABEL: Record<Tag["type"], string> = {
   operator: "Connector",
-  scope: "Scope",
   condition: "Field",
   conditional: "Operator",
   value: "Value",
@@ -57,8 +55,6 @@ export function TagPill({ tag, autoOpen, onChange }: TagPillProps) {
   const options =
     tag.type === "operator"
       ? OPERATOR_OPTIONS
-      : tag.type === "scope"
-      ? SCOPE_OPTIONS
       : tag.type === "condition"
       ? CONDITION_OPTIONS
       : tag.type === "conditional"
