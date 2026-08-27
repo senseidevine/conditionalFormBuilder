@@ -187,17 +187,17 @@
   transform-origin: left center;
 }
 
-/* Fade + slight scale-in when a new tag pill mounts — plays once on
+/* New tag pills slide up from below as they mount — plays once on
  * first paint (React keeps mounted pills stable via their `id` key,
  * so re-renders don't retrigger it). */
 @keyframes tagpill-in {
   from {
     opacity: 0;
-    transform: scale(0.85) translateY(2px);
+    transform: translateY(12px);
   }
   to {
     opacity: 1;
-    transform: scale(1) translateY(0);
+    transform: translateY(0);
   }
 }
 
