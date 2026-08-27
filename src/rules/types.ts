@@ -36,7 +36,6 @@ export const CONDITIONAL_OPTIONS = [
   "is not",
   "in",
   "not in",
-  "not",
   ">",
   ">=",
   "<",
