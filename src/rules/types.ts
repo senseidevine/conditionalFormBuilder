@@ -21,7 +21,7 @@ export interface RuleBlock {
   tags: Tag[];
 }
 
-export const OPERATOR_OPTIONS = ["and", "or", "not", "nor"];
+export const OPERATOR_OPTIONS = ["and", "or"];
 export const CONDITION_OPTIONS = [
   "String",
   "Trade Sweep",
