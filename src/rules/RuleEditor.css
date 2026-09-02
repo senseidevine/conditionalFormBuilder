@@ -63,7 +63,10 @@
   align-items: center;
   justify-content: flex-start;
 }
-.rules-subgroup-bracket::before {
+/* Bracket column is always reserved so a second sibling doesn't jump
+ * the layout, but the L-shaped line and its hover state only paint
+ * on multi-row subgroups. */
+.rules-subgroup.is-multi > .rules-subgroup-bracket::before {
   content: "";
   position: absolute;
   top: 8px;
@@ -76,7 +79,7 @@
   border-bottom-left-radius: 16px;
   transition: border-color 700ms var(--ease);
 }
-.rules-subgroup-bracket:hover::before {
+.rules-subgroup.is-multi > .rules-subgroup-bracket:hover::before {
   border-color: rgba(255, 255, 255, 0.4);
   transition: border-color 400ms var(--ease);
 }
