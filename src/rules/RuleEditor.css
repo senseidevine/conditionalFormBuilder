@@ -44,6 +44,84 @@
   min-height: 30px;
 }
 
+/* --- Subgroup bracket (multi-row groups) -------------------------
+ * Contiguous rows at the same depth collapse into a subgroup that
+ * mirrors Build v1's tree bracket: a left column holds the bracket
+ * line + a shared AND/OR badge, and the rows sit in a right column.
+ * The badge represents the operator that joins every row in the
+ * subgroup (clicking it flips all of the subgroup's connector tags
+ * at once). */
+.rules-subgroup {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+}
+.rules-subgroup-bracket {
+  position: relative;
+  flex: 0 0 40px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+.rules-subgroup-bracket::before {
+  content: "";
+  position: absolute;
+  top: 8px;
+  bottom: 8px;
+  left: 15px;
+  width: 14px;
+  border: 1.5px solid rgba(255, 255, 255, 0.16);
+  border-right: 0;
+  border-top-left-radius: 16px;
+  border-bottom-left-radius: 16px;
+  transition: border-color 700ms var(--ease);
+}
+.rules-subgroup-bracket:hover::before {
+  border-color: rgba(255, 255, 255, 0.4);
+  transition: border-color 400ms var(--ease);
+}
+.rules-subgroup-badge {
+  appearance: none;
+  border: 0;
+  background: #ffffff;
+  color: #0a0b0e;
+  width: 32px;
+  height: 22px;
+  padding: 0;
+  border-radius: 9999px;
+  font: inherit;
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: -0.6px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.28);
+  position: relative;
+  z-index: 1;
+  transition: background var(--dur-1) var(--ease),
+    transform var(--dur-spring) var(--spring);
+}
+.rules-subgroup-badge:hover { background: #f2f2f4; }
+.rules-subgroup-badge:active {
+  background: #e8e8ea;
+  transform: scale(0.9);
+  transition: background 60ms linear, transform 60ms ease-out;
+}
+.rules-subgroup-badge:focus-visible {
+  outline: 2px solid var(--accent-focus);
+  outline-offset: 2px;
+}
+.rules-subgroup-rows {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
 /* One line of the rule — up to four tags: Connector + Field +
  * Operator + Value. When that line fills, the CTA breaks to a new
  * .rules-block-row below so the next Connector starts on a fresh
