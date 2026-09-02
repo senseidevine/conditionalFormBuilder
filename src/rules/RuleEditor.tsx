@@ -5,7 +5,6 @@ import {
   CONDITIONAL_OPTIONS,
   OPERATOR_OPTIONS,
   VALUE_SUGGESTIONS,
-  blockToPreview,
   makeBlock,
   makeTag,
   nextCtaLabel,
@@ -282,12 +281,6 @@ function BlockView({
             ) : null}
           </div>
         ) : null}
-      </div>
-      {/* Linear-reading preview — flattens the tree into a
-       * parenthesized expression so the reader has an unambiguous
-       * check that indentation matches boolean intent. */}
-      <div className="rules-block-preview" aria-live="polite">
-        {blockToPreview(block)}
       </div>
       {canRemove ? (
         <div className="rules-block-actions">
