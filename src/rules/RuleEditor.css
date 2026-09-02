@@ -49,11 +49,28 @@
  * .rules-block-row below so the next Connector starts on a fresh
  * visual line. */
 .rules-block-row {
+  position: relative;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 6px;
   min-height: 30px;
+}
+
+/* Subset guideline — a thin vertical bar sitting in the indent
+ * gutter of a nested row. One per ancestor level (the JSX stamps
+ * out N of these for a row at depth N); contiguous rows at the
+ * same depth naturally share a continuous line because each row's
+ * guide sits at the same x offset. Anchors the subset visually so
+ * the reader can trace it back to the connector chip that opened
+ * it. */
+.rules-row-guide {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: rgba(255, 255, 255, 0.18);
+  pointer-events: none;
 }
 
 .rules-empty {
