@@ -217,19 +217,6 @@ function BlockView({
               style={{ paddingLeft: depth * 40 }}
               key={i}
             >
-              {/* Subset guideline(s) — one thin vertical bar per
-               * ancestor level, positioned in the row's indent
-               * gutter. Contiguous rows at the same subset depth
-               * naturally share a continuous line since each row's
-               * guide sits at the same x offset. */}
-              {Array.from({ length: depth }, (_, k) => (
-                <span
-                  key={`guide-${k}`}
-                  className="rules-row-guide"
-                  aria-hidden
-                  style={{ left: k * 40 + 20 }}
-                />
-              ))}
               {renderedTags.map((t: Tag) => (
                 <TagPill
                   key={t.id}
