@@ -63,6 +63,20 @@
   font-family: var(--font-sans);
 }
 
+/* Linear-reading preview under each block — flattens the tree into
+ * a parenthesized expression (e.g. `if (A and B and (C or D))`) so
+ * the reader can sanity-check the indentation-vs-boolean scope
+ * against a plain-text expression. */
+.rules-block-preview {
+  color: rgba(255, 255, 255, 0.5);
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 12px;
+  line-height: 1.4;
+  padding-top: 4px;
+  border-top: 1px dashed rgba(255, 255, 255, 0.06);
+  word-break: break-word;
+}
+
 /* Bottom action row — add-tag pills + optional remove-group button. */
 .rules-block-actions {
   display: flex;
