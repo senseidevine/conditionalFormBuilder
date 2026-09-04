@@ -190,122 +190,56 @@ function BlockView({
    * currentDepth + 1. The whole row is indented to the current depth
    * so +Connector lines up with the parent chain's left edge. */
   const canSubset = currentDepth < MAX_DEPTH;
-
-  /* Chunk rows into subgroups: maximal contiguous runs at the same
-   * depth. Multi-row subgroups render with a bracket + shared AND/OR
-   * badge (like the tree builder in Build v1); single-row subgroups
-   * keep the inline layout. */
-  const subgroups: { start: number; end: number; depth: number }[] = [];
-  {
-    let i = 0;
-    while (i < rows.length) {
-      const d = rowDepth(i);
-      let j = i;
-      while (j + 1 < rows.length && rowDepth(j + 1) === d) j += 1;
-      subgroups.push({ start: i, end: j, depth: d });
-      i = j + 1;
-    }
-  }
-
-  const renderRow = (
-    row: Tag[],
-    rowIdx: number,
-    depth: number,
-    hideLeadingConnector: boolean
-  ) => {
-    const isLast = rowIdx === lastRowIdx;
-    const canDeleteRow = rowIdx > 0 && row.length > 0;
-    const rowStartIdx = rowIdx * 4;
-    const renderedTags = hideLeadingConnector ? row.slice(1) : row;
-    return (
-      <div
-        className="rules-block-row"
-        style={{ paddingLeft: depth * 40 }}
-        key={rowIdx}
-      >
-        {renderedTags.map((t: Tag) => (
-          <TagPill
-            key={t.id}
-            tag={t}
-            onChange={(v) => onSetTagValue(t.id, v)}
-          />
-        ))}
-        {isLast && !isNextOperator ? (
-          <InlineAddCta tags={block.tags} onAdd={onAddNext} />
-        ) : null}
-        {canDeleteRow ? (
-          <button
-            type="button"
-            className="rules-row-remove"
-            aria-label="Remove this condition"
-            onClick={() => onRemoveRow(rowStartIdx, row.length)}
-          >
-            <IconTrash />
-          </button>
-        ) : null}
-      </div>
-    );
-  };
-
   return (
     <div className="rules-block">
       {block.title ? (
         <div className="rules-block-title">{block.title}</div>
       ) : null}
       <div className="rules-block-body">
-        {subgroups.map((sg, sgIdx) => {
-          const sgRows = rows.slice(sg.start, sg.end + 1);
-          const isMulti = sgRows.length > 1;
-
-          if (!isMulti) {
-            const row = sgRows[0];
-            /* Titled block's first row hides its seed Connector so
-             * the heading above can act as the row's leader. */
-            const hideConn = sg.start === 0 && block.title !== undefined;
-            return renderRow(row, sg.start, sg.depth, hideConn);
-          }
-
-          /* Multi-row subgroup — render a bracket to the left with a
-           * shared AND/OR badge. The badge's value comes from the
-           * subgroup's Connectors (assumed to share an operator);
-           * clicking it flips them all together so the subgroup
-           * behaves like Build v1's group. */
-          const sharedOp = (
-            sgRows[1][0]?.value ||
-            sgRows[0][0]?.value ||
-            "and"
-          ).toLowerCase();
-          const cycleOp = () => {
-            const nextOp = sharedOp === "and" ? "or" : "and";
-            for (const row of sgRows) {
-              const conn = row[0];
-              if (conn) onSetTagValue(conn.id, nextOp);
-            }
-          };
+        {rows.map((row, i) => {
+          const isLast = i === lastRowIdx;
+          const depth = rowDepth(i);
+          /* Row-level delete drops the whole condition line at once.
+           * The first row holds the block's seed Connector and can't
+           * be removed on its own — the whole block's Remove control
+           * handles that. */
+          const canDeleteRow = i > 0 && row.length > 0;
+          const rowStartIdx = i * 4;
+          /* Titled blocks (`if` / `then`) hide the first row's
+           * leading Connector — the heading above the rows already
+           * fills that slot. Untitled blocks show it inline as an
+           * `and` pill on the first row. */
+          const renderedTags =
+            i === 0 && block.title !== undefined ? row.slice(1) : row;
           return (
             <div
-              className="rules-subgroup"
-              style={{ paddingLeft: sg.depth * 40 }}
-              key={`sg-${sgIdx}`}
+              className="rules-block-row"
+              style={{ paddingLeft: depth * 40 }}
+              key={i}
             >
-              <div className="rules-subgroup-bracket">
+              {renderedTags.map((t: Tag) => (
+                <TagPill
+                  key={t.id}
+                  tag={t}
+                  onChange={(v) => onSetTagValue(t.id, v)}
+                />
+              ))}
+              {/* Non-operator CTAs sit inline at the end of the row
+               * still being filled so the condition reads left to
+               * right. Operator CTAs move to their own rows below. */}
+              {isLast && !isNextOperator ? (
+                <InlineAddCta tags={block.tags} onAdd={onAddNext} />
+              ) : null}
+              {canDeleteRow ? (
                 <button
                   type="button"
-                  className="rules-subgroup-badge"
-                  data-op={sharedOp}
-                  aria-label={`Toggle subgroup operator, currently ${sharedOp}`}
-                  onClick={cycleOp}
+                  className="rules-row-remove"
+                  aria-label="Remove this condition"
+                  onClick={() => onRemoveRow(rowStartIdx, row.length)}
                 >
-                  {sharedOp.toUpperCase()}
+                  <IconTrash />
                 </button>
-              </div>
-              <div className="rules-subgroup-rows">
-                {sgRows.map((row, k) =>
-                  /* Every row's leading Connector is folded into the
-                   * shared badge, so hide it inline. */
-                  renderRow(row, sg.start + k, 0, true)
-                )}
-              </div>
+              ) : null}
             </div>
           );
         })}
