@@ -3,6 +3,7 @@ import type { RuleBlock, Tag, TagType } from "./types";
 import {
   CONDITION_OPTIONS,
   CONDITIONAL_OPTIONS,
+  OPERATOR_OPTIONS,
   VALUE_SUGGESTIONS,
   makeBlock,
   makeTag,
@@ -270,21 +271,24 @@ function BlockView({
         {isNextOperator ? (
           <div className="rules-block-row rules-block-row--cta">
             {Array.from({ length: currentDepth }, (_, d) => d).map((d) => (
-              <AutoAddButton
+              <PickerCta
                 key={`ancestor-${d}`}
                 label="Connector"
                 iconOnly
-                onClick={() => onAddNext("and", d)}
+                options={OPERATOR_OPTIONS}
+                onPick={(v) => onAddNext(v, d)}
               />
             ))}
-            <AutoAddButton
+            <PickerCta
               label="Connector"
-              onClick={() => onAddNext("and", currentDepth)}
+              options={OPERATOR_OPTIONS}
+              onPick={(v) => onAddNext(v, currentDepth)}
             />
             {canSubset ? (
-              <AutoAddButton
+              <PickerCta
                 label="Subset"
-                onClick={() => onAddNext("and", currentDepth + 1)}
+                options={OPERATOR_OPTIONS}
+                onPick={(v) => onAddNext(v, currentDepth + 1)}
               />
             ) : null}
           </div>
@@ -302,35 +306,6 @@ function BlockView({
           </button>
         </div>
       ) : null}
-    </div>
-  );
-}
-
-/** Auto-commit +Connector / +Subset pill: fires onClick directly
- *  instead of opening an and/or picker. Adding a sibling seeds it
- *  with `and` so the user's next interaction is picking a Field
- *  rather than choosing between and/or. `iconOnly` collapses the
- *  pill to just a `+` for ancestor-level shortcuts. */
-function AutoAddButton({
-  label,
-  onClick,
-  iconOnly = false,
-}: {
-  label: string;
-  onClick: () => void;
-  iconOnly?: boolean;
-}) {
-  return (
-    <div className="rules-add-inline-wrap">
-      <button
-        type="button"
-        className={`rules-add-inline ${iconOnly ? "is-icon-only" : ""}`}
-        aria-label={iconOnly ? `Add ${label}` : undefined}
-        onClick={onClick}
-      >
-        <span className="rules-add-inline-plus" aria-hidden>+</span>
-        {iconOnly ? null : <span>{label}</span>}
-      </button>
     </div>
   );
 }
