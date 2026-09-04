@@ -290,25 +290,25 @@ function BlockView({
       ) : null}
       <div className="rules-block-body">
         {tree}
-        {/* Connector / Subset CTAs — auto-commit `and` on click.
-         * Ancestor levels render as icon-only "+" pills; the current-
-         * depth pill carries the full "+ Connector" label; a final
-         * "+ Subset" pill (when the depth cap allows) sits on the
-         * right for nesting one deeper. Users flip a subgroup's
-         * shared operator via its badge later, so the CTA doesn't
-         * need to prompt for and/or up front. */}
+        {/* Field / Subset CTAs — click auto-commits an `and` Connector
+         * for the new sibling row so the user goes straight to picking
+         * the Field. Ancestor levels render as icon-only "+" pills to
+         * hop back up a level; the current-depth pill carries the
+         * full "+ Field" label; a final "+ Subset" pill (when the
+         * depth cap allows) sits on the right for nesting one deeper.
+         * Flip a subgroup's shared operator via its badge afterwards. */}
         {isNextOperator || (alwaysShowCtas && block.tags.length >= 4) ? (
           <div className="rules-block-row rules-block-row--cta">
             {Array.from({ length: currentDepth }, (_, d) => d).map((d) => (
               <AutoAddButton
                 key={`ancestor-${d}`}
-                label="Connector"
+                label="Field"
                 iconOnly
                 onClick={() => onAddNext("and", d)}
               />
             ))}
             <AutoAddButton
-              label="Connector"
+              label="Field"
               onClick={() => onAddNext("and", currentDepth)}
             />
             {canSubset ? (

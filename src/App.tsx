@@ -27,7 +27,7 @@ export default function App() {
   const [bracketDottedOr, setBracketDottedOr] = useState<boolean>(false);
   const [bareCblocks, setBareCblocks] = useState<boolean>(false);
   const [colorTagPills, setColorTagPills] = useState<boolean>(true);
-  const [alwaysShowCtas, setAlwaysShowCtas] = useState<boolean>(false);
+  const [alwaysShowCtas, setAlwaysShowCtas] = useState<boolean>(true);
   const [showAddBlock, setShowAddBlock] = useState<boolean>(false);
 
   const activeTree = activeStep === "s2" ? treeS2 : treeS1;
