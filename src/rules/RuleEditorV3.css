@@ -273,6 +273,14 @@
   animation: tagpill-in 200ms var(--ease) both;
   transform-origin: left center;
 }
+/* Each pill wrap becomes its own stacking context via the mount
+ * animation's transform, so a later sibling naturally paints
+ * over an earlier pill's dropdown. When the wrap actually holds
+ * an open menu, raise it above its siblings. */
+.tagpill-wrap:has(.tagpill-menu),
+.rules-add-inline-wrap:has(.rules-add-menu) {
+  z-index: 40;
+}
 
 /* New tag pills slide up from below as they mount — plays once on
  * first paint (React keeps mounted pills stable via their `id` key,

@@ -71,6 +71,16 @@
   pointer-events: none;
 }
 
+/* Each tag pill wrap creates its own stacking context (the mount
+ * animation leaves a transform on it), so a later sibling's pill
+ * naturally paints over an earlier pill's open dropdown. When the
+ * wrap actually contains an open menu, raise it above its
+ * siblings so the dropdown wins. */
+.tagpill-wrap:has(.tagpill-menu),
+.rules-add-inline-wrap:has(.rules-add-menu) {
+  z-index: 40;
+}
+
 .rules-empty {
   color: var(--fg-mute);
   font-size: 12px;
