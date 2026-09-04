@@ -314,11 +314,11 @@ function BlockView({
         i = next;
       }
     }
-    /* The trailing auto-Connector row (length 1) isn't a real sibling
-     * yet — filter it out when deciding whether to paint the shared
-     * AND/OR badge. The badge appears as soon as there's a real row
-     * so the operator is visible from the first completed condition. */
-    const realRows = sameDepthRows.filter((r) => r.length > 1);
+    /* Count only rows whose value has been picked (length 4) as
+     * "real" — partial rows (Field-only, Field+Operator) don't yet
+     * carry a condition, so the AND/OR badge stays hidden until the
+     * first value lands. */
+    const realRows = sameDepthRows.filter((r) => r.length === 4);
     const isMulti = realRows.length > 0;
     const sharedOp =
       isMulti
