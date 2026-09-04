@@ -63,14 +63,40 @@ export function RuleEditor({
       }
 
       /* No depth passed — this is a Field / Operator / Value pick
-       * for the currently building row. */
+       * for the currently building row. When the pick is a Value the
+       * row is now complete, so auto-append a Connector tag for the
+       * next sibling at the same depth (and matching the current
+       * row's operator so a flipped subgroup badge stays coherent).
+       * The trailing Connector is hidden inline; its +Field / +Subset
+       * CTAs render at the end of the row that just completed. */
       const type = nextTagType(target.tags.length);
+      const rowStart = Math.floor(target.tags.length / 4) * 4;
+      const rowConnector = target.tags[rowStart];
+      const rowDepth = rowConnector?.depth ?? 0;
+      const rowOp = rowConnector?.value || "and";
+      const newTags = [...target.tags, makeTag(type, value)];
+      if (type === "value") {
+        newTags.push(makeTag("operator", rowOp, rowDepth));
+      }
       return bs.map((b) =>
-        b.id === blockId
-          ? { ...b, tags: [...b.tags, makeTag(type, value)] }
-          : b
+        b.id === blockId ? { ...b, tags: newTags } : b
       );
     });
+  };
+
+  const setTrailingDepth = (blockId: string, depth: number) => {
+    setBlocks((bs) =>
+      bs.map((b) => {
+        if (b.id !== blockId) return b;
+        const lastIdx = b.tags.length - 1;
+        if (lastIdx < 0) return b;
+        const last = b.tags[lastIdx];
+        if (last.type !== "operator") return b;
+        const tags = [...b.tags];
+        tags[lastIdx] = { ...last, depth };
+        return { ...b, tags };
+      })
+    );
   };
 
   const setTagValue = (blockId: string, tagId: string, value: string) => {
@@ -128,6 +154,7 @@ export function RuleEditor({
       alwaysShowCtas={alwaysShowCtas}
       onAddNext={(v, atDepth) => addNextTag(block.id, v, atDepth)}
       onSetTagValue={(tagId, v) => setTagValue(block.id, tagId, v)}
+      onSetTrailingDepth={(d) => setTrailingDepth(block.id, d)}
       onRemoveRow={(startIdx, count) =>
         removeRow(block.id, startIdx, count)
       }
@@ -153,9 +180,9 @@ const MAX_DEPTH = 2;
 function BlockView({
   block,
   canRemove,
-  alwaysShowCtas,
   onAddNext,
   onSetTagValue,
+  onSetTrailingDepth,
   onRemoveRow,
   onRemoveBlock,
 }: {
@@ -164,6 +191,7 @@ function BlockView({
   alwaysShowCtas: boolean;
   onAddNext: (value: string, atDepth?: number) => void;
   onSetTagValue: (tagId: string, v: string) => void;
+  onSetTrailingDepth: (depth: number) => void;
   onRemoveRow: (startIdx: number, count: number) => void;
   onRemoveBlock: () => void;
 }) {
@@ -173,25 +201,31 @@ function BlockView({
   for (let i = 0; i < block.tags.length; i += 4) {
     rows.push(block.tags.slice(i, i + 4));
   }
-  /* Depth-lookup for row indent — a row's leading Connector holds
-   * its depth. */
+  /* Depth-lookup — a row's leading Connector holds its depth. */
   const rowDepth = (rowIdx: number): number => {
     const row = rows[rowIdx];
     if (row.length > 0 && row[0].type === "operator") return row[0].depth ?? 0;
     return 0;
   };
+  /* After a Value pick the editor auto-appends a Connector for the
+   * next sibling row. That trailing Connector sits alone in a fresh
+   * chunk (row of length 1). We hide that row and instead paint its
+   * +Field / +Subset CTAs inline at the tail of the row that just
+   * completed. */
+  const lastRow = rows[rows.length - 1];
+  const hasTrailingAnd =
+    rows.length > 1 &&
+    lastRow.length === 1 &&
+    lastRow[0].type === "operator";
+  const trailingDepth = hasTrailingAnd ? lastRow[0].depth ?? 0 : 0;
+  const lastVisibleIdx = hasTrailingAnd ? rows.length - 2 : rows.length - 1;
   const nextType = nextTagType(block.tags.length);
   const isNextOperator = nextType === "operator";
-  const lastRowIdx = rows.length - 1;
-  const currentDepth = lastRowIdx >= 0 ? rowDepth(lastRowIdx) : 0;
-  /* Two Connector CTAs sit side-by-side on one line: `Connector` at
-   * the current depth and (when the MAX_DEPTH cap allows) `Subset` at
-   * currentDepth + 1. The whole row is indented to the current depth
-   * so +Connector lines up with the parent chain's left edge. */
-  const canSubset = currentDepth < MAX_DEPTH;
+  const canSubset = trailingDepth < MAX_DEPTH;
 
   const renderRow = (row: Tag[], rowIdx: number) => {
-    const isLast = rowIdx === lastRowIdx;
+    if (hasTrailingAnd && rowIdx === rows.length - 1) return null;
+    const isLast = rowIdx === lastVisibleIdx;
     const canDeleteRow = rowIdx > 0 && row.length > 0;
     const rowStartIdx = rowIdx * 4;
     /* The leading Connector is captured by the enclosing subgroup's
@@ -207,8 +241,39 @@ function BlockView({
             onChange={(v) => onSetTagValue(t.id, v)}
           />
         ))}
-        {isLast && !isNextOperator ? (
+        {isLast && !hasTrailingAnd && !isNextOperator ? (
           <InlineAddCta tags={block.tags} onAdd={onAddNext} />
+        ) : null}
+        {isLast && hasTrailingAnd ? (
+          <>
+            {Array.from({ length: trailingDepth }, (_, d) => d).map((d) => (
+              <PickerCta
+                key={`anc-${d}`}
+                label="Field"
+                options={CONDITION_OPTIONS}
+                iconOnly
+                onPick={(v) => {
+                  onSetTrailingDepth(d);
+                  onAddNext(v);
+                }}
+              />
+            ))}
+            <PickerCta
+              label="Field"
+              options={CONDITION_OPTIONS}
+              onPick={(v) => onAddNext(v)}
+            />
+            {canSubset ? (
+              <PickerCta
+                label="Subset"
+                options={CONDITION_OPTIONS}
+                onPick={(v) => {
+                  onSetTrailingDepth(trailingDepth + 1);
+                  onAddNext(v);
+                }}
+              />
+            ) : null}
+          </>
         ) : null}
         {canDeleteRow ? (
           <button
@@ -248,9 +313,13 @@ function BlockView({
         i = next;
       }
     }
-    const isMulti = sameDepthRows.length > 1;
+    /* The trailing auto-Connector row (length 1) isn't a real sibling
+     * yet — filter it out when deciding whether to paint the shared
+     * AND/OR badge. */
+    const realRows = sameDepthRows.filter((r) => r.length > 1);
+    const isMulti = realRows.length > 1;
     const sharedOp = isMulti
-      ? (sameDepthRows[1][0]?.value || "and").toLowerCase()
+      ? (realRows[1][0]?.value || "and").toLowerCase()
       : "and";
     const cycleOp = () => {
       const nextOp = sharedOp === "and" ? "or" : "and";
@@ -288,38 +357,7 @@ function BlockView({
       {block.title ? (
         <div className="rules-block-title">{block.title}</div>
       ) : null}
-      <div className="rules-block-body">
-        {tree}
-        {/* Field / Subset CTAs — click auto-commits an `and` Connector
-         * for the new sibling row so the user goes straight to picking
-         * the Field. Ancestor levels render as icon-only "+" pills to
-         * hop back up a level; the current-depth pill carries the
-         * full "+ Field" label; a final "+ Subset" pill (when the
-         * depth cap allows) sits on the right for nesting one deeper.
-         * Flip a subgroup's shared operator via its badge afterwards. */}
-        {isNextOperator || (alwaysShowCtas && block.tags.length >= 4) ? (
-          <div className="rules-block-row rules-block-row--cta">
-            {Array.from({ length: currentDepth }, (_, d) => d).map((d) => (
-              <AutoAddButton
-                key={`ancestor-${d}`}
-                label="Field"
-                iconOnly
-                onClick={() => onAddNext("and", d)}
-              />
-            ))}
-            <AutoAddButton
-              label="Field"
-              onClick={() => onAddNext("and", currentDepth)}
-            />
-            {canSubset ? (
-              <AutoAddButton
-                label="Subset"
-                onClick={() => onAddNext("and", currentDepth + 1)}
-              />
-            ) : null}
-          </div>
-        ) : null}
-      </div>
+      <div className="rules-block-body">{tree}</div>
       {canRemove ? (
         <div className="rules-block-actions">
           <button
@@ -332,36 +370,6 @@ function BlockView({
           </button>
         </div>
       ) : null}
-    </div>
-  );
-}
-
-/** Auto-commit CTA — a plain +Connector / +Subset pill that fires
- *  `onClick` directly instead of opening a dropdown. Adding a sibling
- *  seeds it with `and`; users flip a subgroup's shared operator via
- *  its badge afterwards, so the CTA doesn't prompt for and/or up
- *  front. `iconOnly` collapses to just a `+` for ancestor-level
- *  pills. */
-function AutoAddButton({
-  label,
-  onClick,
-  iconOnly = false,
-}: {
-  label: string;
-  onClick: () => void;
-  iconOnly?: boolean;
-}) {
-  return (
-    <div className="rules-add-inline-wrap">
-      <button
-        type="button"
-        className={`rules-add-inline ${iconOnly ? "is-icon-only" : ""}`}
-        aria-label={iconOnly ? `Add ${label}` : undefined}
-        onClick={onClick}
-      >
-        <span className="rules-add-inline-plus" aria-hidden>+</span>
-        {iconOnly ? null : <span>{label}</span>}
-      </button>
     </div>
   );
 }
