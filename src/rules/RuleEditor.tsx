@@ -247,18 +247,6 @@ function BlockView({
         ) : null}
         {isTrailingAndRow ? (
           <>
-            {Array.from({ length: trailingDepth }, (_, d) => d).map((d) => (
-              <PickerCta
-                key={`anc-${d}`}
-                label="Field"
-                options={CONDITION_OPTIONS}
-                iconOnly
-                onPick={(v) => {
-                  onSetTrailingDepth(d);
-                  onAddNext(v);
-                }}
-              />
-            ))}
             <PickerCta
               label="Field"
               options={CONDITION_OPTIONS}
@@ -349,7 +337,27 @@ function BlockView({
             </button>
           ) : null}
         </div>
-        <div className="rules-subgroup-rows">{items}</div>
+        <div className="rules-subgroup-rows">
+          {items}
+          {/* Each is-multi subgroup that doesn't already own the
+           * trailing-and row (whose CTAs are shown inline there)
+           * appends its own "+" pill so the user can add a sibling
+           * at that subgroup's depth without hunting through the
+           * deeper level. */}
+          {isMulti && !(hasTrailingAnd && trailingDepth === atDepth) ? (
+            <div className="rules-block-row rules-subgroup-add">
+              <PickerCta
+                label="Field"
+                options={CONDITION_OPTIONS}
+                iconOnly
+                onPick={(v) => {
+                  onSetTrailingDepth(atDepth);
+                  onAddNext(v);
+                }}
+              />
+            </div>
+          ) : null}
+        </div>
       </div>,
       i,
     ];
