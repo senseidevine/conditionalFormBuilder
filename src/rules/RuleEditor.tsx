@@ -204,12 +204,12 @@ function BlockView({
            * handles that. */
           const canDeleteRow = i > 0 && row.length > 0;
           const rowStartIdx = i * 4;
-          /* Every block hides its first row's leading Connector so
-           * the first thing the reader picks is the Field. Titled
-           * blocks (`if` / `then`) have the heading above the rows;
-           * untitled blocks keep the seed `and` stored but not
-           * shown — it still joins the block to the one above it. */
-          const renderedTags = i === 0 ? row.slice(1) : row;
+          /* Titled blocks (`if` / `then`) hide the first row's
+           * leading Connector — the heading above the rows already
+           * fills that slot. Untitled blocks show it inline as an
+           * `and` pill on the first row. */
+          const renderedTags =
+            i === 0 && block.title !== undefined ? row.slice(1) : row;
           return (
             <div
               className="rules-block-row"
