@@ -207,9 +207,16 @@ function BlockView({
           /* Titled blocks (`if` / `then`) hide the first row's
            * leading Connector — the heading above the rows already
            * fills that slot. Untitled blocks show it inline as an
-           * `and` pill on the first row. */
-          const renderedTags =
-            i === 0 && block.title !== undefined ? row.slice(1) : row;
+           * `and` pill on the first row.
+           *
+           * Nested subsets also hide their first row's Connector so
+           * the first child of a subset lands straight on Field
+           * instead of the operator — the subset's grouping is
+           * already visible from the indent + subset guideline. */
+          const isSubsetOpening = i > 0 && depth > rowDepth(i - 1);
+          const hideLeadingConnector =
+            (i === 0 && block.title !== undefined) || isSubsetOpening;
+          const renderedTags = hideLeadingConnector ? row.slice(1) : row;
           return (
             <div
               className="rules-block-row"
