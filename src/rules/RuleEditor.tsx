@@ -333,6 +333,7 @@ function BlockView({
     return [
       <div
         className={`rules-subgroup ${isMulti ? "is-multi" : ""}`}
+        data-depth={atDepth}
         key={`sg-${atDepth}-${fromIdx}`}
       >
         <div className="rules-subgroup-bracket">
