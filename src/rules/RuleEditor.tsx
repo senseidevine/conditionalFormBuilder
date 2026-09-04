@@ -58,8 +58,33 @@ export function RuleEditor({
           remainder = padded.length % 4;
         }
         padded.push(makeTag("operator", value, atDepth));
+        /* Sync the whole subset's Connectors at atDepth to `value`
+         * so an operator picked (or auto-inherited) for a new
+         * sibling propagates to every existing sibling at the same
+         * depth — one subset, one operator. */
+        const newTagIdx = padded.length - 1;
+        const newRowIdx = Math.floor(newTagIdx / 4);
+        const totalRows = Math.ceil(padded.length / 4);
+        const targetIds = new Set<string>();
+        for (let i = newRowIdx; i >= 0; i -= 1) {
+          const c = padded[i * 4];
+          if (!c || c.type !== "operator") continue;
+          const cd = c.depth ?? 0;
+          if (cd < atDepth) break;
+          if (cd === atDepth) targetIds.add(c.id);
+        }
+        for (let i = newRowIdx + 1; i < totalRows; i += 1) {
+          const c = padded[i * 4];
+          if (!c || c.type !== "operator") continue;
+          const cd = c.depth ?? 0;
+          if (cd < atDepth) break;
+          if (cd === atDepth) targetIds.add(c.id);
+        }
+        const synced = padded.map((t) =>
+          targetIds.has(t.id) ? { ...t, value } : t
+        );
         return bs.map((b) =>
-          b.id === blockId ? { ...b, tags: padded } : b
+          b.id === blockId ? { ...b, tags: synced } : b
         );
       }
 
@@ -76,14 +101,48 @@ export function RuleEditor({
 
   const setTagValue = (blockId: string, tagId: string, value: string) => {
     setBlocks((bs) =>
-      bs.map((b) =>
-        b.id === blockId
-          ? {
-              ...b,
-              tags: b.tags.map((t) => (t.id === tagId ? { ...t, value } : t)),
-            }
-          : b
-      )
+      bs.map((b) => {
+        if (b.id !== blockId) return b;
+        const tagIdx = b.tags.findIndex((t) => t.id === tagId);
+        if (tagIdx === -1) return b;
+        const tag = b.tags[tagIdx];
+        /* Non-operator tags: update in place. */
+        if (tag.type !== "operator") {
+          return {
+            ...b,
+            tags: b.tags.map((t) => (t.id === tagId ? { ...t, value } : t)),
+          };
+        }
+        /* Operator tags: propagate the change to every Connector at
+         * the same depth in the SAME subset — the contiguous run of
+         * rows where depth never drops below this one. Keeps the
+         * subset's shared operator consistent so flipping any pill
+         * flips the group. */
+        const rowIdx = Math.floor(tagIdx / 4);
+        const depth = tag.depth ?? 0;
+        const totalRows = Math.ceil(b.tags.length / 4);
+        const targetIds = new Set<string>();
+        for (let i = rowIdx; i >= 0; i -= 1) {
+          const c = b.tags[i * 4];
+          if (!c || c.type !== "operator") continue;
+          const cd = c.depth ?? 0;
+          if (cd < depth) break;
+          if (cd === depth) targetIds.add(c.id);
+        }
+        for (let i = rowIdx + 1; i < totalRows; i += 1) {
+          const c = b.tags[i * 4];
+          if (!c || c.type !== "operator") continue;
+          const cd = c.depth ?? 0;
+          if (cd < depth) break;
+          if (cd === depth) targetIds.add(c.id);
+        }
+        return {
+          ...b,
+          tags: b.tags.map((t) =>
+            targetIds.has(t.id) ? { ...t, value } : t
+          ),
+        };
+      })
     );
   };
 
@@ -189,6 +248,29 @@ function BlockView({
    * currentDepth + 1. The whole row is indented to the current depth
    * so +Connector lines up with the parent chain's left edge. */
   const canSubset = currentDepth < MAX_DEPTH;
+  /* How many rows already sit at currentDepth in the SAME subset —
+   * walk back from the last row until we hit a shallower depth
+   * (which marks the boundary of this subset). If we only find the
+   * current row (count 1), the next +Connector adds the very first
+   * sibling in this subset, so we open the and/or picker. If there
+   * are already siblings (count >= 2), auto-add using the last
+   * sibling's operator — the whole subset shares one operator. */
+  let currentSiblingCount = 0;
+  for (let i = lastRowIdx; i >= 0; i -= 1) {
+    const d = rowDepth(i);
+    if (d < currentDepth) break;
+    if (d === currentDepth) currentSiblingCount += 1;
+  }
+  const lastSiblingOp = (rows[lastRowIdx]?.[0]?.value || "and").toLowerCase();
+  /* Last operator used at each ancestor depth, so ancestor +
+   * Connector pills inherit that subset's shared op instead of
+   * defaulting to `and`. */
+  const lastOpAtDepth = (d: number): string => {
+    for (let i = rows.length - 1; i >= 0; i -= 1) {
+      if (rowDepth(i) === d) return (rows[i][0]?.value || "and").toLowerCase();
+    }
+    return "and";
+  };
   return (
     <div className="rules-block">
       {block.title ? (
@@ -299,20 +381,33 @@ function BlockView({
          * addNextTag). */}
         {isNextOperator ? (
           <div className="rules-block-row rules-block-row--cta">
+            {/* Ancestor +Connector pills — always auto-add, using
+             * whatever operator that ancestor subset already uses so
+             * the new sibling matches its group. */}
             {Array.from({ length: currentDepth }, (_, d) => d).map((d) => (
-              <PickerCta
+              <AutoAddButton
                 key={`ancestor-${d}`}
                 label="Connector"
                 iconOnly
-                options={OPERATOR_OPTIONS}
-                onPick={(v) => onAddNext(v, d)}
+                onClick={() => onAddNext(lastOpAtDepth(d), d)}
               />
             ))}
-            <PickerCta
-              label="Connector"
-              options={OPERATOR_OPTIONS}
-              onPick={(v) => onAddNext(v, currentDepth)}
-            />
+            {/* Current-depth +Connector: the very first sibling in a
+             * subset opens the and/or picker so the user picks the
+             * shared operator once. Every subsequent +Connector auto-
+             * inherits the last sibling's op — one subset, one op. */}
+            {currentSiblingCount === 1 ? (
+              <PickerCta
+                label="Connector"
+                options={OPERATOR_OPTIONS}
+                onPick={(v) => onAddNext(v, currentDepth)}
+              />
+            ) : (
+              <AutoAddButton
+                label="Connector"
+                onClick={() => onAddNext(lastSiblingOp, currentDepth)}
+              />
+            )}
             {canSubset ? (
               /* Subset creates a nested group — always seeded with
                * `and`, no and/or picker. The user picks the Field
@@ -343,24 +438,29 @@ function BlockView({
 }
 
 /** Auto-commit pill — fires `onClick` directly without opening a
- *  picker. Used for +Subset so clicking it seeds the nested group
- *  with `and` and drops the user straight onto Field selection. */
+ *  picker. Used for +Subset (always) and for +Connector after the
+ *  first sibling exists, so the new Connector inherits the last
+ *  sibling's op. `iconOnly` collapses to just a `+` for ancestor-
+ *  level shortcuts. */
 function AutoAddButton({
   label,
   onClick,
+  iconOnly = false,
 }: {
   label: string;
   onClick: () => void;
+  iconOnly?: boolean;
 }) {
   return (
     <div className="rules-add-inline-wrap">
       <button
         type="button"
-        className="rules-add-inline"
+        className={`rules-add-inline ${iconOnly ? "is-icon-only" : ""}`}
+        aria-label={iconOnly ? `Add ${label}` : undefined}
         onClick={onClick}
       >
         <span className="rules-add-inline-plus" aria-hidden>+</span>
-        <span>{label}</span>
+        {iconOnly ? null : <span>{label}</span>}
       </button>
     </div>
   );
