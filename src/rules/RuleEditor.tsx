@@ -316,12 +316,14 @@ function BlockView({
     }
     /* The trailing auto-Connector row (length 1) isn't a real sibling
      * yet — filter it out when deciding whether to paint the shared
-     * AND/OR badge. */
+     * AND/OR badge. The badge appears as soon as there's a real row
+     * so the operator is visible from the first completed condition. */
     const realRows = sameDepthRows.filter((r) => r.length > 1);
-    const isMulti = realRows.length > 1;
-    const sharedOp = isMulti
-      ? (realRows[1][0]?.value || "and").toLowerCase()
-      : "and";
+    const isMulti = realRows.length > 0;
+    const sharedOp =
+      isMulti
+        ? (realRows[0][0]?.value || "and").toLowerCase()
+        : "and";
     const cycleOp = () => {
       const nextOp = sharedOp === "and" ? "or" : "and";
       for (const r of sameDepthRows) {
