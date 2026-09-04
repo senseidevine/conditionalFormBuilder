@@ -71,6 +71,23 @@
   pointer-events: none;
 }
 
+/* Invisible spacer used at the start of a subset-opening row —
+ * its width matches the operator pill on the sibling below, so
+ * the first child's Field aligns under the siblings' Field. Text
+ * mirrors that sibling's op ("and" / "or") so the width tracks
+ * whichever operator the subset uses. */
+.rules-op-spacer {
+  visibility: hidden;
+  padding: 4px 8px 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  pointer-events: none;
+}
+
 /* Each tag pill wrap creates its own stacking context (the mount
  * animation leaves a transform on it), so a later sibling's pill
  * naturally paints over an earlier pill's open dropdown. When the

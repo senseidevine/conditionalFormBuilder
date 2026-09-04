@@ -217,6 +217,23 @@ function BlockView({
           const hideLeadingConnector =
             (i === 0 && block.title !== undefined) || isSubsetOpening;
           const renderedTags = hideLeadingConnector ? row.slice(1) : row;
+          /* For a subset-opening row, insert a spacer whose width
+           * matches the operator pill that the next sibling in this
+           * subset shows — so the row's Field lines up under the
+           * siblings' Field. The spacer text mirrors the sibling's
+           * op ("and" / "or") so the width tracks with whichever
+           * operator that subset is using. */
+          let siblingOpForSpacer: string | null = null;
+          if (isSubsetOpening) {
+            for (let j = i + 1; j < rows.length; j += 1) {
+              const jd = rowDepth(j);
+              if (jd < depth) break;
+              if (jd === depth) {
+                siblingOpForSpacer = (rows[j][0]?.value || "and").toLowerCase();
+                break;
+              }
+            }
+          }
           return (
             <div
               className="rules-block-row"
@@ -236,6 +253,11 @@ function BlockView({
                   aria-hidden
                 />
               ))}
+              {siblingOpForSpacer ? (
+                <span className="rules-op-spacer" aria-hidden>
+                  {siblingOpForSpacer}
+                </span>
+              ) : null}
               {renderedTags.map((t: Tag) => (
                 <TagPill
                   key={t.id}
@@ -292,10 +314,13 @@ function BlockView({
               onPick={(v) => onAddNext(v, currentDepth)}
             />
             {canSubset ? (
-              <PickerCta
+              /* Subset creates a nested group — always seeded with
+               * `and`, no and/or picker. The user picks the Field
+               * next; the subset's shared operator can be flipped
+               * from any of its rows' Connector pills later. */
+              <AutoAddButton
                 label="Subset"
-                options={OPERATOR_OPTIONS}
-                onPick={(v) => onAddNext(v, currentDepth + 1)}
+                onClick={() => onAddNext("and", currentDepth + 1)}
               />
             ) : null}
           </div>
@@ -313,6 +338,30 @@ function BlockView({
           </button>
         </div>
       ) : null}
+    </div>
+  );
+}
+
+/** Auto-commit pill — fires `onClick` directly without opening a
+ *  picker. Used for +Subset so clicking it seeds the nested group
+ *  with `and` and drops the user straight onto Field selection. */
+function AutoAddButton({
+  label,
+  onClick,
+}: {
+  label: string;
+  onClick: () => void;
+}) {
+  return (
+    <div className="rules-add-inline-wrap">
+      <button
+        type="button"
+        className="rules-add-inline"
+        onClick={onClick}
+      >
+        <span className="rules-add-inline-plus" aria-hidden>+</span>
+        <span>{label}</span>
+      </button>
     </div>
   );
 }
