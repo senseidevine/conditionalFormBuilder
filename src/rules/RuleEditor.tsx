@@ -349,12 +349,21 @@ function BlockView({
               <PickerCta
                 label="Field"
                 options={CONDITION_OPTIONS}
-                iconOnly
                 onPick={(v) => {
                   onSetTrailingDepth(atDepth);
                   onAddNext(v);
                 }}
               />
+              {atDepth < MAX_DEPTH ? (
+                <PickerCta
+                  label="Subset"
+                  options={CONDITION_OPTIONS}
+                  onPick={(v) => {
+                    onSetTrailingDepth(atDepth + 1);
+                    onAddNext(v);
+                  }}
+                />
+              ) : null}
             </div>
           ) : null}
         </div>
