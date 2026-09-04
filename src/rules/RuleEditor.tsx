@@ -224,9 +224,10 @@ function BlockView({
   const canSubset = trailingDepth < MAX_DEPTH;
 
   const renderRow = (row: Tag[], rowIdx: number) => {
-    if (hasTrailingAnd && rowIdx === rows.length - 1) return null;
+    const isTrailingAndRow =
+      hasTrailingAnd && rowIdx === rows.length - 1;
     const isLast = rowIdx === lastVisibleIdx;
-    const canDeleteRow = rowIdx > 0 && row.length > 0;
+    const canDeleteRow = !isTrailingAndRow && rowIdx > 0 && row.length > 0;
     const rowStartIdx = rowIdx * 4;
     /* The leading Connector is captured by the enclosing subgroup's
      * badge (or is redundant for a single-row subgroup), so we always
@@ -244,7 +245,7 @@ function BlockView({
         {isLast && !hasTrailingAnd && !isNextOperator ? (
           <InlineAddCta tags={block.tags} onAdd={onAddNext} />
         ) : null}
-        {isLast && hasTrailingAnd ? (
+        {isTrailingAndRow ? (
           <>
             {Array.from({ length: trailingDepth }, (_, d) => d).map((d) => (
               <PickerCta
