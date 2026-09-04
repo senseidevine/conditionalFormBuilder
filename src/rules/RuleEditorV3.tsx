@@ -1,9 +1,8 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import type { RuleBlock, Tag, TagType } from "./types";
 import {
   CONDITION_OPTIONS,
   CONDITIONAL_OPTIONS,
-  OPERATOR_OPTIONS,
   VALUE_SUGGESTIONS,
   makeBlock,
   makeTag,
@@ -13,9 +12,9 @@ import {
 } from "./types";
 import { TagPill } from "./TagPill";
 import { IconTrash } from "../components/Icons";
-import "./RuleEditor.css";
+import "./RuleEditorV3.css";
 
-export function RuleEditor({
+export function RuleEditorV3({
   alwaysShowCtas,
   showAddBlock,
 }: {
@@ -64,14 +63,40 @@ export function RuleEditor({
       }
 
       /* No depth passed — this is a Field / Operator / Value pick
-       * for the currently building row. */
+       * for the currently building row. When the pick is a Value the
+       * row is now complete, so auto-append a Connector tag for the
+       * next sibling at the same depth (and matching the current
+       * row's operator so a flipped subgroup badge stays coherent).
+       * The trailing Connector is hidden inline; its +Field / +Subset
+       * CTAs render at the end of the row that just completed. */
       const type = nextTagType(target.tags.length);
+      const rowStart = Math.floor(target.tags.length / 4) * 4;
+      const rowConnector = target.tags[rowStart];
+      const rowDepth = rowConnector?.depth ?? 0;
+      const rowOp = rowConnector?.value || "and";
+      const newTags = [...target.tags, makeTag(type, value)];
+      if (type === "value") {
+        newTags.push(makeTag("operator", rowOp, rowDepth));
+      }
       return bs.map((b) =>
-        b.id === blockId
-          ? { ...b, tags: [...b.tags, makeTag(type, value)] }
-          : b
+        b.id === blockId ? { ...b, tags: newTags } : b
       );
     });
+  };
+
+  const setTrailingDepth = (blockId: string, depth: number) => {
+    setBlocks((bs) =>
+      bs.map((b) => {
+        if (b.id !== blockId) return b;
+        const lastIdx = b.tags.length - 1;
+        if (lastIdx < 0) return b;
+        const last = b.tags[lastIdx];
+        if (last.type !== "operator") return b;
+        const tags = [...b.tags];
+        tags[lastIdx] = { ...last, depth };
+        return { ...b, tags };
+      })
+    );
   };
 
   const setTagValue = (blockId: string, tagId: string, value: string) => {
@@ -129,6 +154,7 @@ export function RuleEditor({
       alwaysShowCtas={alwaysShowCtas}
       onAddNext={(v, atDepth) => addNextTag(block.id, v, atDepth)}
       onSetTagValue={(tagId, v) => setTagValue(block.id, tagId, v)}
+      onSetTrailingDepth={(d) => setTrailingDepth(block.id, d)}
       onRemoveRow={(startIdx, count) =>
         removeRow(block.id, startIdx, count)
       }
@@ -154,9 +180,9 @@ const MAX_DEPTH = 2;
 function BlockView({
   block,
   canRemove,
-  alwaysShowCtas,
   onAddNext,
   onSetTagValue,
+  onSetTrailingDepth,
   onRemoveRow,
   onRemoveBlock,
 }: {
@@ -165,6 +191,7 @@ function BlockView({
   alwaysShowCtas: boolean;
   onAddNext: (value: string, atDepth?: number) => void;
   onSetTagValue: (tagId: string, v: string) => void;
+  onSetTrailingDepth: (depth: number) => void;
   onRemoveRow: (startIdx: number, count: number) => void;
   onRemoveBlock: () => void;
 }) {
@@ -174,55 +201,40 @@ function BlockView({
   for (let i = 0; i < block.tags.length; i += 4) {
     rows.push(block.tags.slice(i, i + 4));
   }
-  /* Depth-lookup for row indent — a row's leading Connector holds
-   * its depth. */
+  /* Depth-lookup — a row's leading Connector holds its depth. */
   const rowDepth = (rowIdx: number): number => {
     const row = rows[rowIdx];
     if (row.length > 0 && row[0].type === "operator") return row[0].depth ?? 0;
     return 0;
   };
+  /* After a Value pick the editor auto-appends a Connector for the
+   * next sibling row. That trailing Connector sits alone in a fresh
+   * chunk (row of length 1). We hide that row and instead paint its
+   * +Field / +Subset CTAs inline at the tail of the row that just
+   * completed. */
+  const lastRow = rows[rows.length - 1];
+  const hasTrailingAnd =
+    rows.length > 1 &&
+    lastRow.length === 1 &&
+    lastRow[0].type === "operator";
+  const trailingDepth = hasTrailingAnd ? lastRow[0].depth ?? 0 : 0;
+  const lastVisibleIdx = hasTrailingAnd ? rows.length - 2 : rows.length - 1;
   const nextType = nextTagType(block.tags.length);
   const isNextOperator = nextType === "operator";
-  const lastRowIdx = rows.length - 1;
-  const currentDepth = lastRowIdx >= 0 ? rowDepth(lastRowIdx) : 0;
-  /* Two Connector CTAs sit side-by-side on one line: `Connector` at
-   * the current depth and (when the MAX_DEPTH cap allows) `Subset` at
-   * currentDepth + 1. The whole row is indented to the current depth
-   * so +Connector lines up with the parent chain's left edge. */
-  const canSubset = currentDepth < MAX_DEPTH;
+  const canSubset = trailingDepth < MAX_DEPTH;
 
-  /* Chunk rows into subgroups: maximal contiguous runs at the same
-   * depth. Multi-row subgroups render with a bracket + shared AND/OR
-   * badge (like the tree builder in Build v1); single-row subgroups
-   * keep the inline layout. */
-  const subgroups: { start: number; end: number; depth: number }[] = [];
-  {
-    let i = 0;
-    while (i < rows.length) {
-      const d = rowDepth(i);
-      let j = i;
-      while (j + 1 < rows.length && rowDepth(j + 1) === d) j += 1;
-      subgroups.push({ start: i, end: j, depth: d });
-      i = j + 1;
-    }
-  }
-
-  const renderRow = (
-    row: Tag[],
-    rowIdx: number,
-    depth: number,
-    hideLeadingConnector: boolean
-  ) => {
-    const isLast = rowIdx === lastRowIdx;
-    const canDeleteRow = rowIdx > 0 && row.length > 0;
+  const renderRow = (row: Tag[], rowIdx: number) => {
+    const isTrailingAndRow =
+      hasTrailingAnd && rowIdx === rows.length - 1;
+    const isLast = rowIdx === lastVisibleIdx;
+    const canDeleteRow = !isTrailingAndRow && rowIdx > 0 && row.length > 0;
     const rowStartIdx = rowIdx * 4;
-    const renderedTags = hideLeadingConnector ? row.slice(1) : row;
+    /* The leading Connector is captured by the enclosing subgroup's
+     * badge (or is redundant for a single-row subgroup), so we always
+     * hide it inline. */
+    const renderedTags = row.slice(1);
     return (
-      <div
-        className="rules-block-row"
-        style={{ paddingLeft: depth * 40 }}
-        key={rowIdx}
-      >
+      <div className="rules-block-row" key={`row-${rowIdx}`}>
         {renderedTags.map((t: Tag) => (
           <TagPill
             key={t.id}
@@ -230,8 +242,27 @@ function BlockView({
             onChange={(v) => onSetTagValue(t.id, v)}
           />
         ))}
-        {isLast && !isNextOperator ? (
+        {isLast && !hasTrailingAnd && !isNextOperator ? (
           <InlineAddCta tags={block.tags} onAdd={onAddNext} />
+        ) : null}
+        {isTrailingAndRow ? (
+          <>
+            <PickerCta
+              label="Field"
+              options={CONDITION_OPTIONS}
+              onPick={(v) => onAddNext(v)}
+            />
+            {canSubset ? (
+              <PickerCta
+                label="Subset"
+                options={CONDITION_OPTIONS}
+                onPick={(v) => {
+                  onSetTrailingDepth(trailingDepth + 1);
+                  onAddNext(v);
+                }}
+              />
+            ) : null}
+          </>
         ) : null}
         {canDeleteRow ? (
           <button
@@ -247,107 +278,107 @@ function BlockView({
     );
   };
 
+  /* Recursively render a subgroup at `atDepth`: collect its same-
+   * depth rows and recurse into any deeper subgroups that sit in
+   * between. Every subgroup renders as a `[bracket column][rows
+   * column]` pair — the bracket column is always present (so the
+   * layout never jumps when a second sibling is added), but the
+   * line + AND/OR badge only paint when the subgroup has more than
+   * one same-depth row. Because a subgroup's items include its
+   * nested subgroups too, the bracket visually spans through any
+   * children as well. */
+  const renderTree = (fromIdx: number, atDepth: number): [ReactNode, number] => {
+    const sameDepthRows: Tag[][] = [];
+    const items: ReactNode[] = [];
+    let i = fromIdx;
+    while (i < rows.length && rowDepth(i) >= atDepth) {
+      if (rowDepth(i) === atDepth) {
+        sameDepthRows.push(rows[i]);
+        items.push(renderRow(rows[i], i));
+        i += 1;
+      } else {
+        const [nested, next] = renderTree(i, rowDepth(i));
+        items.push(nested);
+        i = next;
+      }
+    }
+    /* Count only rows whose value has been picked (length 4) as
+     * "real" — partial rows (Field-only, Field+Operator) don't yet
+     * carry a condition, so the AND/OR badge stays hidden until the
+     * first value lands. */
+    const realRows = sameDepthRows.filter((r) => r.length === 4);
+    const isMulti = realRows.length > 0;
+    const sharedOp =
+      isMulti
+        ? (realRows[0][0]?.value || "and").toLowerCase()
+        : "and";
+    const cycleOp = () => {
+      const nextOp = sharedOp === "and" ? "or" : "and";
+      for (const r of sameDepthRows) {
+        if (r[0]) onSetTagValue(r[0].id, nextOp);
+      }
+    };
+    return [
+      <div
+        className={`rules-subgroup ${isMulti ? "is-multi" : ""}`}
+        data-depth={atDepth}
+        key={`sg-${atDepth}-${fromIdx}`}
+      >
+        <div className="rules-subgroup-bracket">
+          {isMulti ? (
+            <button
+              type="button"
+              className="rules-subgroup-badge"
+              data-op={sharedOp}
+              aria-label={`Toggle subgroup operator, currently ${sharedOp}`}
+              onClick={cycleOp}
+            >
+              {sharedOp.toUpperCase()}
+            </button>
+          ) : null}
+        </div>
+        <div className="rules-subgroup-rows">
+          {items}
+          {/* Each is-multi subgroup that doesn't already own the
+           * trailing-and row (whose CTAs are shown inline there)
+           * appends its own "+" pill so the user can add a sibling
+           * at that subgroup's depth without hunting through the
+           * deeper level. */}
+          {isMulti && !(hasTrailingAnd && trailingDepth === atDepth) ? (
+            <div className="rules-block-row rules-subgroup-add">
+              <PickerCta
+                label="Field"
+                options={CONDITION_OPTIONS}
+                onPick={(v) => {
+                  onSetTrailingDepth(atDepth);
+                  onAddNext(v);
+                }}
+              />
+              {atDepth < MAX_DEPTH ? (
+                <PickerCta
+                  label="Subset"
+                  options={CONDITION_OPTIONS}
+                  onPick={(v) => {
+                    onSetTrailingDepth(atDepth + 1);
+                    onAddNext(v);
+                  }}
+                />
+              ) : null}
+            </div>
+          ) : null}
+        </div>
+      </div>,
+      i,
+    ];
+  };
+  const [tree] = rows.length > 0 ? renderTree(0, 0) : [null, 0];
+
   return (
     <div className="rules-block">
       {block.title ? (
         <div className="rules-block-title">{block.title}</div>
       ) : null}
-      <div className="rules-block-body">
-        {subgroups.map((sg, sgIdx) => {
-          const sgRows = rows.slice(sg.start, sg.end + 1);
-          const isMulti = sgRows.length > 1;
-
-          if (!isMulti) {
-            const row = sgRows[0];
-            /* Titled block's first row hides its seed Connector so
-             * the heading above can act as the row's leader. */
-            const hideConn = sg.start === 0 && block.title !== undefined;
-            return renderRow(row, sg.start, sg.depth, hideConn);
-          }
-
-          /* Multi-row subgroup — render a bracket to the left with a
-           * shared AND/OR badge. The badge's value comes from the
-           * subgroup's Connectors (assumed to share an operator);
-           * clicking it flips them all together so the subgroup
-           * behaves like Build v1's group. */
-          const sharedOp = (
-            sgRows[1][0]?.value ||
-            sgRows[0][0]?.value ||
-            "and"
-          ).toLowerCase();
-          const cycleOp = () => {
-            const nextOp = sharedOp === "and" ? "or" : "and";
-            for (const row of sgRows) {
-              const conn = row[0];
-              if (conn) onSetTagValue(conn.id, nextOp);
-            }
-          };
-          return (
-            <div
-              className="rules-subgroup"
-              style={{ paddingLeft: sg.depth * 40 }}
-              key={`sg-${sgIdx}`}
-            >
-              <div className="rules-subgroup-bracket">
-                <button
-                  type="button"
-                  className="rules-subgroup-badge"
-                  data-op={sharedOp}
-                  aria-label={`Toggle subgroup operator, currently ${sharedOp}`}
-                  onClick={cycleOp}
-                >
-                  {sharedOp.toUpperCase()}
-                </button>
-              </div>
-              <div className="rules-subgroup-rows">
-                {sgRows.map((row, k) =>
-                  /* Every row's leading Connector is folded into the
-                   * shared badge, so hide it inline. */
-                  renderRow(row, sg.start + k, 0, true)
-                )}
-              </div>
-            </div>
-          );
-        })}
-        {/* Connector / Subset CTAs — all on ONE row now. Ancestor
-         * levels render as icon-only "+" pills; the current-depth
-         * pill carries the full "+ Connector" label; a final "+
-         * Subset" pill (when the depth cap allows) sits on the right
-         * for nesting one deeper. Order reads left-to-right root →
-         * current → subset.
-         *
-         * When Always show CTAs is on the row renders even while a
-         * later chain is still being built; the initial condition
-         * (Field + Operator + Value) still has to be completed once
-         * — the CTAs only appear once the first row hits four tags.
-         * Clicking a pill mid-chain pads the partial row first (see
-         * addNextTag). */}
-        {isNextOperator || (alwaysShowCtas && block.tags.length >= 4) ? (
-          <div className="rules-block-row rules-block-row--cta">
-            {Array.from({ length: currentDepth }, (_, d) => d).map((d) => (
-              <PickerCta
-                key={`ancestor-${d}`}
-                label="Connector"
-                iconOnly
-                options={OPERATOR_OPTIONS}
-                onPick={(v) => onAddNext(v, d)}
-              />
-            ))}
-            <PickerCta
-              label="Connector"
-              options={OPERATOR_OPTIONS}
-              onPick={(v) => onAddNext(v, currentDepth)}
-            />
-            {canSubset ? (
-              <PickerCta
-                label="Subset"
-                options={OPERATOR_OPTIONS}
-                onPick={(v) => onAddNext(v, currentDepth + 1)}
-              />
-            ) : null}
-          </div>
-        ) : null}
-      </div>
+      <div className="rules-block-body">{tree}</div>
       {canRemove ? (
         <div className="rules-block-actions">
           <button

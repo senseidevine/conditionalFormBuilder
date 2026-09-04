@@ -127,7 +127,7 @@ export function LogoMenu({
 
               {/* Group-builder toggles — visible on every step except
                * the rules editor (Build v2, s3). */}
-              {activeStep !== "s3" ? (
+              {activeStep !== "s3" && activeStep !== "s5" ? (
                 <>
               <div className="logomenu-row">
                 <div className="logomenu-row-text">
@@ -282,7 +282,7 @@ export function LogoMenu({
 
               {/* Rules-editor toggles — visible only on the rules
                * editor (Build v2, s3). */}
-              {activeStep === "s3" ? (
+              {activeStep === "s3" || activeStep === "s5" ? (
                 <>
                   <div className="logomenu-row">
                     <div className="logomenu-row-text">

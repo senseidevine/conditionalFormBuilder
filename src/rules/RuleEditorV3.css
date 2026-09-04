@@ -63,7 +63,16 @@
   align-items: center;
   justify-content: flex-start;
 }
-.rules-subgroup-bracket::before {
+/* Collapse the bracket column when a top-level subgroup has no
+ * completed row — otherwise a fresh block would sit 40px in from
+ * the block edge with nothing painted in that space. Nested
+ * subgroups (data-depth > 0) always reserve the column so the
+ * subset indent is visible the moment +Subset is picked. */
+.rules-subgroup[data-depth="0"]:not(.is-multi) > .rules-subgroup-bracket {
+  flex: 0 0 0;
+  width: 0;
+}
+.rules-subgroup.is-multi > .rules-subgroup-bracket::before {
   content: "";
   position: absolute;
   top: 8px;
@@ -76,7 +85,7 @@
   border-bottom-left-radius: 16px;
   transition: border-color 700ms var(--ease);
 }
-.rules-subgroup-bracket:hover::before {
+.rules-subgroup.is-multi > .rules-subgroup-bracket:hover::before {
   border-color: rgba(255, 255, 255, 0.4);
   transition: border-color 400ms var(--ease);
 }
