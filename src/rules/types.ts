@@ -22,15 +22,7 @@ export interface RuleBlock {
 }
 
 export const OPERATOR_OPTIONS = ["and", "or"];
-export const CONDITION_OPTIONS = [
-  "String",
-  "Trade Sweep",
-  "Trade liquidation fund operation",
-  "PNL",
-  "SOURCE",
-  "COLLATERAL",
-  "Exactly",
-];
+export const CONDITION_OPTIONS = ["String", "Number"];
 export const CONDITIONAL_OPTIONS = [
   "is",
   "is not",
@@ -46,14 +38,7 @@ export const CONDITIONAL_OPTIONS = [
 ];
 /** Suggestions shown for Value tags — the input itself is freeform so
  *  the user can type any custom value, but these seed the dropdown. */
-export const VALUE_SUGGESTIONS = [
-  "Transaction type",
-  "Attribute Name",
-  "Direction",
-  "Amount",
-  "Country",
-  "User",
-];
+export const VALUE_SUGGESTIONS = ["one", "two", "three", "four", "five"];
 
 let __id = 0;
 export const uid = () => `t${++__id}`;
