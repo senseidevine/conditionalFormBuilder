@@ -49,11 +49,26 @@
  * .rules-block-row below so the next Connector starts on a fresh
  * visual line. */
 .rules-block-row {
+  position: relative;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 6px;
   min-height: 30px;
+}
+
+/* Solution 2 — vertical guideline down the left of each subset.
+ * One bar per ancestor depth level; each bar extends into the
+ * row's gutter so adjacent rows read as one continuous line,
+ * making the boundary of every nested subgroup visible at a
+ * glance. */
+.rules-row-guide {
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  width: 1.5px;
+  background: rgba(255, 255, 255, 0.14);
+  pointer-events: none;
 }
 
 .rules-empty {

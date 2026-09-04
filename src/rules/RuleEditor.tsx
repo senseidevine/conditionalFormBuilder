@@ -214,8 +214,21 @@ function BlockView({
             <div
               className="rules-block-row"
               style={{ paddingLeft: depth * 40 }}
+              data-depth={depth}
               key={i}
             >
+              {/* Subset guidelines — one vertical bar per ancestor
+               * depth. Adjacent rows' bars overlap into a continuous
+               * line, giving each nested subset a clear left edge so
+               * the reader can see which rows are grouped together. */}
+              {Array.from({ length: depth }, (_, gi) => (
+                <span
+                  key={`guide-${gi}`}
+                  className="rules-row-guide"
+                  style={{ left: gi * 40 + 19 }}
+                  aria-hidden
+                />
+              ))}
               {renderedTags.map((t: Tag) => (
                 <TagPill
                   key={t.id}
