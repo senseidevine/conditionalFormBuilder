@@ -311,10 +311,16 @@ function BlockView({
                * line, giving each nested subset a clear left edge so
                * the reader can see which rows are grouped together. */}
               {Array.from({ length: depth }, (_, gi) => (
+                /* Each guide bar should sit on the operator column
+                 * of the row it represents. Depth-> 0 rows have no
+                 * indent spacer, deeper rows carry a fixed 16px
+                 * spacer between paddingLeft and their first pill,
+                 * so guides for gi >= 1 shift by that same 16px to
+                 * line up with the operator pill above. */
                 <span
                   key={`guide-${gi}`}
                   className="rules-row-guide"
-                  style={{ left: gi * 40 + 19 }}
+                  style={{ left: gi * 40 + 19 + (gi > 0 ? 16 : 0) }}
                   aria-hidden
                 />
               ))}
