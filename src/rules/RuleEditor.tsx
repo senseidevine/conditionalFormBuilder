@@ -318,6 +318,12 @@ function BlockView({
                   aria-hidden
                 />
               ))}
+              {/* 40px spacer at the start of every nested row so
+               * each child row of a subset visually steps in even
+               * further past the depth-based paddingLeft. */}
+              {depth > 0 ? (
+                <span className="rules-row-indent" aria-hidden />
+              ) : null}
               {renderedTags.map((t: Tag) => (
                 <TagPill
                   key={t.id}

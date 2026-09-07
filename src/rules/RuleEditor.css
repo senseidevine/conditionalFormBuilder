@@ -71,6 +71,15 @@
   pointer-events: none;
 }
 
+/* Empty 40px spacer inserted at the start of every nested row so
+ * each child of a subset visually steps further right beyond the
+ * depth-based paddingLeft. */
+.rules-row-indent {
+  flex: 0 0 40px;
+  height: 1px;
+  pointer-events: none;
+}
+
 
 /* Each tag pill wrap creates its own stacking context (the mount
  * animation leaves a transform on it), so a later sibling's pill
