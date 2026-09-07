@@ -299,23 +299,6 @@ function BlockView({
           const hideLeadingConnector =
             (i === 0 && block.title !== undefined) || isSubsetOpening;
           const renderedTags = hideLeadingConnector ? row.slice(1) : row;
-          /* For a subset-opening row, insert a spacer whose width
-           * matches the operator pill that the next sibling in this
-           * subset shows — so the row's Field lines up under the
-           * siblings' Field. The spacer text mirrors the sibling's
-           * op ("and" / "or") so the width tracks with whichever
-           * operator that subset is using. */
-          let siblingOpForSpacer: string | null = null;
-          if (isSubsetOpening) {
-            for (let j = i + 1; j < rows.length; j += 1) {
-              const jd = rowDepth(j);
-              if (jd < depth) break;
-              if (jd === depth) {
-                siblingOpForSpacer = (rows[j][0]?.value || "and").toLowerCase();
-                break;
-              }
-            }
-          }
           return (
             <div
               className="rules-block-row"
@@ -335,11 +318,6 @@ function BlockView({
                   aria-hidden
                 />
               ))}
-              {siblingOpForSpacer ? (
-                <span className="rules-op-spacer" aria-hidden>
-                  {siblingOpForSpacer}
-                </span>
-              ) : null}
               {renderedTags.map((t: Tag) => (
                 <TagPill
                   key={t.id}
