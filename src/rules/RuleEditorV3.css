@@ -92,8 +92,10 @@
 .rules-subgroup-badge {
   appearance: none;
   border: 0;
-  background: #ffffff;
-  color: #0a0b0e;
+  /* Mirror v2's operator pill palette: steel-blue by default,
+   * flipped to coral when the "Color tag pills" toggle is on. */
+  background: rgba(103, 144, 184, 0.2);
+  color: #6790b8;
   width: 32px;
   height: 22px;
   padding: 0;
@@ -113,15 +115,25 @@
   transition: background var(--dur-1) var(--ease),
     transform var(--dur-spring) var(--spring);
 }
-.rules-subgroup-badge:hover { background: #f2f2f4; }
+.rules-subgroup-badge:hover { background: rgba(103, 144, 184, 0.28); }
 .rules-subgroup-badge:active {
-  background: #e8e8ea;
+  background: rgba(103, 144, 184, 0.36);
   transform: scale(0.9);
   transition: background 60ms linear, transform 60ms ease-out;
 }
 .rules-subgroup-badge:focus-visible {
   outline: 2px solid var(--accent-focus);
   outline-offset: 2px;
+}
+.page[data-color-tagpills="true"] .rules-subgroup-badge {
+  background: rgba(255, 87, 119, 0.18);
+  color: #ff5777;
+}
+.page[data-color-tagpills="true"] .rules-subgroup-badge:hover {
+  background: rgba(255, 87, 119, 0.26);
+}
+.page[data-color-tagpills="true"] .rules-subgroup-badge:active {
+  background: rgba(255, 87, 119, 0.34);
 }
 .rules-subgroup-rows {
   flex: 1;
