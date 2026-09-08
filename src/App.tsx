@@ -6,9 +6,11 @@ import { seedRoot, type GroupNode, type Operator } from "./builder/types";
 import { seedSample } from "./criteria/sample";
 import { RuleEditor } from "./rules/RuleEditor";
 import { RuleEditorV3 } from "./rules/RuleEditorV3";
+import { RuleEditorV4 } from "./rules/v4/RuleEditorV4";
 import "./App.css";
 
 const RAIL_STEPS = [
+  { id: "s6", label: "Build v4" },
   { id: "s3", label: "Build v2" },
   { id: "s5", label: "Build v3" },
   { id: "s1", label: "Build v1" },
@@ -123,7 +125,9 @@ export default function App() {
           </p>
 
           <div className="content">
-            {activeStep === "s5" ? (
+            {activeStep === "s6" ? (
+              <RuleEditorV4 />
+            ) : activeStep === "s5" ? (
               <RuleEditorV3
                 alwaysShowCtas={alwaysShowCtas}
                 showAddBlock={showAddBlock}
