@@ -84,6 +84,27 @@
   border-top-left-radius: 16px;
   border-bottom-left-radius: 16px;
   transition: border-color 700ms var(--ease);
+  /* Cut a hole in the middle of the bracket line so the semi-
+   * transparent badge above doesn't visually stack the line color
+   * inside it. Hole height ~= badge height + 4px breathing room. */
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    #000 0,
+    #000 calc(50% - 13px),
+    transparent calc(50% - 13px),
+    transparent calc(50% + 13px),
+    #000 calc(50% + 13px),
+    #000 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    #000 0,
+    #000 calc(50% - 13px),
+    transparent calc(50% - 13px),
+    transparent calc(50% + 13px),
+    #000 calc(50% + 13px),
+    #000 100%
+  );
 }
 .rules-subgroup.is-multi > .rules-subgroup-bracket:hover::before {
   border-color: rgba(255, 255, 255, 0.4);
