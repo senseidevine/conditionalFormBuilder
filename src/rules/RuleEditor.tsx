@@ -429,7 +429,7 @@ function BlockView({
                   {siblingOpForAlignment}
                   <span
                     className="rules-row-guide rules-op-spacer-guide"
-                    style={{ left: "50%", top: 10, bottom: -7 }}
+                    style={{ left: "58%", top: 10, bottom: -8 }}
                     aria-hidden
                   />
                 </span>

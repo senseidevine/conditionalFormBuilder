@@ -96,7 +96,13 @@
 }
 .rules-op-spacer-guide {
   visibility: visible;
-  transform: translateX(-50%);
+  transform: none;
+  width: 12px;
+  border: 2px solid #ffffff29;
+  border-right: 0;
+  border-bottom: 0;
+  border-top-left-radius: 80px;
+  background: transparent;
 }
 
 
