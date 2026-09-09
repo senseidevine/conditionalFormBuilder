@@ -323,49 +323,32 @@ function BlockView({
     return "and";
   };
 
-  /* Does row `k` render a visible operator pill at depth `d`?
-   * Only rows at that exact depth can, and only if the pill isn't
-   * suppressed (titled-block first row, or a subset-opener). */
-  const hasVisibleOpAt = (k: number, d: number): boolean => {
-    if (rowDepth(k) !== d) return false;
-    const isSubsetOpener = k > 0 && rowDepth(k) > rowDepth(k - 1);
-    const isTitledFirst = k === 0 && block.title !== undefined;
-    return !(isSubsetOpener || isTitledFirst);
-  };
-
-  /* Describe the connector-line segment (if any) to paint at row
-   * `rowIdx` for ancestor depth `atDepth`. The line at that depth
-   * spans from the FIRST row in the subset with a visible operator
-   * pill down to the LAST — rows in between (including deeper
-   * nested rows) get a full-height segment so the line stays
-   * continuous. Opener rows and single-visible-op subsets get
-   * nothing so the line never overshoots a non-operator pill. */
-  const opLineAt = (
-    rowIdx: number,
-    atDepth: number
-  ): { render: boolean; top: string; bottom: string } => {
+  /* For row `rowIdx`, describe the subset at its OWN depth: is it
+   * multi-row, and is this row the first/last same-depth sibling in
+   * that subset? Used to paint a vertical line connecting all
+   * same-level operator pills. */
+  const ownSubsetInfo = (
+    rowIdx: number
+  ): { multi: boolean; isFirst: boolean; isLast: boolean } => {
+    const d = rowDepth(rowIdx);
     let L = rowIdx;
-    while (L > 0 && rowDepth(L - 1) >= atDepth) L -= 1;
+    while (L > 0 && rowDepth(L - 1) >= d) L -= 1;
     let R = rowIdx;
-    while (R + 1 < rows.length && rowDepth(R + 1) >= atDepth) R += 1;
-    let firstVis = -1;
-    let lastVis = -1;
+    while (R + 1 < rows.length && rowDepth(R + 1) >= d) R += 1;
+    let firstAt = -1;
+    let lastAt = -1;
+    let count = 0;
     for (let k = L; k <= R; k += 1) {
-      if (hasVisibleOpAt(k, atDepth)) {
-        if (firstVis === -1) firstVis = k;
-        lastVis = k;
+      if (rowDepth(k) === d) {
+        count += 1;
+        if (firstAt === -1) firstAt = k;
+        lastAt = k;
       }
     }
-    if (firstVis === -1 || firstVis === lastVis) {
-      return { render: false, top: "0", bottom: "0" };
-    }
-    if (rowIdx < firstVis || rowIdx > lastVis) {
-      return { render: false, top: "0", bottom: "0" };
-    }
     return {
-      render: true,
-      top: rowIdx === firstVis ? "50%" : "-3px",
-      bottom: rowIdx === lastVis ? "50%" : "-3px",
+      multi: count >= 2,
+      isFirst: rowIdx === firstAt,
+      isLast: rowIdx === lastAt,
     };
   };
   return (
@@ -396,24 +379,22 @@ function BlockView({
           const hideLeadingConnector =
             (i === 0 && block.title !== undefined) || isSubsetOpening;
           const renderedTags = hideLeadingConnector ? row.slice(1) : row;
-          /* One line per ancestor depth this row belongs to, painted
-           * only when that subset has 2+ visible operator pills.
-           * Trimmed to start at the first visible pill and end at
-           * the last, so the line never crosses an opener's Field.
+          /* Vertical line threading through all same-depth operator
+           * pills in the row's own subset. Painted only when the
+           * subset actually has 2+ same-level rows; trims to the
+           * mid of the first / last sibling so it doesn't leak.
            *
-           * Column math for depth d (from the row's outer left):
-           *   padding-left = d * 40
-           * + rules-row-indent flex item = 16px (only for d > 0)
-           * + flex gap before the connector pill = 6px (same)
+           * Column math (relative to the row's outer left):
+           *   padding-left = depth * 40
+           * + rules-row-indent flex item = 16px (only for depth > 0)
+           * + flex gap between items = 6px (only when there's
+           *   an item before the connector pill)
            * + half of the 34px fixed-width operator pill = 17px
-           * so line-x = d*40 + (d > 0 ? 22 : 0) + 17. */
-          const opLines: { d: number; top: string; bottom: string }[] = [];
-          for (let d = 0; d <= depth; d += 1) {
-            const info = opLineAt(i, d);
-            if (info.render) {
-              opLines.push({ d, top: info.top, bottom: info.bottom });
-            }
-          }
+           * so line-x = depth*40 + (depth > 0 ? 22 : 0) + 17. */
+          const own = ownSubsetInfo(i);
+          const opConnectLeft = depth * 40 + (depth > 0 ? 22 : 0) + 17;
+          const opConnectTop = own.isFirst ? "50%" : "-3px";
+          const opConnectBottom = own.isLast ? "50%" : "-3px";
           return (
             <div
               className="rules-block-row"
@@ -421,18 +402,17 @@ function BlockView({
               data-depth={depth}
               key={i}
             >
-              {opLines.map(({ d, top, bottom }) => (
+              {own.multi ? (
                 <span
-                  key={`op-${d}`}
                   className="rules-op-connect"
                   style={{
-                    left: d * 40 + (d > 0 ? 22 : 0) + 17,
-                    top,
-                    bottom,
+                    left: opConnectLeft,
+                    top: opConnectTop,
+                    bottom: opConnectBottom,
                   }}
                   aria-hidden
                 />
-              ))}
+              ) : null}
               {/* Subset guidelines — one vertical bar per ancestor
                * depth. Adjacent rows' bars overlap into a continuous
                * line, giving each nested subset a clear left edge so
