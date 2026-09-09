@@ -322,6 +322,35 @@ function BlockView({
     }
     return "and";
   };
+
+  /* For row `rowIdx`, describe the subset at its OWN depth: is it
+   * multi-row, and is this row the first/last same-depth sibling in
+   * that subset? Used to paint a vertical line connecting all
+   * same-level operator pills. */
+  const ownSubsetInfo = (
+    rowIdx: number
+  ): { multi: boolean; isFirst: boolean; isLast: boolean } => {
+    const d = rowDepth(rowIdx);
+    let L = rowIdx;
+    while (L > 0 && rowDepth(L - 1) >= d) L -= 1;
+    let R = rowIdx;
+    while (R + 1 < rows.length && rowDepth(R + 1) >= d) R += 1;
+    let firstAt = -1;
+    let lastAt = -1;
+    let count = 0;
+    for (let k = L; k <= R; k += 1) {
+      if (rowDepth(k) === d) {
+        count += 1;
+        if (firstAt === -1) firstAt = k;
+        lastAt = k;
+      }
+    }
+    return {
+      multi: count >= 2,
+      isFirst: rowIdx === firstAt,
+      isLast: rowIdx === lastAt,
+    };
+  };
   return (
     <div className="rules-block">
       {block.title ? (
@@ -350,6 +379,14 @@ function BlockView({
           const hideLeadingConnector =
             (i === 0 && block.title !== undefined) || isSubsetOpening;
           const renderedTags = hideLeadingConnector ? row.slice(1) : row;
+          /* Vertical line threading through all same-depth operator
+           * pills in the row's own subset. Painted only when the
+           * subset actually has 2+ same-level rows; trims to the
+           * mid of the first / last sibling so it doesn't leak. */
+          const own = ownSubsetInfo(i);
+          const opConnectLeft = depth * 40 + (depth > 0 ? 16 : 0) + 15;
+          const opConnectTop = own.isFirst ? "50%" : "-3px";
+          const opConnectBottom = own.isLast ? "50%" : "-3px";
           return (
             <div
               className="rules-block-row"
@@ -357,6 +394,17 @@ function BlockView({
               data-depth={depth}
               key={i}
             >
+              {own.multi ? (
+                <span
+                  className="rules-op-connect"
+                  style={{
+                    left: opConnectLeft,
+                    top: opConnectTop,
+                    bottom: opConnectBottom,
+                  }}
+                  aria-hidden
+                />
+              ) : null}
               {/* Subset guidelines — one vertical bar per ancestor
                * depth. Adjacent rows' bars overlap into a continuous
                * line, giving each nested subset a clear left edge so
