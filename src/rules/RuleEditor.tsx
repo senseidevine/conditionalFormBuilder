@@ -530,29 +530,44 @@ function BlockView({
               ) : null}
             </div>
           );
-          /* Phantom removed rows anchored to this real row. Red
-           * wash flags the structural removal; the pills stay
-           * readable (no strikethrough) so the reviewer can see
-           * what was there. Non-interactive. */
+          /* Phantom removed rows anchored to this real row. Wrap
+           * each phantom pill in the same .tagpill-wrap[data-type]
+           * scaffolding real pills use so the type-based palette
+           * applies; hide the leading Connector and insert the
+           * .rules-op-spacer so the Field lines up with the
+           * surrounding rows. */
           const phantoms = diffRemoved
             .filter((p) => p.afterRowIdx === i)
             .map((p, pi) => {
-              const pTags = p.tags.slice(1);
+              const pRow = p.tags;
+              const pDepth = pRow[0]?.depth ?? 0;
+              const pRendered = pRow.slice(1);
+              const anchorOp =
+                (row[0]?.value || rows[0]?.[0]?.value || "and").toLowerCase();
               return (
                 <div
                   className="rules-block-row is-phantom-removed"
-                  data-depth={0}
+                  style={{ paddingLeft: pDepth * 40 }}
+                  data-depth={pDepth}
                   data-diff="removed"
                   key={`removed-${i}-${pi}`}
                 >
-                  {pTags.map((t) => (
+                  {pDepth > 0 ? (
+                    <span className="rules-row-indent" aria-hidden />
+                  ) : null}
+                  <span className="tagpill rules-op-spacer" aria-hidden>
+                    {anchorOp}
+                  </span>
+                  {pRendered.map((t) => (
                     <span
                       key={t.id}
-                      className="tagpill"
+                      className="tagpill-wrap"
                       data-type={t.type}
                     >
-                      <span className="tagpill-label">
-                        {t.value || t.type}
+                      <span className="tagpill">
+                        <span className="tagpill-label">
+                          {t.value || t.type}
+                        </span>
                       </span>
                     </span>
                   ))}
