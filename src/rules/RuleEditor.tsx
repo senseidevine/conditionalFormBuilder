@@ -362,6 +362,24 @@ function BlockView({
           const hideLeadingConnector =
             (i === 0 && block.title !== undefined) || isSubsetOpening;
           const renderedTags = hideLeadingConnector ? row.slice(1) : row;
+          /* Curved connector — a rounded top-left corner glyph
+           * sitting where the hidden operator pill would be. Shows
+           * on any row whose leading Connector is suppressed AND
+           * whose same-depth subset has a sibling below (i.e., the
+           * subset is multi-row), so the opener visually points into
+           * the run of siblings it belongs to. */
+          let subsetHasSibling = false;
+          if (hideLeadingConnector) {
+            for (let k = i + 1; k < rows.length; k += 1) {
+              const kd = rowDepth(k);
+              if (kd < depth) break;
+              if (kd === depth) {
+                subsetHasSibling = true;
+                break;
+              }
+            }
+          }
+          const showCurl = hideLeadingConnector && subsetHasSibling;
           return (
             <div
               className="rules-block-row"
@@ -392,6 +410,9 @@ function BlockView({
                * further past the depth-based paddingLeft. */}
               {depth > 0 ? (
                 <span className="rules-row-indent" aria-hidden />
+              ) : null}
+              {showCurl ? (
+                <span className="rules-row-curl" aria-hidden />
               ) : null}
               {renderedTags.map((t: Tag) => (
                 <TagPill

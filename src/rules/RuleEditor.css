@@ -80,6 +80,24 @@
   pointer-events: none;
 }
 
+/* Curved connector — a rounded L (top+left border with a top-left
+ * radius) that sits where the hidden operator pill would be on the
+ * first row of a multi-row subset or the first row of a titled
+ * block. Signals "this row opens a group whose siblings share an
+ * operator" without needing a duplicate pill. */
+.rules-row-curl {
+  flex: 0 0 22px;
+  align-self: stretch;
+  height: auto;
+  min-height: 22px;
+  margin-top: 12px;
+  margin-bottom: -12px;
+  border-top: 1.5px solid rgba(255, 255, 255, 0.28);
+  border-left: 1.5px solid rgba(255, 255, 255, 0.28);
+  border-top-left-radius: 14px;
+  pointer-events: none;
+}
+
 
 /* Each tag pill wrap creates its own stacking context (the mount
  * animation leaves a transform on it), so a later sibling's pill
