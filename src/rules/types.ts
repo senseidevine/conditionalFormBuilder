@@ -22,7 +22,7 @@ export interface RuleBlock {
 }
 
 export const OPERATOR_OPTIONS = ["and", "or"];
-export const CONDITION_OPTIONS = ["String", "Number"];
+export const CONDITION_OPTIONS = ["String", "Number", "Really long field value"];
 export const CONDITIONAL_OPTIONS = [
   "is",
   "is not",
