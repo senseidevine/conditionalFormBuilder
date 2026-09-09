@@ -271,37 +271,6 @@ function BlockView({
     }
     return "and";
   };
-
-  /* For row `rowIdx` at ancestor depth `atDepth`, describe the subset
-   * that contains it at that depth: is that subset multi-row, and is
-   * this row the first/last row at that depth in the subset? Used to
-   * decide whether to paint a continuous guide line for that depth
-   * and how to trim its endcaps so the line starts at mid of the
-   * first sibling and ends at mid of the last one. */
-  const subsetInfo = (
-    rowIdx: number,
-    atDepth: number
-  ): { multi: boolean; isFirstAtDepth: boolean; isLastAtDepth: boolean } => {
-    let L = rowIdx;
-    while (L > 0 && rowDepth(L - 1) >= atDepth) L -= 1;
-    let R = rowIdx;
-    while (R + 1 < rows.length && rowDepth(R + 1) >= atDepth) R += 1;
-    let count = 0;
-    let firstAt = -1;
-    let lastAt = -1;
-    for (let k = L; k <= R; k += 1) {
-      if (rowDepth(k) === atDepth) {
-        count += 1;
-        if (firstAt === -1) firstAt = k;
-        lastAt = k;
-      }
-    }
-    return {
-      multi: count >= 2,
-      isFirstAtDepth: rowIdx === firstAt,
-      isLastAtDepth: rowIdx === lastAt,
-    };
-  };
   return (
     <div className="rules-block">
       {block.title ? (
@@ -337,30 +306,24 @@ function BlockView({
               data-depth={depth}
               key={i}
             >
-              {/* Subset guidelines — one continuous vertical bar per
-               * multi-row ancestor subset that contains this row.
-               * Single-row subsets get no bar (nothing to visually
-               * group). Bars start at mid of the first sibling and
-               * end at mid of the last, so the line sits inside the
-               * subset without leaking above the opener or below the
-               * closer. Adjacent rows' bars overlap through the row
-               * gap into a continuous line. */}
-              {Array.from({ length: depth }, (_, gi) => {
-                const atDepth = gi + 1;
-                const info = subsetInfo(i, atDepth);
-                if (!info.multi) return null;
-                const left = gi * 40 + 19 + (gi > 0 ? 16 : 0);
-                const top = info.isFirstAtDepth ? "50%" : "-3px";
-                const bottom = info.isLastAtDepth ? "50%" : "-3px";
-                return (
-                  <span
-                    key={`guide-${gi}`}
-                    className="rules-row-guide"
-                    style={{ left, top, bottom }}
-                    aria-hidden
-                  />
-                );
-              })}
+              {/* Subset guidelines — one vertical bar per ancestor
+               * depth. Adjacent rows' bars overlap into a continuous
+               * line, giving each nested subset a clear left edge so
+               * the reader can see which rows are grouped together. */}
+              {Array.from({ length: depth }, (_, gi) => (
+                /* Each guide bar should sit on the operator column
+                 * of the row it represents. Depth-> 0 rows have no
+                 * indent spacer, deeper rows carry a fixed 16px
+                 * spacer between paddingLeft and their first pill,
+                 * so guides for gi >= 1 shift by that same 16px to
+                 * line up with the operator pill above. */
+                <span
+                  key={`guide-${gi}`}
+                  className="rules-row-guide"
+                  style={{ left: gi * 40 + 19 + (gi > 0 ? 16 : 0) }}
+                  aria-hidden
+                />
+              ))}
               {/* 40px spacer at the start of every nested row so
                * each child row of a subset visually steps in even
                * further past the depth-based paddingLeft. */}
