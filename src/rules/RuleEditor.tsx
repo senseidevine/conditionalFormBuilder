@@ -408,18 +408,6 @@ function BlockView({
                * lands below, drop a guide bar in the operator column
                * so the top row visually ties into the operator pill
                * on the row that follows. */}
-              {i === 0 && rows.length > 1 && rowDepth(1) === depth ? (
-                /* First-row guide: since no sibling below is drawing
-                 * its own guide, this bar has to reach into row 1 on
-                 * its own — top:-3 keeps it just above row 0, and
-                 * bottom:-21 extends past the row gap into the
-                 * middle of row 1 where the operator pill sits. */
-                <span
-                  className="rules-row-guide"
-                  style={{ left: 17, top: -3, bottom: -21 }}
-                  aria-hidden
-                />
-              ) : null}
               {/* 40px spacer at the start of every nested row so
                * each child row of a subset visually steps in even
                * further past the depth-based paddingLeft. */}
@@ -427,8 +415,17 @@ function BlockView({
                 <span className="rules-row-indent" aria-hidden />
               ) : null}
               {siblingOpForAlignment ? (
+                /* Op-spacer stays invisible for alignment, but hosts
+                 * a visible guide bar centred on its column so the
+                 * operator pill on the sibling below reads as
+                 * continuous with the opener. */
                 <span className="tagpill rules-op-spacer" aria-hidden>
                   {siblingOpForAlignment}
+                  <span
+                    className="rules-row-guide rules-op-spacer-guide"
+                    style={{ left: "50%", top: -3, bottom: -21 }}
+                    aria-hidden
+                  />
                 </span>
               ) : null}
               {renderedTags.map((t: Tag) => (

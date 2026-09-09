@@ -84,10 +84,19 @@
  * text as the sibling's operator ("and" / "or") so its intrinsic
  * width matches the visible operator pill exactly — that gives the
  * opener's Field the same starting x as the sibling's Field, and
- * the alignment tracks live as the shared operator flips. */
+ * the alignment tracks live as the shared operator flips.
+ *
+ * position:relative so the child guide can centre itself on the
+ * spacer's own column; visibility:visible on the guide overrides
+ * the parent's visibility:hidden. */
 .rules-op-spacer {
   visibility: hidden;
   pointer-events: none;
+  position: relative;
+}
+.rules-op-spacer-guide {
+  visibility: visible;
+  transform: translateX(-50%);
 }
 
 
