@@ -362,20 +362,6 @@ function BlockView({
           const hideLeadingConnector =
             (i === 0 && block.title !== undefined) || isSubsetOpening;
           const renderedTags = hideLeadingConnector ? row.slice(1) : row;
-          /* Add a depth-0 rules-row-guide bar to any row at depth 0
-           * once the block has a sibling below at the same depth.
-           * Nested rows keep their existing per-ancestor guides;
-           * this just extends the same treatment to the top-level
-           * subset so a multi-row block shows a continuous line
-           * down the left of the operator column too. */
-          let depth0HasSibling = false;
-          for (let k = 0; k < rows.length; k += 1) {
-            if (k !== i && rowDepth(k) === 0) {
-              depth0HasSibling = true;
-              break;
-            }
-          }
-          const showDepth0Guide = depth === 0 && depth0HasSibling;
           return (
             <div
               className="rules-block-row"
@@ -404,13 +390,6 @@ function BlockView({
               {/* 40px spacer at the start of every nested row so
                * each child row of a subset visually steps in even
                * further past the depth-based paddingLeft. */}
-              {showDepth0Guide ? (
-                <span
-                  className="rules-row-guide"
-                  style={{ left: 17 }}
-                  aria-hidden
-                />
-              ) : null}
               {depth > 0 ? (
                 <span className="rules-row-indent" aria-hidden />
               ) : null}
