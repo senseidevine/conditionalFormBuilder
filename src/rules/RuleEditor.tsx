@@ -383,16 +383,10 @@ function BlockView({
            * pills in the row's own subset. Painted only when the
            * subset actually has 2+ same-level rows; trims to the
            * mid of the first / last sibling so it doesn't leak.
-           *
-           * Column math (relative to the row's outer left):
-           *   padding-left = depth * 40
-           * + rules-row-indent flex item = 16px (only for depth > 0)
-           * + flex gap between items = 6px (only when there's
-           *   an item before the connector pill)
-           * + half of the 34px fixed-width operator pill = 17px
-           * so line-x = depth*40 + (depth > 0 ? 22 : 0) + 17. */
+           * The operator pill is fixed at 34px wide (see CSS), so
+           * its center sits at pill-left + 17. */
           const own = ownSubsetInfo(i);
-          const opConnectLeft = depth * 40 + (depth > 0 ? 22 : 0) + 17;
+          const opConnectLeft = depth * 40 + (depth > 0 ? 16 : 0) + 17;
           const opConnectTop = own.isFirst ? "50%" : "-3px";
           const opConnectBottom = own.isLast ? "50%" : "-3px";
           return (
