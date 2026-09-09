@@ -233,16 +233,28 @@ function generateRandomTags(): Tag[] {
   const rowCount = 3 + Math.floor(Math.random() * 10);
   const tags: Tag[] = [];
   let depth = 0;
+  /* ops[d] = the operator chosen for the currently active subset at
+   * depth d. When we OPEN a new subset (depth increases from the
+   * previous row), a fresh op is picked for each new level; siblings
+   * inside that subset reuse it so every same-level pill matches. */
+  const ops: string[] = [pick(OPERATOR_OPTIONS)];
   for (let i = 0; i < rowCount; i += 1) {
+    let newDepth: number;
     if (i === 0) {
-      depth = 0;
+      newDepth = 0;
     } else {
       const options: number[] = [depth];
       if (depth < MAX_DEPTH) options.push(depth + 1);
       for (let d = 0; d < depth; d += 1) options.push(d);
-      depth = pick(options);
+      newDepth = pick(options);
     }
-    const op = pick(OPERATOR_OPTIONS);
+    if (newDepth > depth) {
+      for (let d = depth + 1; d <= newDepth; d += 1) {
+        ops[d] = pick(OPERATOR_OPTIONS);
+      }
+    }
+    depth = newDepth;
+    const op = ops[depth];
     const field = pick(CONDITION_OPTIONS);
     const cond = pick(CONDITIONAL_OPTIONS);
     const nValues = 1 + Math.floor(Math.random() * 3);
