@@ -180,6 +180,56 @@ export function RuleEditor({
         b.title === "if" ? { ...b, tags: generateRandomTags() } : b
       )
     );
+    setDiffStatus(new Map());
+    setDiffRemoved([]);
+  };
+
+  /* Review-mode diff — quiet triage surface (option 4).
+   * `diffStatus`  maps a row's leading-Connector id to its status.
+   * `diffRemoved` holds phantom removed rows, positioned after the
+   *   index of the real row they used to follow.
+   * The rendered surface stays clean: rows keep their normal
+   * palette. Change signals only appear as a thin coloured bar in
+   * each row's left gutter and a "N changes" badge on the block
+   * header. */
+  const [diffStatus, setDiffStatus] = useState<
+    Map<string, "added" | "modified">
+  >(new Map());
+  const [diffRemoved, setDiffRemoved] = useState<
+    { afterRowIdx: number; tags: Tag[] }[]
+  >([]);
+
+  const simulateDiff = () => {
+    const tags = generateRandomTags();
+    const status = new Map<string, "added" | "modified">();
+    const totalRows = Math.ceil(tags.length / 4);
+    for (let i = 0; i < totalRows; i += 1) {
+      const c = tags[i * 4];
+      if (!c) continue;
+      const r = Math.random();
+      if (r < 0.28) status.set(c.id, "added");
+      else if (r < 0.55) status.set(c.id, "modified");
+    }
+    const removedCount = 1 + Math.floor(Math.random() * 2);
+    const removed: { afterRowIdx: number; tags: Tag[] }[] = [];
+    for (let n = 0; n < removedCount; n += 1) {
+      const afterRowIdx = Math.floor(Math.random() * Math.max(totalRows, 1));
+      const rowTags = generateRandomTags().slice(0, 4);
+      if (rowTags.length === 4) {
+        rowTags[0] = { ...rowTags[0], depth: 0 };
+        removed.push({ afterRowIdx, tags: rowTags });
+      }
+    }
+    setBlocks((bs) =>
+      bs.map((b) => (b.title === "if" ? { ...b, tags } : b))
+    );
+    setDiffStatus(status);
+    setDiffRemoved(removed);
+  };
+
+  const clearDiff = () => {
+    setDiffStatus(new Map());
+    setDiffRemoved([]);
   };
 
   /* The trailing `then` block always sits UNDER the +Block CTA; each
@@ -194,6 +244,8 @@ export function RuleEditor({
       block={block}
       canRemove={block.title === undefined}
       alwaysShowCtas={alwaysShowCtas}
+      diffStatus={block.title === "if" ? diffStatus : new Map()}
+      diffRemoved={block.title === "if" ? diffRemoved : []}
       onAddNext={(v, atDepth) => addNextTag(block.id, v, atDepth)}
       onSetTagValue={(tagId, v) => setTagValue(block.id, tagId, v)}
       onRemoveRow={(startIdx, count) =>
@@ -212,13 +264,31 @@ export function RuleEditor({
         </button>
       ) : null}
       {renderBlock(trailing)}
-      <button
-        type="button"
-        className="rules-randomize"
-        onClick={randomizeIf}
-      >
-        Generate random rule
-      </button>
+      <div className="rules-devtools">
+        <button
+          type="button"
+          className="rules-randomize"
+          onClick={randomizeIf}
+        >
+          Generate random rule
+        </button>
+        <button
+          type="button"
+          className="rules-randomize"
+          onClick={simulateDiff}
+        >
+          Simulate review diff
+        </button>
+        {diffStatus.size > 0 || diffRemoved.length > 0 ? (
+          <button
+            type="button"
+            className="rules-randomize"
+            onClick={clearDiff}
+          >
+            Clear diff
+          </button>
+        ) : null}
+      </div>
     </div>
   );
 }
@@ -276,6 +346,8 @@ const MAX_DEPTH = 2;
 function BlockView({
   block,
   canRemove,
+  diffStatus,
+  diffRemoved,
   onAddNext,
   onSetTagValue,
   onRemoveRow,
@@ -284,6 +356,8 @@ function BlockView({
   block: RuleBlock;
   canRemove: boolean;
   alwaysShowCtas: boolean;
+  diffStatus: Map<string, "added" | "modified">;
+  diffRemoved: { afterRowIdx: number; tags: Tag[] }[];
   onAddNext: (value: string, atDepth?: number) => void;
   onSetTagValue: (tagId: string, v: string) => void;
   onRemoveRow: (startIdx: number, count: number) => void;
@@ -334,15 +408,24 @@ function BlockView({
     }
     return "and";
   };
+  const diffTotal = diffStatus.size + diffRemoved.length;
   return (
     <div className="rules-block">
       {block.title ? (
-        <div className="rules-block-title">{block.title}</div>
+        <div className="rules-block-title">
+          <span>{block.title}</span>
+          {diffTotal > 0 ? (
+            <span className="rules-block-diff-badge" aria-label={`${diffTotal} changes in this block`}>
+              {diffTotal} change{diffTotal === 1 ? "" : "s"}
+            </span>
+          ) : null}
+        </div>
       ) : null}
       <div className="rules-block-body">
-        {rows.map((row, i) => {
+        {rows.flatMap((row, i) => {
           const isLast = i === lastRowIdx;
           const depth = rowDepth(i);
+          const rowDiff = row[0] ? diffStatus.get(row[0].id) : undefined;
           /* Row-level delete drops the whole condition line at once.
            * The first row holds the block's seed Connector and can't
            * be removed on its own — the whole block's Remove control
@@ -379,13 +462,20 @@ function BlockView({
               }
             }
           }
-          return (
+          const rowEl = (
             <div
               className="rules-block-row"
               style={{ paddingLeft: depth * 40 }}
               data-depth={depth}
               key={i}
             >
+              {rowDiff ? (
+                <span
+                  className="rules-gutter-mark"
+                  data-diff={rowDiff}
+                  aria-hidden
+                />
+              ) : null}
               {/* Subset guidelines — one vertical bar per ancestor
                * depth. Adjacent rows' bars overlap into a continuous
                * line, giving each nested subset a clear left edge so
@@ -459,6 +549,39 @@ function BlockView({
               ) : null}
             </div>
           );
+          /* Phantom removed rows anchored to this real row. Keep the
+           * same clean palette — a red gutter mark + strikethrough
+           * on the text signals "this was removed" without shouting. */
+          const phantoms = diffRemoved
+            .filter((p) => p.afterRowIdx === i)
+            .map((p, pi) => {
+              const pTags = p.tags.slice(1);
+              return (
+                <div
+                  className="rules-block-row is-phantom-removed"
+                  data-depth={0}
+                  key={`removed-${i}-${pi}`}
+                >
+                  <span
+                    className="rules-gutter-mark"
+                    data-diff="removed"
+                    aria-hidden
+                  />
+                  {pTags.map((t) => (
+                    <span
+                      key={t.id}
+                      className="tagpill"
+                      data-type={t.type}
+                    >
+                      <span className="tagpill-label">
+                        {t.value || t.type}
+                      </span>
+                    </span>
+                  ))}
+                </div>
+              );
+            });
+          return [rowEl, ...phantoms];
         })}
         {/* Connector / Subset CTAs — all on ONE row now. Ancestor
          * levels render as icon-only "+" pills; the current-depth

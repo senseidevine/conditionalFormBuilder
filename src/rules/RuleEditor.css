@@ -34,6 +34,23 @@
   font-weight: 700;
   letter-spacing: 0.3px;
   text-transform: lowercase;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* "N changes" review badge — sits inline next to the block title
+ * so the admin can eyeball how much to inspect before opening. */
+.rules-block-diff-badge {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  text-transform: none;
+  color: rgba(255, 255, 255, 0.85);
+  background: rgba(120, 160, 210, 0.22);
+  padding: 2px 8px;
+  border-radius: 9999px;
 }
 
 .rules-block-body {
@@ -188,6 +205,46 @@
 .rules-block-remove:hover {
   background: rgba(255, 255, 255, 0.06);
   color: var(--fg);
+}
+
+/* Quiet review triage (option 4) — thin coloured bar in the row's
+ * left margin. Absolute-positioned inside the row so it can sit
+ * outside the row's content area (in the block's inner padding),
+ * never competing with pill layout or content. Colour maps to the
+ * change kind: green added, yellow modified, red removed. */
+.rules-gutter-mark {
+  position: absolute;
+  left: -8px;
+  top: 4px;
+  bottom: 4px;
+  width: 3px;
+  border-radius: 2px;
+  pointer-events: none;
+}
+.rules-gutter-mark[data-diff="added"] {
+  background: rgba(80, 200, 120, 0.85);
+}
+.rules-gutter-mark[data-diff="modified"] {
+  background: rgba(240, 200, 60, 0.85);
+}
+.rules-gutter-mark[data-diff="removed"] {
+  background: rgba(240, 90, 90, 0.85);
+}
+
+/* Phantom removed row — same clean palette as any row, but the
+ * text is struck through and the pills can't be interacted with
+ * so it reads as a historical "was here". */
+.rules-block-row.is-phantom-removed {
+  text-decoration: line-through;
+  opacity: 0.72;
+  pointer-events: none;
+}
+
+/* Devtools row under the `then` block — hosts demo buttons. */
+.rules-devtools {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 /* Random-rule generator — sits under the `then` block and stuffs
