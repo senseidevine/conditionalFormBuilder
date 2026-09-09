@@ -382,9 +382,11 @@ function BlockView({
           /* Vertical line threading through all same-depth operator
            * pills in the row's own subset. Painted only when the
            * subset actually has 2+ same-level rows; trims to the
-           * mid of the first / last sibling so it doesn't leak. */
+           * mid of the first / last sibling so it doesn't leak.
+           * The operator pill is fixed at 34px wide (see CSS), so
+           * its center sits at pill-left + 17. */
           const own = ownSubsetInfo(i);
-          const opConnectLeft = depth * 40 + (depth > 0 ? 16 : 0) + 15;
+          const opConnectLeft = depth * 40 + (depth > 0 ? 16 : 0) + 17;
           const opConnectTop = own.isFirst ? "50%" : "-3px";
           const opConnectBottom = own.isLast ? "50%" : "-3px";
           return (

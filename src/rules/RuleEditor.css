@@ -292,6 +292,16 @@
 .tagpill-wrap[data-type="operator"] .tagpill {
   background: rgba(103, 144, 184, 0.2);
   color: #6790b8;
+  /* Fixed width + centered content so "and" and "or" pills line
+   * up on a predictable center, which the operator-column line
+   * uses as its target x. */
+  min-width: 34px;
+  padding-left: 8px;
+  padding-right: 8px;
+  justify-content: center;
+}
+.tagpill-wrap[data-type="operator"] .tagpill-label {
+  text-align: center;
 }
 .tagpill-wrap[data-type="condition"] .tagpill {
   background: rgba(255, 255, 255, 0.14);
