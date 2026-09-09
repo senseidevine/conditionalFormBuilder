@@ -174,6 +174,14 @@ export function RuleEditor({
     });
   };
 
+  const randomizeIf = () => {
+    setBlocks((bs) =>
+      bs.map((b) =>
+        b.title === "if" ? { ...b, tags: generateRandomTags() } : b
+      )
+    );
+  };
+
   /* The trailing `then` block always sits UNDER the +Block CTA; each
    * of the leading blocks (the `if` heading and any user-added
    * untitled blocks) render above the CTA. Untitled blocks are the
@@ -204,8 +212,51 @@ export function RuleEditor({
         </button>
       ) : null}
       {renderBlock(trailing)}
+      <button
+        type="button"
+        className="rules-randomize"
+        onClick={randomizeIf}
+      >
+        Generate random rule
+      </button>
     </div>
   );
+}
+
+/* Build a plausible rule of 3–12 rows for the `if` block. Depth walks
+ * randomly (up 1, stay, or drop back to any shallower level) so we
+ * see a mix of siblings and nested subsets. All tags are non-empty
+ * so guides / badges / bracket lines all light up. */
+function generateRandomTags(): Tag[] {
+  const pick = <T,>(arr: T[]): T =>
+    arr[Math.floor(Math.random() * arr.length)];
+  const rowCount = 3 + Math.floor(Math.random() * 10);
+  const tags: Tag[] = [];
+  let depth = 0;
+  for (let i = 0; i < rowCount; i += 1) {
+    if (i === 0) {
+      depth = 0;
+    } else {
+      const options: number[] = [depth];
+      if (depth < MAX_DEPTH) options.push(depth + 1);
+      for (let d = 0; d < depth; d += 1) options.push(d);
+      depth = pick(options);
+    }
+    const op = pick(OPERATOR_OPTIONS);
+    const field = pick(CONDITION_OPTIONS);
+    const cond = pick(CONDITIONAL_OPTIONS);
+    const nValues = 1 + Math.floor(Math.random() * 3);
+    const values: string[] = [];
+    for (let v = 0; v < nValues; v += 1) {
+      const val = pick(VALUE_SUGGESTIONS);
+      if (!values.includes(val)) values.push(val);
+    }
+    tags.push(makeTag("operator", op, depth));
+    tags.push(makeTag("condition", field));
+    tags.push(makeTag("conditional", cond));
+    tags.push(makeTag("value", values.join(", ")));
+  }
+  return tags;
 }
 
 const MAX_DEPTH = 2;

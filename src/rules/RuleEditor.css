@@ -165,6 +165,42 @@
   color: var(--fg);
 }
 
+/* Random-rule generator — sits under the `then` block and stuffs
+ * the `if` block with a plausible 3–12 row rule so reviewers can
+ * see badges, guidelines, and nested subsets without hand-building
+ * the tree. */
+.rules-randomize {
+  appearance: none;
+  background: transparent;
+  border: 1px dashed rgba(255, 255, 255, 0.24);
+  color: rgba(255, 255, 255, 0.72);
+  align-self: flex-start;
+  padding: 8px 14px;
+  border-radius: 9999px;
+  font: inherit;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background var(--dur-1) var(--ease),
+    border-color var(--dur-1) var(--ease),
+    color var(--dur-1) var(--ease),
+    transform var(--dur-spring) var(--spring);
+}
+.rules-randomize:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.4);
+  color: #fff;
+}
+.rules-randomize:active {
+  transform: scale(0.96);
+  transition: background 60ms linear, transform 60ms ease-out;
+}
+.rules-randomize:focus-visible {
+  outline: 2px solid var(--accent-focus);
+  outline-offset: 2px;
+}
+
 /* + Block at the bottom of the editor — adds another block below.
  * Uses the same solid-fill pill treatment as .apill (the Section /
  * Group actions in the tree builder) so the two editors share one
