@@ -180,6 +180,50 @@ export function RuleEditor({
         b.title === "if" ? { ...b, tags: generateRandomTags() } : b
       )
     );
+    setDiffAdded(new Set());
+    setDiffRemoved([]);
+  };
+
+  /* Structural-only diff (scoped option 1). Row-level tints for
+   * add/remove only — value edits are left alone. Pill-level
+   * changes belong to option 2 and are intentionally excluded.
+   *
+   * `diffAdded`   -> set of leading-Connector ids for newly-added rows.
+   * `diffRemoved` -> phantom rows dropped in the submission, each
+   *                  anchored to render after a real row's index. */
+  const [diffAdded, setDiffAdded] = useState<Set<string>>(new Set());
+  const [diffRemoved, setDiffRemoved] = useState<
+    { afterRowIdx: number; tags: Tag[] }[]
+  >([]);
+
+  const simulateDiff = () => {
+    const tags = generateRandomTags();
+    const totalRows = Math.ceil(tags.length / 4);
+    const added = new Set<string>();
+    for (let i = 0; i < totalRows; i += 1) {
+      const c = tags[i * 4];
+      if (c && Math.random() < 0.33) added.add(c.id);
+    }
+    const removedCount = 1 + Math.floor(Math.random() * 2);
+    const removed: { afterRowIdx: number; tags: Tag[] }[] = [];
+    for (let n = 0; n < removedCount; n += 1) {
+      const afterRowIdx = Math.floor(Math.random() * Math.max(totalRows, 1));
+      const rowTags = generateRandomTags().slice(0, 4);
+      if (rowTags.length === 4) {
+        rowTags[0] = { ...rowTags[0], depth: 0 };
+        removed.push({ afterRowIdx, tags: rowTags });
+      }
+    }
+    setBlocks((bs) =>
+      bs.map((b) => (b.title === "if" ? { ...b, tags } : b))
+    );
+    setDiffAdded(added);
+    setDiffRemoved(removed);
+  };
+
+  const clearDiff = () => {
+    setDiffAdded(new Set());
+    setDiffRemoved([]);
   };
 
   /* The trailing `then` block always sits UNDER the +Block CTA; each
@@ -194,6 +238,8 @@ export function RuleEditor({
       block={block}
       canRemove={block.title === undefined}
       alwaysShowCtas={alwaysShowCtas}
+      diffAdded={block.title === "if" ? diffAdded : new Set()}
+      diffRemoved={block.title === "if" ? diffRemoved : []}
       onAddNext={(v, atDepth) => addNextTag(block.id, v, atDepth)}
       onSetTagValue={(tagId, v) => setTagValue(block.id, tagId, v)}
       onRemoveRow={(startIdx, count) =>
@@ -212,13 +258,31 @@ export function RuleEditor({
         </button>
       ) : null}
       {renderBlock(trailing)}
-      <button
-        type="button"
-        className="rules-randomize"
-        onClick={randomizeIf}
-      >
-        Generate random rule
-      </button>
+      <div className="rules-devtools">
+        <button
+          type="button"
+          className="rules-randomize"
+          onClick={randomizeIf}
+        >
+          Generate random rule
+        </button>
+        <button
+          type="button"
+          className="rules-randomize"
+          onClick={simulateDiff}
+        >
+          Simulate review diff
+        </button>
+        {diffAdded.size > 0 || diffRemoved.length > 0 ? (
+          <button
+            type="button"
+            className="rules-randomize"
+            onClick={clearDiff}
+          >
+            Clear diff
+          </button>
+        ) : null}
+      </div>
     </div>
   );
 }
@@ -276,6 +340,8 @@ const MAX_DEPTH = 2;
 function BlockView({
   block,
   canRemove,
+  diffAdded,
+  diffRemoved,
   onAddNext,
   onSetTagValue,
   onRemoveRow,
@@ -284,6 +350,8 @@ function BlockView({
   block: RuleBlock;
   canRemove: boolean;
   alwaysShowCtas: boolean;
+  diffAdded: Set<string>;
+  diffRemoved: { afterRowIdx: number; tags: Tag[] }[];
   onAddNext: (value: string, atDepth?: number) => void;
   onSetTagValue: (tagId: string, v: string) => void;
   onRemoveRow: (startIdx: number, count: number) => void;
@@ -340,9 +408,11 @@ function BlockView({
         <div className="rules-block-title">{block.title}</div>
       ) : null}
       <div className="rules-block-body">
-        {rows.map((row, i) => {
+        {rows.flatMap((row, i) => {
           const isLast = i === lastRowIdx;
           const depth = rowDepth(i);
+          const rowDiff =
+            row[0] && diffAdded.has(row[0].id) ? "added" : undefined;
           /* Row-level delete drops the whole condition line at once.
            * The first row holds the block's seed Connector and can't
            * be removed on its own — the whole block's Remove control
@@ -379,11 +449,12 @@ function BlockView({
               }
             }
           }
-          return (
+          const rowEl = (
             <div
               className="rules-block-row"
               style={{ paddingLeft: depth * 40 }}
               data-depth={depth}
+              data-diff={rowDiff}
               key={i}
             >
               {/* Subset guidelines — one vertical bar per ancestor
@@ -459,6 +530,36 @@ function BlockView({
               ) : null}
             </div>
           );
+          /* Phantom removed rows anchored to this real row. Red
+           * wash flags the structural removal; the pills stay
+           * readable (no strikethrough) so the reviewer can see
+           * what was there. Non-interactive. */
+          const phantoms = diffRemoved
+            .filter((p) => p.afterRowIdx === i)
+            .map((p, pi) => {
+              const pTags = p.tags.slice(1);
+              return (
+                <div
+                  className="rules-block-row is-phantom-removed"
+                  data-depth={0}
+                  data-diff="removed"
+                  key={`removed-${i}-${pi}`}
+                >
+                  {pTags.map((t) => (
+                    <span
+                      key={t.id}
+                      className="tagpill"
+                      data-type={t.type}
+                    >
+                      <span className="tagpill-label">
+                        {t.value || t.type}
+                      </span>
+                    </span>
+                  ))}
+                </div>
+              );
+            });
+          return [rowEl, ...phantoms];
         })}
         {/* Connector / Subset CTAs — all on ONE row now. Ancestor
          * levels render as icon-only "+" pills; the current-depth

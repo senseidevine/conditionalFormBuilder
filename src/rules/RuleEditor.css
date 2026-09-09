@@ -190,6 +190,31 @@
   color: var(--fg);
 }
 
+/* Structural-only diff washes (scoped option 1). Only added rows
+ * and removed rows/subsets get a tint — value-only edits inside a
+ * row are left alone (that's option 2's job). Keeps the git-diff
+ * readability where it's semantically honest. */
+.rules-block-row[data-diff="added"] {
+  background: rgba(80, 200, 120, 0.10);
+  box-shadow: inset 3px 0 0 rgba(80, 200, 120, 0.6);
+  border-radius: 4px;
+}
+.rules-block-row[data-diff="removed"] {
+  background: rgba(240, 90, 90, 0.10);
+  box-shadow: inset 3px 0 0 rgba(240, 90, 90, 0.6);
+  border-radius: 4px;
+}
+.rules-block-row.is-phantom-removed {
+  pointer-events: none;
+}
+
+/* Devtools row under the `then` block — hosts demo buttons. */
+.rules-devtools {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 /* Random-rule generator — sits under the `then` block and stuffs
  * the `if` block with a plausible 3–12 row rule so reviewers can
  * see badges, guidelines, and nested subsets without hand-building
