@@ -389,21 +389,27 @@ function BlockView({
               {/* Subset guidelines — one vertical bar per ancestor
                * depth. Adjacent rows' bars overlap into a continuous
                * line, giving each nested subset a clear left edge so
-               * the reader can see which rows are grouped together. */}
-              {Array.from({ length: depth }, (_, gi) => (
-                /* Each guide bar should sit on the operator column
-                 * of the row it represents. Depth-> 0 rows have no
-                 * indent spacer, deeper rows carry a fixed 16px
-                 * spacer between paddingLeft and their first pill,
-                 * so guides for gi >= 1 shift by that same 16px to
-                 * line up with the operator pill above. */
-                <span
-                  key={`guide-${gi}`}
-                  className="rules-row-guide"
-                  style={{ left: gi * 40 + 19 + (gi > 0 ? 16 : 0) }}
-                  aria-hidden
-                />
-              ))}
+               * the reader can see which rows are grouped together.
+               *
+               * Guide-x for ancestor depth gi:
+               *   paddingLeft         = gi * 40
+               * + indent-spacer + gap = 22 (only for gi > 0)
+               * + operator pill centre = ~20 for "and", ~16 for "or"
+               * We read the ancestor subset's current shared op via
+               * lastOpAtDepth(gi) so the bar shifts when the op is
+               * flipped and stays centred on the pill above. */}
+              {Array.from({ length: depth }, (_, gi) => {
+                const ancestorOp = lastOpAtDepth(gi);
+                const centreOffset = ancestorOp === "or" ? 16 : 20;
+                return (
+                  <span
+                    key={`guide-${gi}`}
+                    className="rules-row-guide"
+                    style={{ left: gi * 40 + (gi > 0 ? 22 : 0) + centreOffset }}
+                    aria-hidden
+                  />
+                );
+              })}
               {/* First row of the block: once a same-depth sibling
                * lands below, drop a guide bar in the operator column
                * so the top row visually ties into the operator pill
