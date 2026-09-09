@@ -80,20 +80,23 @@
   pointer-events: none;
 }
 
-/* Curved L connector on the first row of a titled block. Starts at
- * the mid of row 0's Field column, drops through the row-gap, and
- * curves right into the operator pill on the first sibling below.
- * Absolute-positioned so it can extend past its own row's box; the
- * containing .rules-block-row is position:relative. */
+/* Curved connector on the first row of a titled block: a rounded
+ * top-left ┌ corner. Its short top segment tucks in above the
+ * first row's Field pill; its long left segment descends through
+ * the operator pill on the sibling row below (and past it), so
+ * the eye reads "this Field continues into the operator below".
+ * Absolute-positioned inside .rules-block-row (position:relative);
+ * height overflows the row so the tail extends into the rows
+ * below. */
 .rules-firstline-curl {
   position: absolute;
   left: 0;
-  top: 50%;
-  height: 36px;
-  width: 20px;
-  border-left: 1.5px solid rgba(255, 255, 255, 0.28);
-  border-bottom: 1.5px solid rgba(255, 255, 255, 0.28);
-  border-bottom-left-radius: 14px;
+  top: 4px;
+  height: 60px;
+  width: 22px;
+  border-top: 1.5px solid rgba(255, 255, 255, 0.32);
+  border-left: 1.5px solid rgba(255, 255, 255, 0.32);
+  border-top-left-radius: 16px;
   pointer-events: none;
 }
 
