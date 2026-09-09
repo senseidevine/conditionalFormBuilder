@@ -387,6 +387,17 @@ function BlockView({
                   aria-hidden
                 />
               ))}
+              {/* First row of the block: once a same-depth sibling
+               * lands below, drop a guide bar in the operator column
+               * so the top row visually ties into the operator pill
+               * on the row that follows. */}
+              {i === 0 && rows.length > 1 && rowDepth(1) === depth ? (
+                <span
+                  className="rules-row-guide"
+                  style={{ left: 17 }}
+                  aria-hidden
+                />
+              ) : null}
               {/* 40px spacer at the start of every nested row so
                * each child row of a subset visually steps in even
                * further past the depth-based paddingLeft. */}
