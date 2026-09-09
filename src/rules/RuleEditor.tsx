@@ -362,6 +362,23 @@ function BlockView({
           const hideLeadingConnector =
             (i === 0 && block.title !== undefined) || isSubsetOpening;
           const renderedTags = hideLeadingConnector ? row.slice(1) : row;
+          /* Look for a same-depth sibling below to steal its
+           * operator value from. When the first row's Connector is
+           * hidden, we insert an invisible pill of the same text as
+           * the sibling's op so the Field on this row lines up
+           * horizontally with the Field on every sibling below —
+           * and stays aligned as the op flips between and / or. */
+          let siblingOpForAlignment: string | null = null;
+          if (hideLeadingConnector) {
+            for (let k = i + 1; k < rows.length; k += 1) {
+              const kd = rowDepth(k);
+              if (kd < depth) break;
+              if (kd === depth) {
+                siblingOpForAlignment = (rows[k][0]?.value || "and").toLowerCase();
+                break;
+              }
+            }
+          }
           return (
             <div
               className="rules-block-row"
@@ -403,6 +420,11 @@ function BlockView({
                * further past the depth-based paddingLeft. */}
               {depth > 0 ? (
                 <span className="rules-row-indent" aria-hidden />
+              ) : null}
+              {siblingOpForAlignment ? (
+                <span className="tagpill rules-op-spacer" aria-hidden>
+                  {siblingOpForAlignment}
+                </span>
               ) : null}
               {renderedTags.map((t: Tag) => (
                 <TagPill

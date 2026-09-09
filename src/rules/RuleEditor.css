@@ -80,6 +80,16 @@
   pointer-events: none;
 }
 
+/* Invisible tagpill-shaped spacer on opener rows. Renders the same
+ * text as the sibling's operator ("and" / "or") so its intrinsic
+ * width matches the visible operator pill exactly — that gives the
+ * opener's Field the same starting x as the sibling's Field, and
+ * the alignment tracks live as the shared operator flips. */
+.rules-op-spacer {
+  visibility: hidden;
+  pointer-events: none;
+}
+
 
 /* Each tag pill wrap creates its own stacking context (the mount
  * animation leaves a transform on it), so a later sibling's pill
