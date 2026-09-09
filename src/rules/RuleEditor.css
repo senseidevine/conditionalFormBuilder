@@ -71,19 +71,6 @@
   pointer-events: none;
 }
 
-/* Vertical line threading through all same-level operator pills in
- * a subset. Sits underneath the pills (z-index 0) so the coloured
- * "and"/"or" pill visually caps the line at its position. Adjacent
- * rows' bars overlap through the row gap so consecutive siblings
- * read as one continuous line. */
-.rules-op-connect {
-  position: absolute;
-  width: 1.5px;
-  background: rgba(255, 255, 255, 0.18);
-  pointer-events: none;
-  z-index: 0;
-}
-
 /* Empty 40px spacer inserted at the start of every nested row so
  * each child of a subset visually steps further right beyond the
  * depth-based paddingLeft. */
