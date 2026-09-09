@@ -362,22 +362,6 @@ function BlockView({
           const hideLeadingConnector =
             (i === 0 && block.title !== undefined) || isSubsetOpening;
           const renderedTags = hideLeadingConnector ? row.slice(1) : row;
-          /* On the first row of a titled block (`if` / `then`), if a
-           * sibling below shares depth 0, draw a curved L connector
-           * from the Field down and right into the operator pill on
-           * that sibling row — visually says "this Field continues
-           * into the operator below". Nested subsets and untitled
-           * blocks skip it. */
-          let firstLineHasSibling = false;
-          if (i === 0 && block.title !== undefined) {
-            for (let k = 1; k < rows.length; k += 1) {
-              if (rowDepth(k) === 0) {
-                firstLineHasSibling = true;
-                break;
-              }
-            }
-          }
-          const showFirstLineCurl = firstLineHasSibling;
           return (
             <div
               className="rules-block-row"
@@ -408,9 +392,6 @@ function BlockView({
                * further past the depth-based paddingLeft. */}
               {depth > 0 ? (
                 <span className="rules-row-indent" aria-hidden />
-              ) : null}
-              {showFirstLineCurl ? (
-                <span className="rules-firstline-curl" aria-hidden />
               ) : null}
               {renderedTags.map((t: Tag) => (
                 <TagPill
