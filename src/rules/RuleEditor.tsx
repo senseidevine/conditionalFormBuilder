@@ -180,60 +180,6 @@ export function RuleEditor({
         b.title === "if" ? { ...b, tags: generateRandomTags() } : b
       )
     );
-    setDiffStatus(new Map());
-    setDiffRemoved([]);
-  };
-
-  /* Row-level diff state — a git-style tint per row for review.
-   * `diffStatus` maps a row's leading-Connector id to its status
-   * ("added" / "modified"); unmapped rows render as unchanged.
-   * `diffRemoved` holds phantom rows that were removed in the
-   * pending submission, positioned by the index of the (real) row
-   * they used to follow. Rendered inline with a red wash. */
-  const [diffStatus, setDiffStatus] = useState<
-    Map<string, "added" | "modified">
-  >(new Map());
-  const [diffRemoved, setDiffRemoved] = useState<
-    { afterRowIdx: number; tags: Tag[] }[]
-  >([]);
-
-  const simulateDiff = () => {
-    const tags = generateRandomTags();
-    const status = new Map<string, "added" | "modified">();
-    const totalRows = Math.ceil(tags.length / 4);
-    for (let i = 0; i < totalRows; i += 1) {
-      const c = tags[i * 4];
-      if (!c) continue;
-      const r = Math.random();
-      if (r < 0.28) status.set(c.id, "added");
-      else if (r < 0.55) status.set(c.id, "modified");
-      // otherwise: unchanged (no entry)
-    }
-    /* Fabricate 1–2 phantom removed rows scattered through the
-     * block. Each phantom carries a full 4-tag row so it renders
-     * with the same pill layout as a real row. */
-    const removedCount = 1 + Math.floor(Math.random() * 2);
-    const removed: { afterRowIdx: number; tags: Tag[] }[] = [];
-    for (let n = 0; n < removedCount; n += 1) {
-      const afterRowIdx = Math.floor(Math.random() * Math.max(totalRows, 1));
-      const rowTags = generateRandomTags().slice(0, 4);
-      if (rowTags.length === 4) {
-        /* Force depth 0 for the phantom so it renders inline with
-         * the block's top-level rows. */
-        rowTags[0] = { ...rowTags[0], depth: 0 };
-        removed.push({ afterRowIdx, tags: rowTags });
-      }
-    }
-    setBlocks((bs) =>
-      bs.map((b) => (b.title === "if" ? { ...b, tags } : b))
-    );
-    setDiffStatus(status);
-    setDiffRemoved(removed);
-  };
-
-  const clearDiff = () => {
-    setDiffStatus(new Map());
-    setDiffRemoved([]);
   };
 
   /* The trailing `then` block always sits UNDER the +Block CTA; each
@@ -248,8 +194,6 @@ export function RuleEditor({
       block={block}
       canRemove={block.title === undefined}
       alwaysShowCtas={alwaysShowCtas}
-      diffStatus={block.title === "if" ? diffStatus : new Map()}
-      diffRemoved={block.title === "if" ? diffRemoved : []}
       onAddNext={(v, atDepth) => addNextTag(block.id, v, atDepth)}
       onSetTagValue={(tagId, v) => setTagValue(block.id, tagId, v)}
       onRemoveRow={(startIdx, count) =>
@@ -268,31 +212,13 @@ export function RuleEditor({
         </button>
       ) : null}
       {renderBlock(trailing)}
-      <div className="rules-devtools">
-        <button
-          type="button"
-          className="rules-randomize"
-          onClick={randomizeIf}
-        >
-          Generate random rule
-        </button>
-        <button
-          type="button"
-          className="rules-randomize"
-          onClick={simulateDiff}
-        >
-          Simulate review diff
-        </button>
-        {diffStatus.size > 0 || diffRemoved.length > 0 ? (
-          <button
-            type="button"
-            className="rules-randomize"
-            onClick={clearDiff}
-          >
-            Clear diff
-          </button>
-        ) : null}
-      </div>
+      <button
+        type="button"
+        className="rules-randomize"
+        onClick={randomizeIf}
+      >
+        Generate random rule
+      </button>
     </div>
   );
 }
@@ -350,8 +276,6 @@ const MAX_DEPTH = 2;
 function BlockView({
   block,
   canRemove,
-  diffStatus,
-  diffRemoved,
   onAddNext,
   onSetTagValue,
   onRemoveRow,
@@ -360,8 +284,6 @@ function BlockView({
   block: RuleBlock;
   canRemove: boolean;
   alwaysShowCtas: boolean;
-  diffStatus: Map<string, "added" | "modified">;
-  diffRemoved: { afterRowIdx: number; tags: Tag[] }[];
   onAddNext: (value: string, atDepth?: number) => void;
   onSetTagValue: (tagId: string, v: string) => void;
   onRemoveRow: (startIdx: number, count: number) => void;
@@ -418,7 +340,7 @@ function BlockView({
         <div className="rules-block-title">{block.title}</div>
       ) : null}
       <div className="rules-block-body">
-        {rows.flatMap((row, i) => {
+        {rows.map((row, i) => {
           const isLast = i === lastRowIdx;
           const depth = rowDepth(i);
           /* Row-level delete drops the whole condition line at once.
@@ -457,13 +379,11 @@ function BlockView({
               }
             }
           }
-          const rowDiff = row[0] ? diffStatus.get(row[0].id) : undefined;
-          const rowEl = (
+          return (
             <div
               className="rules-block-row"
               style={{ paddingLeft: depth * 40 }}
               data-depth={depth}
-              data-diff={rowDiff}
               key={i}
             >
               {/* Subset guidelines — one vertical bar per ancestor
@@ -539,37 +459,6 @@ function BlockView({
               ) : null}
             </div>
           );
-          /* Phantom removed rows — inserted after this real row for
-           * any diffRemoved entry with afterRowIdx === i. Each
-           * phantom renders as a static .rules-block-row with a red
-           * wash + strikethrough so the reviewer sees what was
-           * dropped, but the pills are non-interactive. */
-          const phantoms = diffRemoved
-            .filter((p) => p.afterRowIdx === i)
-            .map((p, pi) => {
-              const pTags = p.tags.slice(1);
-              return (
-                <div
-                  className="rules-block-row"
-                  data-depth={0}
-                  data-diff="removed"
-                  key={`removed-${i}-${pi}`}
-                >
-                  {pTags.map((t) => (
-                    <span
-                      key={t.id}
-                      className="tagpill"
-                      data-type={t.type}
-                    >
-                      <span className="tagpill-label">
-                        {t.value || t.type}
-                      </span>
-                    </span>
-                  ))}
-                </div>
-              );
-            });
-          return [rowEl, ...phantoms];
         })}
         {/* Connector / Subset CTAs — all on ONE row now. Ancestor
          * levels render as icon-only "+" pills; the current-depth
