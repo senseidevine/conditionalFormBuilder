@@ -34,23 +34,6 @@
   font-weight: 700;
   letter-spacing: 0.3px;
   text-transform: lowercase;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
-
-/* "N changes" review badge — sits inline next to the block title
- * so the admin can eyeball how much to inspect before opening. */
-.rules-block-diff-badge {
-  font-family: var(--font-sans);
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.2px;
-  text-transform: none;
-  color: rgba(255, 255, 255, 0.85);
-  background: rgba(120, 160, 210, 0.22);
-  padding: 2px 8px;
-  border-radius: 9999px;
 }
 
 .rules-block-body {
@@ -207,34 +190,23 @@
   color: var(--fg);
 }
 
-/* Quiet triage diff (option 4). Thin coloured bar in each changed
- * row's left gutter, plus a "N changes" pill on the block header.
- * Absolute-positioned inside the row so it can sit outside the
- * content area (in the block's inner padding), never competing
- * with pill layout. */
-.rules-gutter-mark {
-  position: absolute;
-  left: -8px;
-  top: 4px;
-  bottom: 4px;
-  width: 3px;
-  border-radius: 2px;
-  pointer-events: none;
+/* Structural-only diff washes (scoped option 1). Only added rows
+ * and removed rows/subsets get a tint — value-only edits inside a
+ * row are left alone (that's option 2's job). Keeps the git-diff
+ * readability where it's semantically honest. */
+.rules-block-row[data-diff="added"] {
+  background: rgba(80, 200, 120, 0.10);
+  border-radius: 4px;
 }
-.rules-gutter-mark[data-diff="added"] {
-  background: rgba(80, 200, 120, 0.85);
-}
-.rules-gutter-mark[data-diff="modified"] {
-  background: rgba(240, 200, 60, 0.85);
-}
-.rules-gutter-mark[data-diff="removed"] {
-  background: rgba(240, 90, 90, 0.85);
+.rules-block-row[data-diff="removed"] {
+  background: rgba(240, 90, 90, 0.10);
+  border-radius: 4px;
 }
 .rules-block-row.is-phantom-removed {
   pointer-events: none;
 }
 .rules-block-row.is-phantom-removed .tagpill-label {
-  opacity: 0.6;
+  opacity: 0.4;
 }
 
 /* Devtools row under the `then` block — hosts demo buttons. */

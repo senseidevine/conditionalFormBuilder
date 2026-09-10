@@ -181,18 +181,17 @@ export function RuleEditor({
       )
     );
     setDiffAdded(new Set());
-    setDiffModified(new Set());
     setDiffRemoved([]);
   };
 
-  /* Quiet triage diff (option 4). Only two signals surface:
-   *  - a thin coloured bar in each changed row's left gutter,
-   *  - a "N changes" pill on the block header (title row).
-   * Row backgrounds stay untouched so the rule content never has
-   * to compete with a wash. Colours: green added, amber modified,
-   * red removed. */
+  /* Structural-only diff (scoped option 1). Row-level tints for
+   * add/remove only — value edits are left alone. Pill-level
+   * changes belong to option 2 and are intentionally excluded.
+   *
+   * `diffAdded`   -> set of leading-Connector ids for newly-added rows.
+   * `diffRemoved` -> phantom rows dropped in the submission, each
+   *                  anchored to render after a real row's index. */
   const [diffAdded, setDiffAdded] = useState<Set<string>>(new Set());
-  const [diffModified, setDiffModified] = useState<Set<string>>(new Set());
   const [diffRemoved, setDiffRemoved] = useState<
     { afterRowIdx: number; tags: Tag[] }[]
   >([]);
@@ -201,13 +200,9 @@ export function RuleEditor({
     const tags = generateRandomTags();
     const totalRows = Math.ceil(tags.length / 4);
     const added = new Set<string>();
-    const modified = new Set<string>();
     for (let i = 0; i < totalRows; i += 1) {
       const c = tags[i * 4];
-      if (!c) continue;
-      const r = Math.random();
-      if (r < 0.25) added.add(c.id);
-      else if (r < 0.5) modified.add(c.id);
+      if (c && Math.random() < 0.33) added.add(c.id);
     }
     const removedCount = 1 + Math.floor(Math.random() * 2);
     const removed: { afterRowIdx: number; tags: Tag[] }[] = [];
@@ -223,13 +218,11 @@ export function RuleEditor({
       bs.map((b) => (b.title === "if" ? { ...b, tags } : b))
     );
     setDiffAdded(added);
-    setDiffModified(modified);
     setDiffRemoved(removed);
   };
 
   const clearDiff = () => {
     setDiffAdded(new Set());
-    setDiffModified(new Set());
     setDiffRemoved([]);
   };
 
@@ -246,7 +239,6 @@ export function RuleEditor({
       canRemove={block.title === undefined}
       alwaysShowCtas={alwaysShowCtas}
       diffAdded={block.title === "if" ? diffAdded : new Set()}
-      diffModified={block.title === "if" ? diffModified : new Set()}
       diffRemoved={block.title === "if" ? diffRemoved : []}
       onAddNext={(v, atDepth) => addNextTag(block.id, v, atDepth)}
       onSetTagValue={(tagId, v) => setTagValue(block.id, tagId, v)}
@@ -281,9 +273,7 @@ export function RuleEditor({
         >
           Simulate review diff
         </button>
-        {diffAdded.size > 0 ||
-        diffModified.size > 0 ||
-        diffRemoved.length > 0 ? (
+        {diffAdded.size > 0 || diffRemoved.length > 0 ? (
           <button
             type="button"
             className="rules-randomize"
@@ -351,7 +341,6 @@ function BlockView({
   block,
   canRemove,
   diffAdded,
-  diffModified,
   diffRemoved,
   onAddNext,
   onSetTagValue,
@@ -362,7 +351,6 @@ function BlockView({
   canRemove: boolean;
   alwaysShowCtas: boolean;
   diffAdded: Set<string>;
-  diffModified: Set<string>;
   diffRemoved: { afterRowIdx: number; tags: Tag[] }[];
   onAddNext: (value: string, atDepth?: number) => void;
   onSetTagValue: (tagId: string, v: string) => void;
@@ -414,34 +402,17 @@ function BlockView({
     }
     return "and";
   };
-  const diffTotal =
-    diffAdded.size + diffModified.size + diffRemoved.length;
   return (
     <div className="rules-block">
       {block.title ? (
-        <div className="rules-block-title">
-          <span>{block.title}</span>
-          {diffTotal > 0 ? (
-            <span
-              className="rules-block-diff-badge"
-              aria-label={`${diffTotal} changes in this block`}
-            >
-              {diffTotal} change{diffTotal === 1 ? "" : "s"}
-            </span>
-          ) : null}
-        </div>
+        <div className="rules-block-title">{block.title}</div>
       ) : null}
       <div className="rules-block-body">
         {rows.flatMap((row, i) => {
           const isLast = i === lastRowIdx;
           const depth = rowDepth(i);
-          const rowDiff = row[0]
-            ? diffAdded.has(row[0].id)
-              ? "added"
-              : diffModified.has(row[0].id)
-              ? "modified"
-              : undefined
-            : undefined;
+          const rowDiff =
+            row[0] && diffAdded.has(row[0].id) ? "added" : undefined;
           /* Row-level delete drops the whole condition line at once.
            * The first row holds the block's seed Connector and can't
            * be removed on its own — the whole block's Remove control
@@ -483,15 +454,9 @@ function BlockView({
               className="rules-block-row"
               style={{ paddingLeft: depth * 40 }}
               data-depth={depth}
+              data-diff={rowDiff}
               key={i}
             >
-              {rowDiff ? (
-                <span
-                  className="rules-gutter-mark"
-                  data-diff={rowDiff}
-                  aria-hidden
-                />
-              ) : null}
               {/* Subset guidelines — one vertical bar per ancestor
                * depth. Adjacent rows' bars overlap into a continuous
                * line, giving each nested subset a clear left edge so
@@ -584,13 +549,9 @@ function BlockView({
                   className="rules-block-row is-phantom-removed"
                   style={{ paddingLeft: pDepth * 40 }}
                   data-depth={pDepth}
+                  data-diff="removed"
                   key={`removed-${i}-${pi}`}
                 >
-                  <span
-                    className="rules-gutter-mark"
-                    data-diff="removed"
-                    aria-hidden
-                  />
                   {pDepth > 0 ? (
                     <span className="rules-row-indent" aria-hidden />
                   ) : null}
