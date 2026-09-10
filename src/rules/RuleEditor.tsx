@@ -182,26 +182,19 @@ export function RuleEditor({
     );
     setDiffAdded(new Set());
     setDiffRemoved([]);
-    setPillDiff(new Map());
   };
 
-  /* Combined structural + pill-level diff (scoped options 1 + 2).
+  /* Structural-only diff (scoped option 1). Row-level tints for
+   * add/remove only — value edits are left alone. Pill-level
+   * changes belong to option 2 and are intentionally excluded.
    *
-   * `diffAdded`   -> set of leading-Connector ids for newly-added rows
-   *                  (row-level green wash, per option 1).
-   * `diffRemoved` -> phantom rows dropped in the submission, rendered
-   *                  as red-wash rows (per option 1).
-   * `pillDiff`    -> per-tag "modified" status with the previous
-   *                  value, applied only to pills in rows that are
-   *                  NOT themselves added (an added row's contents
-   *                  are all new — no inner diff needed). */
+   * `diffAdded`   -> set of leading-Connector ids for newly-added rows.
+   * `diffRemoved` -> phantom rows dropped in the submission, each
+   *                  anchored to render after a real row's index. */
   const [diffAdded, setDiffAdded] = useState<Set<string>>(new Set());
   const [diffRemoved, setDiffRemoved] = useState<
     { afterRowIdx: number; tags: Tag[] }[]
   >([]);
-  const [pillDiff, setPillDiff] = useState<
-    Map<string, { status: "modified"; oldValue: string }>
-  >(new Map());
 
   const simulateDiff = () => {
     const tags = generateRandomTags();
@@ -210,40 +203,6 @@ export function RuleEditor({
     for (let i = 0; i < totalRows; i += 1) {
       const c = tags[i * 4];
       if (c && Math.random() < 0.33) added.add(c.id);
-    }
-    /* Modified pills sit only in rows that AREN'T added — an added
-     * row's pills are all new by definition. Value pills reveal the
-     * "one-item add/remove" flavour with a soft +/− chip; other
-     * pills swap to another option from the same list. */
-    const optionsFor = (t: Tag): string[] => {
-      if (t.type === "operator") return OPERATOR_OPTIONS;
-      if (t.type === "condition") return CONDITION_OPTIONS;
-      if (t.type === "conditional") return CONDITIONAL_OPTIONS;
-      return VALUE_SUGGESTIONS;
-    };
-    const pickAlt = (t: Tag): string => {
-      const opts = optionsFor(t).filter((o) => o !== t.value);
-      if (opts.length === 0) return t.value;
-      return opts[Math.floor(Math.random() * opts.length)];
-    };
-    const pills = new Map<
-      string,
-      { status: "modified"; oldValue: string }
-    >();
-    for (let i = 0; i < totalRows; i += 1) {
-      const rowStart = i * 4;
-      const rowConnector = tags[rowStart];
-      if (!rowConnector || added.has(rowConnector.id)) continue;
-      /* Iterate the row's 4 slots. Skip the Connector (leading
-       * operator) — its edits belong to the group-op treatment,
-       * not per-pill. */
-      for (let s = 1; s < 4; s += 1) {
-        const t = tags[rowStart + s];
-        if (!t) continue;
-        if (Math.random() < 0.22) {
-          pills.set(t.id, { status: "modified", oldValue: pickAlt(t) });
-        }
-      }
     }
     const removedCount = 1 + Math.floor(Math.random() * 2);
     const removed: { afterRowIdx: number; tags: Tag[] }[] = [];
@@ -260,13 +219,11 @@ export function RuleEditor({
     );
     setDiffAdded(added);
     setDiffRemoved(removed);
-    setPillDiff(pills);
   };
 
   const clearDiff = () => {
     setDiffAdded(new Set());
     setDiffRemoved([]);
-    setPillDiff(new Map());
   };
 
   /* The trailing `then` block always sits UNDER the +Block CTA; each
@@ -283,7 +240,6 @@ export function RuleEditor({
       alwaysShowCtas={alwaysShowCtas}
       diffAdded={block.title === "if" ? diffAdded : new Set()}
       diffRemoved={block.title === "if" ? diffRemoved : []}
-      pillDiff={block.title === "if" ? pillDiff : new Map()}
       onAddNext={(v, atDepth) => addNextTag(block.id, v, atDepth)}
       onSetTagValue={(tagId, v) => setTagValue(block.id, tagId, v)}
       onRemoveRow={(startIdx, count) =>
@@ -317,7 +273,7 @@ export function RuleEditor({
         >
           Simulate review diff
         </button>
-        {diffAdded.size > 0 || diffRemoved.length > 0 || pillDiff.size > 0 ? (
+        {diffAdded.size > 0 || diffRemoved.length > 0 ? (
           <button
             type="button"
             className="rules-randomize"
@@ -386,7 +342,6 @@ function BlockView({
   canRemove,
   diffAdded,
   diffRemoved,
-  pillDiff,
   onAddNext,
   onSetTagValue,
   onRemoveRow,
@@ -397,7 +352,6 @@ function BlockView({
   alwaysShowCtas: boolean;
   diffAdded: Set<string>;
   diffRemoved: { afterRowIdx: number; tags: Tag[] }[];
-  pillDiff: Map<string, { status: "modified"; oldValue: string }>;
   onAddNext: (value: string, atDepth?: number) => void;
   onSetTagValue: (tagId: string, v: string) => void;
   onRemoveRow: (startIdx: number, count: number) => void;
@@ -551,27 +505,13 @@ function BlockView({
                   />
                 </span>
               ) : null}
-              {renderedTags.map((t: Tag) => {
-                const pd = pillDiff.get(t.id);
-                const pill = (
-                  <TagPill
-                    tag={t}
-                    onChange={(v) => onSetTagValue(t.id, v)}
-                  />
-                );
-                if (!pd) return <span key={t.id}>{pill}</span>;
-                return (
-                  <span
-                    key={t.id}
-                    className="pill-diff is-modified"
-                    data-diff="modified"
-                  >
-                    <span className="pill-diff-old">{pd.oldValue}</span>
-                    <span className="pill-diff-arrow" aria-hidden>→</span>
-                    {pill}
-                  </span>
-                );
-              })}
+              {renderedTags.map((t: Tag) => (
+                <TagPill
+                  key={t.id}
+                  tag={t}
+                  onChange={(v) => onSetTagValue(t.id, v)}
+                />
+              ))}
               {/* Non-operator CTAs sit inline at the end of the row
                * still being filled so the condition reads left to
                * right. Operator CTAs move to their own rows below. */}
