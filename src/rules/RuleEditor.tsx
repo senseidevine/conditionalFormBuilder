@@ -229,7 +229,9 @@ export function RuleEditor({
     for (let i = 0; i < totalRows; i += 1) {
       const rowTags = tags.slice(i * 4, i * 4 + 4);
       if (rowTags.length !== 4) continue;
-      rowTags[0] = { ...rowTags[0], depth: 0 };
+      /* Keep the operator's original depth from generateRandomTags
+       * so the diff view reflects the same nesting shape as the
+       * live editor rather than a flat single-level list. */
       const r = Math.random();
       if (r < 0.15) {
         slots.push({ kind: "removed", tags: rowTags });
@@ -380,7 +382,29 @@ type SideBySideSlot =
     };
 
 function SideBySideDiff({ slots }: { slots: SideBySideSlot[] }) {
-  const renderRow = (slot: SideBySideSlot, side: "left" | "right") => {
+  /* Which slot indices actually render on each side — added-only
+   * slots vanish on the left, removed-only on the right. Knowing
+   * this lets us tell the first visible slot per side apart from
+   * the rest so its leading Connector can be hidden (the "if" title
+   * above the block already fills that column, matching the live
+   * editor). */
+  const firstIdxOnSide = (side: "left" | "right"): number => {
+    for (let i = 0; i < slots.length; i += 1) {
+      const s = slots[i];
+      if (side === "left" && s.kind === "added") continue;
+      if (side === "right" && s.kind === "removed") continue;
+      return i;
+    }
+    return -1;
+  };
+  const firstLeft = firstIdxOnSide("left");
+  const firstRight = firstIdxOnSide("right");
+
+  const renderRow = (
+    slot: SideBySideSlot,
+    slotIdx: number,
+    side: "left" | "right"
+  ) => {
     /* Added rows only render on the right; removed rows only on
      * the left. The other side gets a same-height placeholder so
      * the two columns stay row-aligned. */
@@ -403,6 +427,14 @@ function SideBySideDiff({ slots }: { slots: SideBySideSlot[] }) {
           ? slot.before
           : slot.after
         : slot.tags;
+    const depth = tags[0]?.depth ?? 0;
+    const isFirst =
+      side === "left" ? slotIdx === firstLeft : slotIdx === firstRight;
+    /* Hide the Connector on the first visible row of each column —
+     * matches the live editor where the block's title fills that
+     * slot instead of a connector pill. Other rows show all four
+     * pills so the reader can see the operator that joins them. */
+    const showConnector = !isFirst;
     /* On the left, an updated row reads as a "removed-flavoured"
      * highlight; on the right it reads as "added-flavoured".
      * Unchanged / added / removed rows just carry their own kind. */
@@ -413,9 +445,19 @@ function SideBySideDiff({ slots }: { slots: SideBySideSlot[] }) {
           : "updated-after"
         : slot.kind;
     const changed = slot.kind === "updated" ? slot.changed : null;
+    /* Columns to render, in order. 0 = Connector, 1 = Field,
+     * 2 = Operator (Conditional), 3 = Value. */
+    const columns = showConnector ? [0, 1, 2, 3] : [1, 2, 3];
     return (
-      <div className="rules-block-row" data-diff={rowDiff}>
-        {[1, 2, 3].map((idx) => {
+      <div
+        className="rules-block-row"
+        data-diff={rowDiff}
+        style={{ paddingLeft: depth * 40 }}
+      >
+        {depth > 0 ? (
+          <span className="rules-row-indent" aria-hidden />
+        ) : null}
+        {columns.map((idx) => {
           const t = tags[idx];
           if (!t) return null;
           const isChanged = changed?.has(idx) ?? false;
@@ -443,7 +485,7 @@ function SideBySideDiff({ slots }: { slots: SideBySideSlot[] }) {
           <div className="rules-block-title">if</div>
           <div className="rules-block-body">
             {slots.map((s, i) => (
-              <div key={`L-${i}`}>{renderRow(s, "left")}</div>
+              <div key={`L-${i}`}>{renderRow(s, i, "left")}</div>
             ))}
           </div>
         </div>
@@ -454,7 +496,7 @@ function SideBySideDiff({ slots }: { slots: SideBySideSlot[] }) {
           <div className="rules-block-title">if</div>
           <div className="rules-block-body">
             {slots.map((s, i) => (
-              <div key={`R-${i}`}>{renderRow(s, "right")}</div>
+              <div key={`R-${i}`}>{renderRow(s, i, "right")}</div>
             ))}
           </div>
         </div>
