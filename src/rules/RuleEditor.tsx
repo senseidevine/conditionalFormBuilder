@@ -180,50 +180,77 @@ export function RuleEditor({
         b.title === "if" ? { ...b, tags: generateRandomTags() } : b
       )
     );
-    setDiffAdded(new Set());
-    setDiffRemoved([]);
+    setDiffSlots(null);
   };
 
-  /* Structural-only diff (scoped option 1). Row-level tints for
-   * add/remove only — value edits are left alone. Pill-level
-   * changes belong to option 2 and are intentionally excluded.
+  /* Side-by-side diff (option 3). Two aligned columns:
+   *   Left  = before → shows removed + unchanged rows.
+   *   Right = after  → shows added   + unchanged rows.
+   * Unchanged rows appear on both sides at the same slot index so
+   * their y positions match; added/removed rows leave a placeholder
+   * on the OTHER side to keep alignment.
    *
-   * `diffAdded`   -> set of leading-Connector ids for newly-added rows.
-   * `diffRemoved` -> phantom rows dropped in the submission, each
-   *                  anchored to render after a real row's index. */
-  const [diffAdded, setDiffAdded] = useState<Set<string>>(new Set());
-  const [diffRemoved, setDiffRemoved] = useState<
-    { afterRowIdx: number; tags: Tag[] }[]
-  >([]);
+   * Each slot carries a full 4-tag row (Connector, Field, Op,
+   * Value) at depth 0 for demo simplicity. */
+  type DiffSlot =
+    | { kind: "unchanged"; tags: Tag[] }
+    | { kind: "added"; tags: Tag[] }
+    | { kind: "removed"; tags: Tag[] };
+  const [diffSlots, setDiffSlots] = useState<DiffSlot[] | null>(null);
 
   const simulateDiff = () => {
+    /* Build a plausible before/after: generate a random rule; each
+     * row is randomly kept, replaced (removed then added new), or
+     * has a fresh sibling added — producing a mix that reads as a
+     * real submission's diff. */
     const tags = generateRandomTags();
     const totalRows = Math.ceil(tags.length / 4);
-    const added = new Set<string>();
+    const slots: DiffSlot[] = [];
     for (let i = 0; i < totalRows; i += 1) {
-      const c = tags[i * 4];
-      if (c && Math.random() < 0.33) added.add(c.id);
-    }
-    const removedCount = 1 + Math.floor(Math.random() * 2);
-    const removed: { afterRowIdx: number; tags: Tag[] }[] = [];
-    for (let n = 0; n < removedCount; n += 1) {
-      const afterRowIdx = Math.floor(Math.random() * Math.max(totalRows, 1));
-      const rowTags = generateRandomTags().slice(0, 4);
-      if (rowTags.length === 4) {
-        rowTags[0] = { ...rowTags[0], depth: 0 };
-        removed.push({ afterRowIdx, tags: rowTags });
+      const rowTags = tags.slice(i * 4, i * 4 + 4);
+      if (rowTags.length !== 4) continue;
+      rowTags[0] = { ...rowTags[0], depth: 0 };
+      const r = Math.random();
+      if (r < 0.15) {
+        /* Removed only — appears on the left, placeholder on the right. */
+        slots.push({ kind: "removed", tags: rowTags });
+      } else if (r < 0.30) {
+        /* Added only — appears on the right, placeholder on the left. */
+        slots.push({ kind: "added", tags: rowTags });
+      } else {
+        slots.push({ kind: "unchanged", tags: rowTags });
       }
     }
-    setBlocks((bs) =>
-      bs.map((b) => (b.title === "if" ? { ...b, tags } : b))
-    );
-    setDiffAdded(added);
-    setDiffRemoved(removed);
+    /* Guarantee at least one of each kind so the demo always shows
+     * the full palette even on a lucky/unlucky roll. */
+    const kinds = new Set(slots.map((s) => s.kind));
+    if (!kinds.has("added")) {
+      const extra = generateRandomTags().slice(0, 4);
+      if (extra.length === 4) {
+        extra[0] = { ...extra[0], depth: 0 };
+        slots.splice(
+          Math.floor(Math.random() * (slots.length + 1)),
+          0,
+          { kind: "added", tags: extra }
+        );
+      }
+    }
+    if (!kinds.has("removed")) {
+      const extra = generateRandomTags().slice(0, 4);
+      if (extra.length === 4) {
+        extra[0] = { ...extra[0], depth: 0 };
+        slots.splice(
+          Math.floor(Math.random() * (slots.length + 1)),
+          0,
+          { kind: "removed", tags: extra }
+        );
+      }
+    }
+    setDiffSlots(slots);
   };
 
   const clearDiff = () => {
-    setDiffAdded(new Set());
-    setDiffRemoved([]);
+    setDiffSlots(null);
   };
 
   /* The trailing `then` block always sits UNDER the +Block CTA; each
@@ -238,8 +265,6 @@ export function RuleEditor({
       block={block}
       canRemove={block.title === undefined}
       alwaysShowCtas={alwaysShowCtas}
-      diffAdded={block.title === "if" ? diffAdded : new Set()}
-      diffRemoved={block.title === "if" ? diffRemoved : []}
       onAddNext={(v, atDepth) => addNextTag(block.id, v, atDepth)}
       onSetTagValue={(tagId, v) => setTagValue(block.id, tagId, v)}
       onRemoveRow={(startIdx, count) =>
@@ -258,6 +283,7 @@ export function RuleEditor({
         </button>
       ) : null}
       {renderBlock(trailing)}
+      {diffSlots ? <SideBySideDiff slots={diffSlots} /> : null}
       <div className="rules-devtools">
         <button
           type="button"
@@ -271,9 +297,9 @@ export function RuleEditor({
           className="rules-randomize"
           onClick={simulateDiff}
         >
-          Simulate review diff
+          Simulate side-by-side diff
         </button>
-        {diffAdded.size > 0 || diffRemoved.length > 0 ? (
+        {diffSlots ? (
           <button
             type="button"
             className="rules-randomize"
@@ -282,6 +308,90 @@ export function RuleEditor({
             Clear diff
           </button>
         ) : null}
+      </div>
+    </div>
+  );
+}
+
+/** Side-by-side diff view (option 3). Renders two aligned columns
+ *  under the normal editor: LEFT holds the "before" state (removed
+ *  + unchanged rows), RIGHT holds the "after" state (added +
+ *  unchanged rows). Unchanged rows appear at the same slot index
+ *  on both sides so the reader sees the shape shift; added rows
+ *  leave a placeholder on the left and removed rows leave a
+ *  placeholder on the right. */
+function SideBySideDiff({
+  slots,
+}: {
+  slots: (
+    | { kind: "unchanged"; tags: Tag[] }
+    | { kind: "added"; tags: Tag[] }
+    | { kind: "removed"; tags: Tag[] }
+  )[];
+}) {
+  const renderRow = (
+    tags: Tag[],
+    kind: "unchanged" | "added" | "removed",
+    side: "left" | "right"
+  ) => {
+    /* Visibility rule: unchanged rows show on both sides.
+     * added -> only on right; removed -> only on left. Otherwise
+     * render a same-height placeholder so slots stay aligned. */
+    const showRow =
+      kind === "unchanged" ||
+      (kind === "added" && side === "right") ||
+      (kind === "removed" && side === "left");
+    if (!showRow) {
+      return (
+        <div className="rules-block-row rules-sbs-placeholder" aria-hidden />
+      );
+    }
+    const [, field, op, value] = tags;
+    return (
+      <div className="rules-block-row" data-diff={kind}>
+        {[field, op, value].map((t) =>
+          t ? (
+            <span
+              key={t.id}
+              className="tagpill-wrap"
+              data-type={t.type}
+            >
+              <span className="tagpill">
+                <span className="tagpill-label">{t.value || t.type}</span>
+              </span>
+            </span>
+          ) : null
+        )}
+      </div>
+    );
+  };
+  return (
+    <div className="rules-sbs">
+      <div className="rules-sbs-col">
+        <div className="rules-sbs-heading">before</div>
+        <div className="rules-block rules-sbs-block">
+          <div className="rules-block-title">
+            <span>if</span>
+          </div>
+          <div className="rules-block-body">
+            {slots.map((s, i) => (
+              <div key={`L-${i}`}>{renderRow(s.tags, s.kind, "left")}</div>
+            ))}
+          </div>
+        </div>
+      </div>
+      <div className="rules-sbs-col">
+        <div className="rules-sbs-heading">after</div>
+        <div className="rules-block rules-sbs-block">
+          <div className="rules-block-title">
+            <span>if</span>
+          </div>
+          <div className="rules-block-body">
+            {slots.map((s, i) => (
+              <div key={`R-${i}`}>{renderRow(s.tags, s.kind, "right")}</div>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -340,8 +450,6 @@ const MAX_DEPTH = 2;
 function BlockView({
   block,
   canRemove,
-  diffAdded,
-  diffRemoved,
   onAddNext,
   onSetTagValue,
   onRemoveRow,
@@ -350,8 +458,6 @@ function BlockView({
   block: RuleBlock;
   canRemove: boolean;
   alwaysShowCtas: boolean;
-  diffAdded: Set<string>;
-  diffRemoved: { afterRowIdx: number; tags: Tag[] }[];
   onAddNext: (value: string, atDepth?: number) => void;
   onSetTagValue: (tagId: string, v: string) => void;
   onRemoveRow: (startIdx: number, count: number) => void;
@@ -408,11 +514,9 @@ function BlockView({
         <div className="rules-block-title">{block.title}</div>
       ) : null}
       <div className="rules-block-body">
-        {rows.flatMap((row, i) => {
+        {rows.map((row, i) => {
           const isLast = i === lastRowIdx;
           const depth = rowDepth(i);
-          const rowDiff =
-            row[0] && diffAdded.has(row[0].id) ? "added" : undefined;
           /* Row-level delete drops the whole condition line at once.
            * The first row holds the block's seed Connector and can't
            * be removed on its own — the whole block's Remove control
@@ -449,12 +553,11 @@ function BlockView({
               }
             }
           }
-          const rowEl = (
+          return (
             <div
               className="rules-block-row"
               style={{ paddingLeft: depth * 40 }}
               data-depth={depth}
-              data-diff={rowDiff}
               key={i}
             >
               {/* Subset guidelines — one vertical bar per ancestor
@@ -530,51 +633,6 @@ function BlockView({
               ) : null}
             </div>
           );
-          /* Phantom removed rows anchored to this real row. Wrap
-           * each phantom pill in the same .tagpill-wrap[data-type]
-           * scaffolding real pills use so the type-based palette
-           * applies; hide the leading Connector and insert the
-           * .rules-op-spacer so the Field lines up with the
-           * surrounding rows. */
-          const phantoms = diffRemoved
-            .filter((p) => p.afterRowIdx === i)
-            .map((p, pi) => {
-              const pRow = p.tags;
-              const pDepth = pRow[0]?.depth ?? 0;
-              const pRendered = pRow.slice(1);
-              const anchorOp =
-                (row[0]?.value || rows[0]?.[0]?.value || "and").toLowerCase();
-              return (
-                <div
-                  className="rules-block-row is-phantom-removed"
-                  style={{ paddingLeft: pDepth * 40 }}
-                  data-depth={pDepth}
-                  data-diff="removed"
-                  key={`removed-${i}-${pi}`}
-                >
-                  {pDepth > 0 ? (
-                    <span className="rules-row-indent" aria-hidden />
-                  ) : null}
-                  <span className="tagpill rules-op-spacer" aria-hidden>
-                    {anchorOp}
-                  </span>
-                  {pRendered.map((t) => (
-                    <span
-                      key={t.id}
-                      className="tagpill-wrap"
-                      data-type={t.type}
-                    >
-                      <span className="tagpill">
-                        <span className="tagpill-label">
-                          {t.value || t.type}
-                        </span>
-                      </span>
-                    </span>
-                  ))}
-                </div>
-              );
-            });
-          return [rowEl, ...phantoms];
         })}
         {/* Connector / Subset CTAs — all on ONE row now. Ancestor
          * levels render as icon-only "+" pills; the current-depth

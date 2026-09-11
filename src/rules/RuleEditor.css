@@ -190,23 +190,70 @@
   color: var(--fg);
 }
 
-/* Structural-only diff washes (scoped option 1). Only added rows
- * and removed rows/subsets get a tint — value-only edits inside a
- * row are left alone (that's option 2's job). Keeps the git-diff
- * readability where it's semantically honest. */
+/* Side-by-side diff (option 3). Two aligned columns render below
+ * the live editor when the reviewer hits Simulate diff: LEFT shows
+ * the "before" state (removed + unchanged rows), RIGHT shows the
+ * "after" state (added + unchanged rows). Unchanged rows appear at
+ * the same slot index on both sides so the shape shift reads at a
+ * glance; the OTHER side of an added/removed slot gets a same-
+ * height placeholder to keep the two columns line-locked. */
+.rules-sbs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 4px;
+}
+.rules-sbs-col {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+.rules-sbs-heading {
+  color: rgba(255, 255, 255, 0.5);
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  padding: 0 2px;
+}
+.rules-sbs-block {
+  /* Slightly recessed surface so the diff pair reads as a paired
+   * inspector card and doesn't compete with the live editor above. */
+  background: rgba(255, 255, 255, 0.03);
+}
+.rules-sbs-block:hover {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.06);
+}
+.rules-sbs-placeholder {
+  /* Invisible spacer preserving the row's height so unchanged rows
+   * on the other side stay pinned to the same y. Kept a hair
+   * dimmer than a real row so the eye can still tell they're
+   * absent. */
+  visibility: hidden;
+}
 .rules-block-row[data-diff="added"] {
-  background: rgba(80, 200, 120, 0.10);
-  border-radius: 4px;
+  background: rgba(80, 200, 120, 0.14);
+  border: 1px solid rgba(80, 200, 120, 0.28);
+  border-radius: 6px;
+  padding: 2px 6px;
 }
 .rules-block-row[data-diff="removed"] {
-  background: rgba(240, 90, 90, 0.10);
-  border-radius: 4px;
+  background: rgba(240, 90, 90, 0.12);
+  border: 1px solid rgba(240, 90, 90, 0.28);
+  border-radius: 6px;
+  padding: 2px 6px;
 }
-.rules-block-row.is-phantom-removed {
-  pointer-events: none;
+.rules-block-row[data-diff="unchanged"] {
+  opacity: 0.78;
+  padding: 2px 6px;
 }
-.rules-block-row.is-phantom-removed .tagpill-label {
-  opacity: 0.4;
+
+/* Narrow: stack the two columns so each stays legible on phone. */
+@media (max-width: 720px) {
+  .rules-sbs { grid-template-columns: 1fr; }
 }
 
 /* Devtools row under the `then` block — hosts demo buttons. */
