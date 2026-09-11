@@ -45,7 +45,7 @@
 
 .main-inner {
   width: 100%;
-  max-width: var(--main-max);
+  max-width: 900px;
   position: relative;
 }
 
