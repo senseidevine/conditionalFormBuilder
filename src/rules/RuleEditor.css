@@ -233,13 +233,15 @@
    * on the other side stay pinned to the same y. */
   visibility: hidden;
 }
-.rules-block-row[data-diff="added"] {
+.rules-block-row[data-diff="added"],
+.rules-block-row[data-diff="updated-after"] {
   background: rgba(80, 200, 120, 0.14);
   border: 1px solid rgba(80, 200, 120, 0.28);
   border-radius: 6px;
   padding: 2px 6px;
 }
-.rules-block-row[data-diff="removed"] {
+.rules-block-row[data-diff="removed"],
+.rules-block-row[data-diff="updated-before"] {
   background: rgba(240, 90, 90, 0.12);
   border: 1px solid rgba(240, 90, 90, 0.28);
   border-radius: 6px;
@@ -248,6 +250,26 @@
 .rules-block-row[data-diff="unchanged"] {
   opacity: 0.78;
   padding: 2px 6px;
+}
+
+/* Per-pill "word-level" highlight for updated rows. The row already
+ * carries the coarse red/green wash; the changed pill gets a deeper
+ * outline + tint on top so the reader can see exactly which cell of
+ * the condition moved — the git-diff pattern where a modified line
+ * gets a background wash and the modified span is painted darker on
+ * top of it. */
+.rules-sbs .tagpill-wrap.is-diff-changed {
+  border-radius: 8px;
+  outline: 1.5px solid transparent;
+  outline-offset: 1px;
+}
+.rules-sbs .tagpill-wrap.is-diff-changed[data-diff-cell="updated-before"] {
+  outline-color: rgba(240, 90, 90, 0.7);
+  background: rgba(240, 90, 90, 0.22);
+}
+.rules-sbs .tagpill-wrap.is-diff-changed[data-diff-cell="updated-after"] {
+  outline-color: rgba(80, 200, 120, 0.75);
+  background: rgba(80, 200, 120, 0.24);
 }
 
 /* Narrow: stack the two columns so each stays legible on phone. */

@@ -185,32 +185,80 @@ export function RuleEditor({
 
   /* Side-by-side diff (option 3). The reviewer sees two aligned
    * columns under the live editor:
-   *   Left  = before → unchanged + removed rows only.
-   *   Right = after  → unchanged + added   rows only.
-   * Unchanged rows appear on both sides at the same slot index so
-   * the shape shift reads at a glance; added rows leave a
-   * placeholder on the left and removed rows leave one on the right
-   * to keep the two columns line-locked. */
+   *   Left  = before → unchanged + removed + updated rows.
+   *   Right = after  → unchanged + added   + updated rows.
+   * Unchanged and updated rows appear on both sides at the same
+   * slot index. Updated rows carry per-pill change markers so the
+   * viewer sees exactly which cell of the condition changed —
+   * git-style word highlighting inside an already-highlighted line.
+   * Added rows leave a placeholder on the left and removed rows one
+   * on the right to keep the columns line-locked. */
   type DiffSlot =
     | { kind: "unchanged"; tags: Tag[] }
     | { kind: "added"; tags: Tag[] }
-    | { kind: "removed"; tags: Tag[] };
+    | { kind: "removed"; tags: Tag[] }
+    | {
+        kind: "updated";
+        before: Tag[];
+        after: Tag[];
+        /* Which of the rendered pill columns changed. 1 = Field,
+         * 2 = Operator (Conditional), 3 = Value — matches the row's
+         * tag indices so a single set can drive both sides. */
+        changed: Set<number>;
+      };
   const [diffSlots, setDiffSlots] = useState<DiffSlot[] | null>(null);
 
   const simulateDiff = () => {
     /* Roll up a plausible before/after: build a random rule and
-     * randomly mark each row as added / removed / unchanged. */
+     * randomly mark each row as added / removed / updated /
+     * unchanged. Updated rows get 1-2 pills mutated to a different
+     * value from the same option set. */
     const tags = generateRandomTags();
     const totalRows = Math.ceil(tags.length / 4);
     const slots: DiffSlot[] = [];
+    const pickDifferent = (options: string[], current: string): string => {
+      if (options.length <= 1) return current;
+      let next = current;
+      let guard = 0;
+      while (next === current && guard < 12) {
+        next = options[Math.floor(Math.random() * options.length)];
+        guard += 1;
+      }
+      return next;
+    };
     for (let i = 0; i < totalRows; i += 1) {
       const rowTags = tags.slice(i * 4, i * 4 + 4);
       if (rowTags.length !== 4) continue;
       rowTags[0] = { ...rowTags[0], depth: 0 };
       const r = Math.random();
-      if (r < 0.18) slots.push({ kind: "removed", tags: rowTags });
-      else if (r < 0.36) slots.push({ kind: "added", tags: rowTags });
-      else slots.push({ kind: "unchanged", tags: rowTags });
+      if (r < 0.15) {
+        slots.push({ kind: "removed", tags: rowTags });
+      } else if (r < 0.30) {
+        slots.push({ kind: "added", tags: rowTags });
+      } else if (r < 0.50) {
+        /* Build the "after" version by copying and mutating 1-2 of
+         * the three content pills (Field/Operator/Value) so the
+         * per-pill highlight has something to point at. */
+        const after = rowTags.map((t) => ({ ...t }));
+        const columns = [1, 2, 3];
+        const changeCount = 1 + Math.floor(Math.random() * 2);
+        const changed = new Set<number>();
+        for (let n = 0; n < changeCount && columns.length; n += 1) {
+          const pickIdx = Math.floor(Math.random() * columns.length);
+          const idx = columns.splice(pickIdx, 1)[0];
+          const opts =
+            idx === 1
+              ? CONDITION_OPTIONS
+              : idx === 2
+              ? CONDITIONAL_OPTIONS
+              : VALUE_SUGGESTIONS;
+          after[idx].value = pickDifferent(opts, after[idx].value);
+          changed.add(idx);
+        }
+        slots.push({ kind: "updated", before: rowTags, after, changed });
+      } else {
+        slots.push({ kind: "unchanged", tags: rowTags });
+      }
     }
     /* Ensure the palette always has at least one of each so the
      * demo doesn't roll an all-unchanged diff. */
@@ -227,6 +275,24 @@ export function RuleEditor({
     };
     if (!kinds.has("added")) forceKind("added");
     if (!kinds.has("removed")) forceKind("removed");
+    if (!kinds.has("updated")) {
+      const extra = generateRandomTags().slice(0, 4);
+      if (extra.length === 4) {
+        extra[0] = { ...extra[0], depth: 0 };
+        const after = extra.map((t) => ({ ...t }));
+        after[3].value = pickDifferent(VALUE_SUGGESTIONS, after[3].value);
+        slots.splice(
+          Math.floor(Math.random() * (slots.length + 1)),
+          0,
+          {
+            kind: "updated",
+            before: extra,
+            after,
+            changed: new Set([3]),
+          }
+        );
+      }
+    }
     setDiffSlots(slots);
   };
 
@@ -295,51 +361,77 @@ export function RuleEditor({
 }
 
 /** Side-by-side diff view. Two aligned columns render below the
- *  live editor: LEFT is the "before" state (unchanged + removed
- *  rows), RIGHT is the "after" state (unchanged + added rows).
- *  Unchanged rows appear at the same slot index on both sides so
- *  the eye can track the shape shift; added rows leave a
- *  placeholder on the left and removed rows leave a placeholder on
- *  the right to keep the two columns line-locked. */
-function SideBySideDiff({
-  slots,
-}: {
-  slots: (
-    | { kind: "unchanged"; tags: Tag[] }
-    | { kind: "added"; tags: Tag[] }
-    | { kind: "removed"; tags: Tag[] }
-  )[];
-}) {
-  const renderRow = (
-    tags: Tag[],
-    kind: "unchanged" | "added" | "removed",
-    side: "left" | "right"
-  ) => {
-    const showRow =
-      kind === "unchanged" ||
-      (kind === "added" && side === "right") ||
-      (kind === "removed" && side === "left");
-    if (!showRow) {
+ *  live editor: LEFT is the "before" state (unchanged + removed +
+ *  updated), RIGHT is the "after" state (unchanged + added +
+ *  updated). Unchanged and updated rows appear at the same slot
+ *  index on both sides; updated rows carry per-pill markers so the
+ *  reader sees exactly which cell changed, git-word-style, inside
+ *  the already-highlighted row. Added rows leave a placeholder on
+ *  the left; removed rows leave one on the right. */
+type SideBySideSlot =
+  | { kind: "unchanged"; tags: Tag[] }
+  | { kind: "added"; tags: Tag[] }
+  | { kind: "removed"; tags: Tag[] }
+  | {
+      kind: "updated";
+      before: Tag[];
+      after: Tag[];
+      changed: Set<number>;
+    };
+
+function SideBySideDiff({ slots }: { slots: SideBySideSlot[] }) {
+  const renderRow = (slot: SideBySideSlot, side: "left" | "right") => {
+    /* Added rows only render on the right; removed rows only on
+     * the left. The other side gets a same-height placeholder so
+     * the two columns stay row-aligned. */
+    if (slot.kind === "added" && side === "left") {
       return (
         <div className="rules-block-row rules-sbs-placeholder" aria-hidden />
       );
     }
-    const [, field, op, value] = tags;
+    if (slot.kind === "removed" && side === "right") {
+      return (
+        <div className="rules-block-row rules-sbs-placeholder" aria-hidden />
+      );
+    }
+    /* Choose which tag list to render per side. Updated rows pull
+     * from `before` on the left and `after` on the right so the
+     * two columns each show their own snapshot of the row. */
+    const tags =
+      slot.kind === "updated"
+        ? side === "left"
+          ? slot.before
+          : slot.after
+        : slot.tags;
+    /* On the left, an updated row reads as a "removed-flavoured"
+     * highlight; on the right it reads as "added-flavoured".
+     * Unchanged / added / removed rows just carry their own kind. */
+    const rowDiff =
+      slot.kind === "updated"
+        ? side === "left"
+          ? "updated-before"
+          : "updated-after"
+        : slot.kind;
+    const changed = slot.kind === "updated" ? slot.changed : null;
     return (
-      <div className="rules-block-row" data-diff={kind}>
-        {[field, op, value].map((t) =>
-          t ? (
+      <div className="rules-block-row" data-diff={rowDiff}>
+        {[1, 2, 3].map((idx) => {
+          const t = tags[idx];
+          if (!t) return null;
+          const isChanged = changed?.has(idx) ?? false;
+          return (
             <span
               key={t.id}
-              className="tagpill-wrap"
+              className={`tagpill-wrap ${isChanged ? "is-diff-changed" : ""}`}
               data-type={t.type}
+              data-diff-cell={isChanged ? rowDiff : undefined}
             >
               <span className="tagpill">
                 <span className="tagpill-label">{t.value || t.type}</span>
               </span>
             </span>
-          ) : null
-        )}
+          );
+        })}
       </div>
     );
   };
@@ -351,7 +443,7 @@ function SideBySideDiff({
           <div className="rules-block-title">if</div>
           <div className="rules-block-body">
             {slots.map((s, i) => (
-              <div key={`L-${i}`}>{renderRow(s.tags, s.kind, "left")}</div>
+              <div key={`L-${i}`}>{renderRow(s, "left")}</div>
             ))}
           </div>
         </div>
@@ -362,7 +454,7 @@ function SideBySideDiff({
           <div className="rules-block-title">if</div>
           <div className="rules-block-body">
             {slots.map((s, i) => (
-              <div key={`R-${i}`}>{renderRow(s.tags, s.kind, "right")}</div>
+              <div key={`R-${i}`}>{renderRow(s, "right")}</div>
             ))}
           </div>
         </div>
