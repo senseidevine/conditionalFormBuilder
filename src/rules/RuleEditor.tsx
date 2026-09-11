@@ -438,6 +438,11 @@ function BlockView({
            * the sibling's op so the Field on this row lines up
            * horizontally with the Field on every sibling below —
            * and stays aligned as the op flips between and / or. */
+          /* Row's Field value drives the Value slot's UX: when the
+           * user picks the "input" field, Value renders as a plain
+           * text input instead of the suggestion dropdown. */
+          const rowFieldValue =
+            row[1]?.type === "condition" ? row[1].value : "";
           let siblingOpForAlignment: string | null = null;
           if (hideLeadingConnector) {
             for (let k = i + 1; k < rows.length; k += 1) {
@@ -509,6 +514,7 @@ function BlockView({
                 <TagPill
                   key={t.id}
                   tag={t}
+                  fieldValue={rowFieldValue}
                   onChange={(v) => onSetTagValue(t.id, v)}
                 />
               ))}
@@ -516,7 +522,11 @@ function BlockView({
                * still being filled so the condition reads left to
                * right. Operator CTAs move to their own rows below. */}
               {isLast && !isNextOperator ? (
-                <InlineAddCta tags={block.tags} onAdd={onAddNext} />
+                <InlineAddCta
+                  tags={block.tags}
+                  onAdd={onAddNext}
+                  fieldValue={rowFieldValue}
+                />
               ) : null}
               {canDeleteRow ? (
                 <button
@@ -683,13 +693,17 @@ function AutoAddButton({
 function InlineAddCta({
   tags,
   onAdd,
+  fieldValue,
 }: {
   tags: Tag[];
   onAdd: (value: string, atDepth?: number) => void;
+  fieldValue?: string;
 }) {
   const type = nextTagType(tags.length);
   if (type === "operator") return null;
-  return <FullCta tags={tags} type={type} onAdd={onAdd} />;
+  return (
+    <FullCta tags={tags} type={type} onAdd={onAdd} fieldValue={fieldValue} />
+  );
 }
 
 /** Small pick-only CTA — the pattern used for Connector, Field, and
@@ -780,10 +794,12 @@ function FullCta({
   tags,
   type,
   onAdd,
+  fieldValue,
 }: {
   tags: Tag[];
   type: ReturnType<typeof nextTagType>;
   onAdd: (value: string) => void;
+  fieldValue?: string;
 }) {
   const label = nextCtaLabel(tags);
   const isValue = type === "value";
@@ -794,19 +810,27 @@ function FullCta({
     return <PickerCta label={label} options={options} onPick={onAdd} />;
   }
 
-  return <ValueCta label={label} onAdd={onAdd} />;
+  return <ValueCta label={label} onAdd={onAdd} fieldValue={fieldValue} />;
 }
 
 /** Value-tag CTA: multi-select from suggestions plus a freeform text
  *  input. Picks commit together as a comma-separated tag on Done, on
- *  Enter with an empty input, or on outside click. */
+ *  Enter with an empty input, or on outside click.
+ *
+ *  When the row's Field is the special "input" option, the CTA
+ *  switches to plain-text mode: a single-line input replaces the
+ *  suggestion dropdown, and Enter (or an outside click) commits the
+ *  typed string as-is. */
 function ValueCta({
   label,
   onAdd,
+  fieldValue,
 }: {
   label: string;
   onAdd: (value: string) => void;
+  fieldValue?: string;
 }) {
+  const isInputMode = fieldValue === "input";
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState("");
   const [picks, setPicks] = useState<string[]>([]);
@@ -818,9 +842,16 @@ function ValueCta({
     inputRef.current?.focus();
     const onDoc = (e: MouseEvent) => {
       if (!wrapRef.current?.contains(e.target as Node)) {
-        /* Commit any pending picks before dismissing so the user
-         * doesn't lose their selection to an accidental outside click. */
-        if (picks.length > 0) {
+        /* Commit any pending picks / typed text before dismissing so
+         * the user doesn't lose their selection to an accidental
+         * outside click. Input-mode commits the raw draft as-is. */
+        if (isInputMode) {
+          const v = draft.trim();
+          if (v) {
+            onAdd(v);
+            setDraft("");
+          }
+        } else if (picks.length > 0) {
           onAdd(serializeValueList(picks));
           setPicks([]);
           setDraft("");
@@ -841,7 +872,7 @@ function ValueCta({
       document.removeEventListener("mousedown", onDoc);
       document.removeEventListener("keydown", onKey);
     };
-  }, [open, picks, onAdd]);
+  }, [open, picks, draft, isInputMode, onAdd]);
 
   const options = VALUE_SUGGESTIONS;
 
@@ -878,67 +909,95 @@ function ValueCta({
       </button>
       {open ? (
         <div className="rules-add-menu" role="group">
-          {picks.length > 0 ? (
-            <div className="tagpill-chips">
-              {picks.map((v) => (
-                <span key={v} className="tagpill-chip">
-                  {v}
-                  <button
-                    type="button"
-                    className="tagpill-chip-x"
-                    aria-label={`Remove ${v}`}
-                    onClick={() => togglePick(v)}
-                  >
-                    ×
-                  </button>
-                </span>
-              ))}
-            </div>
-          ) : null}
-          <input
-            ref={inputRef}
-            className="rules-add-input"
-            value={draft}
-            placeholder="Type any value and press Enter"
-            onChange={(e) => setDraft(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.preventDefault();
-                if (draft.trim()) appendDraft();
-                else commitPicks();
-              }
-            }}
-            aria-label="Value"
-            spellCheck={false}
-          />
-          <div className="rules-add-options">
-            {options.map((o) => {
-              const selected = picks.includes(o);
-              return (
-                <button
-                  key={o}
-                  type="button"
-                  role="option"
-                  aria-selected={selected}
-                  className={`rules-add-option ${selected ? "is-selected" : ""}`}
-                  onClick={() => togglePick(o)}
-                >
-                  <span className="tagpill-check" aria-hidden>
-                    {selected ? "✓" : ""}
-                  </span>
-                  <span>{o}</span>
-                </button>
-              );
-            })}
-          </div>
-          <button
-            type="button"
-            className="rules-add-done"
-            onClick={commitPicks}
-            disabled={picks.length === 0}
-          >
-            Done
-          </button>
+          {isInputMode ? (
+            /* Input mode — a single-line freeform text field replaces
+             * the suggestion dropdown. Enter (or clicking outside)
+             * commits the raw string as the tag's value. */
+            <input
+              ref={inputRef}
+              className="rules-add-input"
+              value={draft}
+              placeholder="Type a value and press Enter"
+              onChange={(e) => setDraft(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  const v = draft.trim();
+                  if (v) {
+                    onAdd(v);
+                    setDraft("");
+                    setOpen(false);
+                  }
+                }
+              }}
+              aria-label="Value"
+              spellCheck={false}
+            />
+          ) : (
+            <>
+              {picks.length > 0 ? (
+                <div className="tagpill-chips">
+                  {picks.map((v) => (
+                    <span key={v} className="tagpill-chip">
+                      {v}
+                      <button
+                        type="button"
+                        className="tagpill-chip-x"
+                        aria-label={`Remove ${v}`}
+                        onClick={() => togglePick(v)}
+                      >
+                        ×
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              ) : null}
+              <input
+                ref={inputRef}
+                className="rules-add-input"
+                value={draft}
+                placeholder="Type any value and press Enter"
+                onChange={(e) => setDraft(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    if (draft.trim()) appendDraft();
+                    else commitPicks();
+                  }
+                }}
+                aria-label="Value"
+                spellCheck={false}
+              />
+              <div className="rules-add-options">
+                {options.map((o) => {
+                  const selected = picks.includes(o);
+                  return (
+                    <button
+                      key={o}
+                      type="button"
+                      role="option"
+                      aria-selected={selected}
+                      className={`rules-add-option ${selected ? "is-selected" : ""}`}
+                      onClick={() => togglePick(o)}
+                    >
+                      <span className="tagpill-check" aria-hidden>
+                        {selected ? "✓" : ""}
+                      </span>
+                      <span>{o}</span>
+                    </button>
+                  );
+                })}
+              </div>
+              <button
+                type="button"
+                className="rules-add-done"
+                onClick={commitPicks}
+                disabled={picks.length === 0}
+              >
+                Done
+              </button>
+            </>
+          )}
         </div>
       ) : null}
     </div>

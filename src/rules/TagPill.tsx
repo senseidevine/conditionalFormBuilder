@@ -12,6 +12,11 @@ import {
 interface TagPillProps {
   tag: Tag;
   autoOpen?: boolean;
+  /** When this tag sits on a row whose Field is the special "input"
+   *  option, the Value pill switches to plain-text input mode — a
+   *  single-line freeform text field instead of the suggestion
+   *  dropdown. Only meaningful for `value` tags. */
+  fieldValue?: string;
   onChange: (value: string) => void;
 }
 
@@ -28,18 +33,29 @@ const TYPE_LABEL: Record<Tag["type"], string> = {
  *  the tag's type. Operator / Condition / Conditional are pick-only
  *  single-select. Value is multi-select: suggestions toggle in and
  *  out, and Enter in the text input appends a custom value. */
-export function TagPill({ tag, autoOpen, onChange }: TagPillProps) {
+export function TagPill({ tag, autoOpen, fieldValue, onChange }: TagPillProps) {
   const [open, setOpen] = useState(!!autoOpen);
   const [draft, setDraft] = useState("");
   const wrapRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const isValue = tag.type === "value";
+  const isInputMode = isValue && fieldValue === "input";
 
   useEffect(() => {
     if (!open) return;
     if (isValue) inputRef.current?.focus();
+    /* Input mode seeds the draft with the tag's current value so the
+     * user can edit in place; other modes keep draft as the "new
+     * value being composed" scratch buffer. */
+    if (isInputMode) setDraft(tag.value);
     const onDoc = (e: MouseEvent) => {
-      if (!wrapRef.current?.contains(e.target as Node)) setOpen(false);
+      if (!wrapRef.current?.contains(e.target as Node)) {
+        if (isInputMode) {
+          const v = draft.trim();
+          if (v !== tag.value) onChange(v);
+        }
+        setOpen(false);
+      }
     };
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") setOpen(false);
@@ -50,7 +66,8 @@ export function TagPill({ tag, autoOpen, onChange }: TagPillProps) {
       document.removeEventListener("mousedown", onDoc);
       document.removeEventListener("keydown", onKey);
     };
-  }, [open, isValue]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, isValue, isInputMode, draft, tag.value, onChange]);
 
   const options =
     tag.type === "operator"
@@ -102,7 +119,28 @@ export function TagPill({ tag, autoOpen, onChange }: TagPillProps) {
 
       {open ? (
         <div className="tagpill-menu" role={isValue ? "group" : "listbox"}>
-          {isValue ? (
+          {isInputMode ? (
+            /* Input-mode Value pill — a single-line freeform input
+             * seeded with the current value. Enter commits and
+             * closes; clicking outside also commits. */
+            <input
+              ref={inputRef}
+              className="tagpill-input"
+              value={draft}
+              placeholder="Type a value"
+              onChange={(e) => setDraft(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  const v = draft.trim();
+                  if (v !== tag.value) onChange(v);
+                  setOpen(false);
+                }
+              }}
+              aria-label="Value"
+              spellCheck={false}
+            />
+          ) : isValue ? (
             <>
               {selectedValues.length > 0 ? (
                 <div className="tagpill-chips">
@@ -138,6 +176,7 @@ export function TagPill({ tag, autoOpen, onChange }: TagPillProps) {
               />
             </>
           ) : null}
+          {isInputMode ? null : (
           <div className="tagpill-options">
             {options.map((o) => {
               const selected = isValue
@@ -164,6 +203,7 @@ export function TagPill({ tag, autoOpen, onChange }: TagPillProps) {
               );
             })}
           </div>
+          )}
         </div>
       ) : null}
     </div>
