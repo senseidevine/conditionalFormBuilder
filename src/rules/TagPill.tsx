@@ -2,12 +2,12 @@ import { useEffect, useRef, useState } from "react";
 import type { Tag } from "./types";
 import {
   OPERATOR_OPTIONS,
-  CONDITION_OPTIONS,
   CONDITIONAL_OPTIONS,
   VALUE_SUGGESTIONS,
   parseValueList,
   serializeValueList,
 } from "./types";
+import { FieldPickerMenu } from "./FieldPicker";
 
 interface TagPillProps {
   tag: Tag;
@@ -40,6 +40,7 @@ export function TagPill({ tag, autoOpen, fieldValue, onChange }: TagPillProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const isValue = tag.type === "value";
   const isInputMode = isValue && fieldValue === "input";
+  const isField = tag.type === "condition";
 
   useEffect(() => {
     if (!open) return;
@@ -72,8 +73,6 @@ export function TagPill({ tag, autoOpen, fieldValue, onChange }: TagPillProps) {
   const options =
     tag.type === "operator"
       ? OPERATOR_OPTIONS
-      : tag.type === "condition"
-      ? CONDITION_OPTIONS
       : tag.type === "conditional"
       ? CONDITIONAL_OPTIONS
       : VALUE_SUGGESTIONS;
@@ -119,7 +118,18 @@ export function TagPill({ tag, autoOpen, fieldValue, onChange }: TagPillProps) {
 
       {open ? (
         <div className="tagpill-menu" role={isValue ? "group" : "listbox"}>
-          {isInputMode ? (
+          {isField ? (
+            /* Field pill — shared FieldPickerMenu handles both bare
+             * base fields and computed-function edits. Committing
+             * closes the menu. */
+            <FieldPickerMenu
+              current={tag.value}
+              onCommit={(v) => {
+                onChange(v);
+                setOpen(false);
+              }}
+            />
+          ) : isInputMode ? (
             /* Input-mode Value pill — a single-line freeform input
              * seeded with the current value. Enter commits and
              * closes; clicking outside also commits. */
@@ -176,7 +186,7 @@ export function TagPill({ tag, autoOpen, fieldValue, onChange }: TagPillProps) {
               />
             </>
           ) : null}
-          {isInputMode ? null : (
+          {isInputMode || isField ? null : (
           <div className="tagpill-options">
             {options.map((o) => {
               const selected = isValue
