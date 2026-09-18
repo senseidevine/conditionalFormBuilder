@@ -28,58 +28,6 @@ export const CONDITION_OPTIONS = [
   "Really long field value",
   "input",
 ];
-
-/** Base fields that can appear as arguments to a computed field. The
- *  "input" mode is intentionally excluded — args are references to
- *  known fields, not freeform runtime inputs. */
-export const BASE_FIELD_OPTIONS = [
-  "String",
-  "Number",
-  "Really long field value",
-];
-
-/** A computed field is a named function that composes over base
- *  fields, e.g. `coalesce(String, Number)` picks the first non-null
- *  of its args. Modelling these as "virtual" field options keeps the
- *  row's Connector/Field/Operator/Value shape intact — the function
- *  call hides inside the Field pill instead of adding a new
- *  primitive. */
-export interface ComputedField {
-  name: string;
-  /** Menu label shown in the Field dropdown. */
-  label: string;
-  minArgs: number;
-  maxArgs: number;
-}
-export const COMPUTED_FIELDS: ComputedField[] = [
-  { name: "coalesce", label: "coalesce(...)", minArgs: 2, maxArgs: 5 },
-  {
-    name: "levenshtein_distance",
-    label: "levenshtein_distance(...)",
-    minArgs: 2,
-    maxArgs: 2,
-  },
-];
-
-/** Parse a Field tag value like "coalesce(String, Number)" back into
- *  its function + args. Returns null for a bare base field name. */
-export function parseComputedField(
-  value: string
-): { fn: ComputedField; args: string[] } | null {
-  const m = value.match(/^(\w+)\(([^)]*)\)$/);
-  if (!m) return null;
-  const fn = COMPUTED_FIELDS.find((f) => f.name === m[1]);
-  if (!fn) return null;
-  const args = m[2]
-    .split(",")
-    .map((s) => s.trim())
-    .filter(Boolean);
-  return { fn, args };
-}
-
-export function formatComputedField(name: string, args: string[]): string {
-  return `${name}(${args.join(", ")})`;
-}
 export const CONDITIONAL_OPTIONS = [
   "is",
   "is not",

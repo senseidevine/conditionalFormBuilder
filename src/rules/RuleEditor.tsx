@@ -12,7 +12,6 @@ import {
   serializeValueList,
 } from "./types";
 import { TagPill } from "./TagPill";
-import { FieldPickerMenu } from "./FieldPicker";
 import { IconTrash } from "../components/Icons";
 import "./RuleEditor.css";
 
@@ -971,75 +970,13 @@ function FullCta({
   const label = nextCtaLabel(tags);
   const isValue = type === "value";
 
-  if (type === "condition") {
-    /* Field uses a two-mode picker: base fields commit directly,
-     * computed functions like coalesce(...) open an inline arg
-     * picker before committing the composed value. */
-    return <FieldCta label={label} onAdd={onAdd} />;
-  }
   if (!isValue) {
-    return (
-      <PickerCta label={label} options={CONDITIONAL_OPTIONS} onPick={onAdd} />
-    );
+    const options =
+      type === "condition" ? CONDITION_OPTIONS : CONDITIONAL_OPTIONS;
+    return <PickerCta label={label} options={options} onPick={onAdd} />;
   }
 
   return <ValueCta label={label} onAdd={onAdd} fieldValue={fieldValue} />;
-}
-
-/** Field-tag CTA: opens a dropdown whose content is the shared
- *  FieldPickerMenu — base fields commit inline, computed functions
- *  open a second-mode arg picker. */
-function FieldCta({
-  label,
-  onAdd,
-}: {
-  label: string;
-  onAdd: (value: string) => void;
-}) {
-  const [open, setOpen] = useState(false);
-  const wrapRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!open) return;
-    const onDoc = (e: MouseEvent) => {
-      if (!wrapRef.current?.contains(e.target as Node)) setOpen(false);
-    };
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
-    };
-    document.addEventListener("mousedown", onDoc);
-    document.addEventListener("keydown", onKey);
-    return () => {
-      document.removeEventListener("mousedown", onDoc);
-      document.removeEventListener("keydown", onKey);
-    };
-  }, [open]);
-
-  return (
-    <div className="rules-add-inline-wrap" ref={wrapRef}>
-      <button
-        type="button"
-        className="rules-add-inline"
-        aria-haspopup="listbox"
-        aria-expanded={open}
-        onClick={() => setOpen((v) => !v)}
-      >
-        <span className="rules-add-inline-plus" aria-hidden>+</span>
-        <span>{label}</span>
-      </button>
-      {open ? (
-        <div className="rules-add-menu" role="group">
-          <FieldPickerMenu
-            current=""
-            onCommit={(v) => {
-              onAdd(v);
-              setOpen(false);
-            }}
-          />
-        </div>
-      ) : null}
-    </div>
-  );
 }
 
 /** Value-tag CTA: multi-select from suggestions plus a freeform text
