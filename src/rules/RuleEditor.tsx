@@ -1206,6 +1206,7 @@ function ValueCta({
           className="tagpill tagpill-inline-input"
           value={draft}
           placeholder="Value"
+          size={Math.max(1, (draft || "Value").length)}
           onChange={(e) => setDraft(e.target.value)}
           onBlur={commit}
           onKeyDown={(e) => {

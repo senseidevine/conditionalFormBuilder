@@ -518,13 +518,22 @@
 /* Inline-input variant — used when the row's Field is "input" so
  * the Value pill is a text field directly in the row instead of a
  * click-to-open dropdown. Reuses the pill's paint (colour, radius,
- * padding) so it lines up with neighbouring pills. */
+ * padding) so it lines up with neighbouring pills.
+ *
+ * Width hugs the typed content via field-sizing (with a `size`
+ * attribute fallback for older browsers). The mount slide-up
+ * animation is disabled so the field doesn't animate every render. */
+.tagpill-wrap--input {
+  animation: none;
+}
 .tagpill.tagpill-inline-input {
   appearance: none;
   border: 0;
   outline: none;
   font-family: inherit;
-  min-width: 60px;
+  min-width: 0;
+  width: auto;
+  field-sizing: content;
   transition: background var(--dur-1) var(--ease),
     box-shadow var(--dur-1) var(--ease);
 }

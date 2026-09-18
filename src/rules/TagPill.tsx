@@ -109,6 +109,7 @@ export function TagPill({ tag, autoOpen, fieldValue, onChange }: TagPillProps) {
    * input, no dropdown, no click-to-open. Every keystroke commits
    * so the value stays in sync with what the user sees. */
   if (isInputMode) {
+    const placeholder = TYPE_LABEL[tag.type];
     return (
       <div
         className="tagpill-wrap tagpill-wrap--input"
@@ -117,7 +118,8 @@ export function TagPill({ tag, autoOpen, fieldValue, onChange }: TagPillProps) {
         <input
           className="tagpill tagpill-inline-input"
           value={tag.value}
-          placeholder={TYPE_LABEL[tag.type]}
+          placeholder={placeholder}
+          size={Math.max(1, (tag.value || placeholder).length)}
           onChange={(e) => onChange(e.target.value)}
           aria-label="Value"
           spellCheck={false}
