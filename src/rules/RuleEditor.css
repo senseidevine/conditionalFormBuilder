@@ -540,6 +540,13 @@
 .tagpill.tagpill-inline-input:hover {
   filter: none;
 }
+.tagpill.tagpill-inline-input:active {
+  /* Kill the .tagpill scale-on-press so clicking to focus the
+   * input doesn't punch the pill. */
+  transform: none;
+  transition: background var(--dur-1) var(--ease),
+    box-shadow var(--dur-1) var(--ease);
+}
 .tagpill.tagpill-inline-input:focus {
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.24);
 }
