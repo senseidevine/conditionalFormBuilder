@@ -302,6 +302,11 @@ export function RuleEditor({
     setDiffSlots(null);
   };
 
+  /* Code view — swap the pill tree for a plain text serialisation
+   * of the current rule so the reader gets a "view source" of the
+   * builder's state without any lines / brackets / colour. */
+  const [codeView, setCodeView] = useState(false);
+
   /* The trailing `then` block always sits UNDER the +Block CTA; each
    * of the leading blocks (the `if` heading and any user-added
    * untitled blocks) render above the CTA. Untitled blocks are the
@@ -324,16 +329,36 @@ export function RuleEditor({
   );
   return (
     <div className="rules">
-      {leading.map(renderBlock)}
-      {showAddBlock ? (
-        <button type="button" className="rules-add-block" onClick={addBlock}>
-          <span className="rules-add-block-icon" aria-hidden>+</span>
-          <span>Block</span>
-        </button>
-      ) : null}
-      {renderBlock(trailing)}
-      {diffSlots ? <SideBySideDiff slots={diffSlots} /> : null}
+      {codeView ? (
+        <pre className="rules-code" aria-label="Rule as text">
+          {serializeRule(blocks)}
+        </pre>
+      ) : (
+        <>
+          {leading.map(renderBlock)}
+          {showAddBlock ? (
+            <button
+              type="button"
+              className="rules-add-block"
+              onClick={addBlock}
+            >
+              <span className="rules-add-block-icon" aria-hidden>+</span>
+              <span>Block</span>
+            </button>
+          ) : null}
+          {renderBlock(trailing)}
+          {diffSlots ? <SideBySideDiff slots={diffSlots} /> : null}
+        </>
+      )}
       <div className="rules-devtools">
+        <button
+          type="button"
+          className={`rules-randomize ${codeView ? "is-on" : ""}`}
+          aria-pressed={codeView}
+          onClick={() => setCodeView((v) => !v)}
+        >
+          {codeView ? "Show visual" : "Show code"}
+        </button>
         <button
           type="button"
           className="rules-randomize"
@@ -360,6 +385,45 @@ export function RuleEditor({
       </div>
     </div>
   );
+}
+
+/** Flatten the block tree into a plain-text rendering — the same
+ *  info the visual builder shows, but as indented lines instead of
+ *  pills. Blocks appear as headings ("if" / "then" / "and" for
+ *  untitled) followed by their rows, each indented one level per
+ *  subset depth. Empty tag slots are elided so a half-built row
+ *  reads as far as it goes. */
+function serializeRule(blocks: RuleBlock[]): string {
+  const chunks: string[] = [];
+  blocks.forEach((block) => {
+    const heading = block.title ?? "and";
+    const lines: string[] = [heading];
+    const rows: Tag[][] = [];
+    for (let i = 0; i < block.tags.length; i += 4) {
+      rows.push(block.tags.slice(i, i + 4));
+    }
+    rows.forEach((row, rowIdx) => {
+      const [connector, field, cond, value] = row;
+      const depth = connector?.depth ?? 0;
+      const indent = "  ".repeat(depth + 1);
+      /* Titled blocks (if/then) hide their first row's connector —
+       * the heading fills that slot. Subset openers (rows whose
+       * depth just increased) also drop their connector to match
+       * the visual builder. */
+      const prevDepth = rowIdx > 0 ? rows[rowIdx - 1][0]?.depth ?? 0 : 0;
+      const isSubsetOpener = rowIdx > 0 && depth > prevDepth;
+      const hideConnector =
+        (rowIdx === 0 && block.title !== undefined) || isSubsetOpener;
+      const parts: string[] = [];
+      if (!hideConnector && connector?.value) parts.push(connector.value);
+      if (field?.value) parts.push(field.value);
+      if (cond?.value) parts.push(cond.value);
+      if (value?.value) parts.push(value.value);
+      if (parts.length > 0) lines.push(indent + parts.join(" "));
+    });
+    chunks.push(lines.join("\n"));
+  });
+  return chunks.join("\n\n");
 }
 
 /** Side-by-side diff view. Two aligned columns render below the

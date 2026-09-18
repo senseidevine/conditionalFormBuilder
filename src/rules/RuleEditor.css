@@ -284,6 +284,39 @@
   flex-wrap: wrap;
 }
 
+/* Active state for a dashed devtools toggle (e.g. Show code). Fills
+ * the pill so the "on" state reads clearly against the dashed
+ * outline of the other buttons in the row. */
+.rules-randomize.is-on {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: transparent;
+  color: #0a0b0e;
+}
+.rules-randomize.is-on:hover {
+  background: #ffffff;
+  color: #0a0b0e;
+}
+
+/* Plain-text "view source" of the current rule — the same info the
+ * pill tree shows, without any of the lines, brackets or colour.
+ * Monospace so the indentation reads as structure, wraps on narrow
+ * screens so long values don't force horizontal scroll. */
+.rules-code {
+  margin: 0;
+  padding: 14px 16px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  color: rgba(255, 255, 255, 0.85);
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, "Roboto Mono", monospace;
+  font-size: 13px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-x: auto;
+  tab-size: 2;
+}
+
 /* Random-rule generator — sits under the `then` block and stuffs
  * the `if` block with a plausible 3–12 row rule so reviewers can
  * see badges, guidelines, and nested subsets without hand-building
