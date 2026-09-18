@@ -1189,6 +1189,38 @@ function ValueCta({
     setOpen(false);
   };
 
+  /* Input-mode CTA — render the Value slot as an inline text input
+   * pill directly, no + Value CTA, no dropdown. Commits on Enter
+   * (or on blur when non-empty) so the row completes without an
+   * extra click. */
+  if (isInputMode) {
+    const commit = () => {
+      const v = draft.trim();
+      if (!v) return;
+      onAdd(v);
+      setDraft("");
+    };
+    return (
+      <span className="tagpill-wrap tagpill-wrap--input" data-type="value">
+        <input
+          className="tagpill tagpill-inline-input"
+          value={draft}
+          placeholder="Value"
+          onChange={(e) => setDraft(e.target.value)}
+          onBlur={commit}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              commit();
+            }
+          }}
+          aria-label="Value"
+          spellCheck={false}
+        />
+      </span>
+    );
+  }
+
   return (
     <div className="rules-add-inline-wrap" ref={wrapRef}>
       <button

@@ -514,6 +514,31 @@
     transform var(--dur-spring) var(--spring);
 }
 .tagpill.is-empty { opacity: 0.72; font-style: italic; }
+
+/* Inline-input variant — used when the row's Field is "input" so
+ * the Value pill is a text field directly in the row instead of a
+ * click-to-open dropdown. Reuses the pill's paint (colour, radius,
+ * padding) so it lines up with neighbouring pills. */
+.tagpill.tagpill-inline-input {
+  appearance: none;
+  border: 0;
+  outline: none;
+  font-family: inherit;
+  min-width: 60px;
+  transition: background var(--dur-1) var(--ease),
+    box-shadow var(--dur-1) var(--ease);
+}
+.tagpill.tagpill-inline-input:hover {
+  filter: none;
+}
+.tagpill.tagpill-inline-input:focus {
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.24);
+}
+.tagpill.tagpill-inline-input::placeholder {
+  color: var(--fg-mute);
+  font-style: italic;
+  opacity: 0.72;
+}
 .tagpill:hover { filter: brightness(1.15); }
 .tagpill:active {
   transform: scale(0.94);

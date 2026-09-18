@@ -105,6 +105,27 @@ export function TagPill({ tag, autoOpen, fieldValue, onChange }: TagPillProps) {
   const selectedValues = isValue ? parseValueList(tag.value) : [];
   const display = tag.value || TYPE_LABEL[tag.type];
 
+  /* Input-mode Value pill — the whole tagpill is an inline text
+   * input, no dropdown, no click-to-open. Every keystroke commits
+   * so the value stays in sync with what the user sees. */
+  if (isInputMode) {
+    return (
+      <div
+        className="tagpill-wrap tagpill-wrap--input"
+        data-type={tag.type}
+      >
+        <input
+          className="tagpill tagpill-inline-input"
+          value={tag.value}
+          placeholder={TYPE_LABEL[tag.type]}
+          onChange={(e) => onChange(e.target.value)}
+          aria-label="Value"
+          spellCheck={false}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="tagpill-wrap" ref={wrapRef} data-type={tag.type}>
       <button
