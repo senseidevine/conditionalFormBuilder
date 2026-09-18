@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import type { RuleBlock, Tag, TagType } from "./types";
 import {
   CONDITION_OPTIONS,
@@ -331,7 +331,7 @@ export function RuleEditor({
     <div className="rules">
       {codeView ? (
         <pre className="rules-code" aria-label="Rule as text">
-          {serializeRule(blocks)}
+          {renderRuleCode(blocks)}
         </pre>
       ) : (
         <>
@@ -387,43 +387,107 @@ export function RuleEditor({
   );
 }
 
-/** Flatten the block tree into a plain-text rendering — the same
- *  info the visual builder shows, but as indented lines instead of
- *  pills. Blocks appear as headings ("if" / "then" / "and" for
- *  untitled) followed by their rows, each indented one level per
- *  subset depth. Empty tag slots are elided so a half-built row
+/** Flatten the block tree into a plain-text rendering with the same
+ *  colour palette as the pill tree. Blocks open with a heading + `{`
+ *  and close with `}`; each subset opens with a `{` and closes with
+ *  `}` when the depth drops, so the reader can see parent/child
+ *  scope at a glance. Empty tag slots are elided so a half-built row
  *  reads as far as it goes. */
-function serializeRule(blocks: RuleBlock[]): string {
-  const chunks: string[] = [];
-  blocks.forEach((block) => {
+function renderRuleCode(blocks: RuleBlock[]): ReactNode {
+  const nodes: ReactNode[] = [];
+  const brace = (b: "{" | "}", key: string) => (
+    <span key={key} className="rules-code-brace">{b}</span>
+  );
+  const token = (
+    value: string,
+    type: "operator" | "condition" | "conditional" | "value",
+    key: string
+  ) => (
+    <span key={key} className="rules-code-tag" data-type={type}>
+      {value}
+    </span>
+  );
+  blocks.forEach((block, blockIdx) => {
+    if (blockIdx > 0) nodes.push("\n\n");
     const heading = block.title ?? "and";
-    const lines: string[] = [heading];
+    nodes.push(
+      <span key={`heading-${block.id}`} className="rules-code-heading">
+        {heading}
+      </span>
+    );
+    nodes.push(" ");
+    nodes.push(brace("{", `open-${block.id}`));
+    nodes.push("\n");
+
     const rows: Tag[][] = [];
     for (let i = 0; i < block.tags.length; i += 4) {
       rows.push(block.tags.slice(i, i + 4));
     }
+
+    let prevDepth = 0;
     rows.forEach((row, rowIdx) => {
       const [connector, field, cond, value] = row;
       const depth = connector?.depth ?? 0;
-      const indent = "  ".repeat(depth + 1);
+      /* Depth increased since the previous row — open one `{` per
+       * new level so the reader sees a subset opening. Depth dropped
+       * — close one `}` per abandoned level. */
+      while (prevDepth < depth) {
+        prevDepth += 1;
+        nodes.push("  ".repeat(prevDepth));
+        nodes.push(brace("{", `so-${block.id}-${rowIdx}-${prevDepth}`));
+        nodes.push("\n");
+      }
+      while (prevDepth > depth) {
+        nodes.push("  ".repeat(prevDepth));
+        nodes.push(brace("}", `sc-${block.id}-${rowIdx}-${prevDepth}`));
+        nodes.push("\n");
+        prevDepth -= 1;
+      }
       /* Titled blocks (if/then) hide their first row's connector —
-       * the heading fills that slot. Subset openers (rows whose
-       * depth just increased) also drop their connector to match
-       * the visual builder. */
-      const prevDepth = rowIdx > 0 ? rows[rowIdx - 1][0]?.depth ?? 0 : 0;
-      const isSubsetOpener = rowIdx > 0 && depth > prevDepth;
+       * the heading fills that slot. Subset openers (first row at a
+       * new depth) also drop their connector to match the visual
+       * builder. */
+      const isSubsetOpener =
+        rowIdx > 0 && depth > (rows[rowIdx - 1][0]?.depth ?? 0);
       const hideConnector =
         (rowIdx === 0 && block.title !== undefined) || isSubsetOpener;
-      const parts: string[] = [];
-      if (!hideConnector && connector?.value) parts.push(connector.value);
-      if (field?.value) parts.push(field.value);
-      if (cond?.value) parts.push(cond.value);
-      if (value?.value) parts.push(value.value);
-      if (parts.length > 0) lines.push(indent + parts.join(" "));
+
+      const parts: ReactNode[] = [];
+      const push = (n: ReactNode) => {
+        if (parts.length > 0) parts.push(" ");
+        parts.push(n);
+      };
+      if (!hideConnector && connector?.value) {
+        push(token(connector.value, "operator", `t-op-${connector.id}`));
+      }
+      if (field?.value) {
+        push(token(field.value, "condition", `t-fd-${field.id}`));
+      }
+      if (cond?.value) {
+        push(token(cond.value, "conditional", `t-cd-${cond.id}`));
+      }
+      if (value?.value) {
+        push(token(value.value, "value", `t-vl-${value.id}`));
+      }
+      if (parts.length > 0) {
+        nodes.push("  ".repeat(depth + 1));
+        nodes.push(
+          <span key={`row-${block.id}-${rowIdx}`}>{parts}</span>
+        );
+        nodes.push("\n");
+      }
     });
-    chunks.push(lines.join("\n"));
+
+    /* Close any subset braces still open at end-of-block. */
+    while (prevDepth > 0) {
+      nodes.push("  ".repeat(prevDepth));
+      nodes.push(brace("}", `endclose-${block.id}-${prevDepth}`));
+      nodes.push("\n");
+      prevDepth -= 1;
+    }
+    nodes.push(brace("}", `close-${block.id}`));
   });
-  return chunks.join("\n\n");
+  return <>{nodes}</>;
 }
 
 /** Side-by-side diff view. Two aligned columns render below the

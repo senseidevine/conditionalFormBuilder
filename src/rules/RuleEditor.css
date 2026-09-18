@@ -298,8 +298,9 @@
 }
 
 /* Plain-text "view source" of the current rule — the same info the
- * pill tree shows, without any of the lines, brackets or colour.
- * Monospace so the indentation reads as structure, wraps on narrow
+ * pill tree shows, using the same colour palette but rendered as
+ * indented lines instead of pills. Curly braces mark parent/child
+ * scope so nested subsets are visible at a glance. Wraps on narrow
  * screens so long values don't force horizontal scroll. */
 .rules-code {
   margin: 0;
@@ -315,6 +316,40 @@
   word-break: break-word;
   overflow-x: auto;
   tab-size: 2;
+}
+.rules-code-heading {
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  text-transform: lowercase;
+}
+.rules-code-brace {
+  color: rgba(255, 255, 255, 0.42);
+  font-weight: 600;
+}
+
+/* Token palette — mirrors the tag pill palette so the code view
+ * reads with the same colour coding as the visual builder. */
+.rules-code-tag[data-type="operator"] { color: #6790b8; }
+.rules-code-tag[data-type="condition"] {
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 700;
+}
+.rules-code-tag[data-type="conditional"] { color: rgba(255, 255, 255, 0.7); }
+.rules-code-tag[data-type="value"] { color: #ffffff; }
+
+/* Color tag pills toggle ON — same swap the visual builder uses:
+ * coral operators, steel-blue conditions, solid white values.
+ * Conditionals stay on the neutral palette. */
+.page[data-color-tagpills="true"] .rules-code-tag[data-type="operator"] {
+  color: #ff5777;
+}
+.page[data-color-tagpills="true"] .rules-code-tag[data-type="condition"] {
+  color: #6790b8;
+  font-weight: 500;
+}
+.page[data-color-tagpills="true"] .rules-code-tag[data-type="value"] {
+  color: #ffffff;
 }
 
 /* Random-rule generator — sits under the `then` block and stuffs
