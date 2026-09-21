@@ -317,6 +317,40 @@
   overflow-x: auto;
   tab-size: 2;
 }
+
+/* Editable code view. Textarea variant of .rules-code: same paint,
+ * plus a min height so short rules still get a comfortable canvas,
+ * a focus ring so the reader sees the edit surface, and a red
+ * error box under it when the last blur couldn't parse. */
+.rules-code-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.rules-code.rules-code-textarea {
+  width: 100%;
+  min-height: 200px;
+  resize: vertical;
+  outline: none;
+  transition: background var(--dur-1) var(--ease),
+    border-color var(--dur-1) var(--ease),
+    box-shadow var(--dur-1) var(--ease);
+}
+.rules-code.rules-code-textarea:focus {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.18);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.06);
+}
+.rules-code-error {
+  color: #ff9090;
+  background: rgba(240, 90, 90, 0.10);
+  border: 1px solid rgba(240, 90, 90, 0.35);
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  line-height: 1.4;
+}
 .rules-code-heading {
   color: rgba(255, 255, 255, 0.6);
   font-weight: 700;

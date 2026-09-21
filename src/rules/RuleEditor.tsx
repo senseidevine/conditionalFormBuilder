@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { RuleBlock, Tag, TagType } from "./types";
 import {
   CONDITION_OPTIONS,
@@ -10,6 +10,7 @@ import {
   nextCtaLabel,
   nextTagType,
   serializeValueList,
+  uid,
 } from "./types";
 import { TagPill } from "./TagPill";
 import { IconTrash } from "../components/Icons";
@@ -304,8 +305,30 @@ export function RuleEditor({
 
   /* Code view — swap the pill tree for a plain text serialisation
    * of the current rule so the reader gets a "view source" of the
-   * builder's state without any lines / brackets / colour. */
+   * builder's state without any lines / brackets. Editable: on
+   * blur, parse the text back into blocks and either commit or
+   * surface an inline error. */
   const [codeView, setCodeView] = useState(false);
+  const [codeText, setCodeText] = useState("");
+  const [codeError, setCodeError] = useState<string | null>(null);
+
+  const openCodeView = () => {
+    setCodeText(serializeRuleText(blocks));
+    setCodeError(null);
+    setCodeView(true);
+  };
+  const applyCodeText = () => {
+    const r = parseRuleText(codeText);
+    if ("error" in r) {
+      setCodeError(`Line ${r.error.line + 1}: ${r.error.message}`);
+      return;
+    }
+    setBlocks(r.blocks);
+    setCodeError(null);
+    /* Re-canonicalise so the textarea reformats to the standard
+     * shape (indent + spacing) once a valid edit lands. */
+    setCodeText(serializeRuleText(r.blocks));
+  };
 
   /* The trailing `then` block always sits UNDER the +Block CTA; each
    * of the leading blocks (the `if` heading and any user-added
@@ -330,9 +353,30 @@ export function RuleEditor({
   return (
     <div className="rules">
       {codeView ? (
-        <pre className="rules-code" aria-label="Rule as text">
-          {renderRuleCode(blocks)}
-        </pre>
+        <div className="rules-code-editor">
+          <textarea
+            className="rules-code rules-code-textarea"
+            value={codeText}
+            onChange={(e) => {
+              setCodeText(e.target.value);
+              if (codeError) setCodeError(null);
+            }}
+            onBlur={applyCodeText}
+            onKeyDown={(e) => {
+              if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+                e.preventDefault();
+                applyCodeText();
+              }
+            }}
+            spellCheck={false}
+            aria-label="Rule as text"
+          />
+          {codeError ? (
+            <div className="rules-code-error" role="alert">
+              {codeError}
+            </div>
+          ) : null}
+        </div>
       ) : (
         <>
           {leading.map(renderBlock)}
@@ -355,7 +399,7 @@ export function RuleEditor({
           type="button"
           className={`rules-randomize ${codeView ? "is-on" : ""}`}
           aria-pressed={codeView}
-          onClick={() => setCodeView((v) => !v)}
+          onClick={() => (codeView ? setCodeView(false) : openCodeView())}
         >
           {codeView ? "Show visual" : "Show code"}
         </button>
@@ -387,107 +431,206 @@ export function RuleEditor({
   );
 }
 
-/** Flatten the block tree into a plain-text rendering with the same
- *  colour palette as the pill tree. Blocks open with a heading + `{`
- *  and close with `}`; each subset opens with a `{` and closes with
- *  `}` when the depth drops, so the reader can see parent/child
- *  scope at a glance. Empty tag slots are elided so a half-built row
- *  reads as far as it goes. */
-function renderRuleCode(blocks: RuleBlock[]): ReactNode {
-  const nodes: ReactNode[] = [];
-  const brace = (b: "{" | "}", key: string) => (
-    <span key={key} className="rules-code-brace">{b}</span>
-  );
-  const token = (
-    value: string,
-    type: "operator" | "condition" | "conditional" | "value",
-    key: string
-  ) => (
-    <span key={key} className="rules-code-tag" data-type={type}>
-      {value}
-    </span>
-  );
-  blocks.forEach((block, blockIdx) => {
-    if (blockIdx > 0) nodes.push("\n\n");
+/** Plain-text serialisation of the current rule — the same
+ *  structure a reader would see in the pill tree, emitted as text
+ *  so the code view's textarea can be seeded and round-tripped
+ *  through the parser below. */
+function serializeRuleText(blocks: RuleBlock[]): string {
+  const chunks: string[] = [];
+  blocks.forEach((block) => {
     const heading = block.title ?? "and";
-    nodes.push(
-      <span key={`heading-${block.id}`} className="rules-code-heading">
-        {heading}
-      </span>
-    );
-    nodes.push(" ");
-    nodes.push(brace("{", `open-${block.id}`));
-    nodes.push("\n");
-
+    const lines: string[] = [`${heading} {`];
     const rows: Tag[][] = [];
     for (let i = 0; i < block.tags.length; i += 4) {
       rows.push(block.tags.slice(i, i + 4));
     }
-
     let prevDepth = 0;
     rows.forEach((row, rowIdx) => {
       const [connector, field, cond, value] = row;
       const depth = connector?.depth ?? 0;
-      /* Depth increased since the previous row — open one `{` per
-       * new level so the reader sees a subset opening. Depth dropped
-       * — close one `}` per abandoned level. */
       while (prevDepth < depth) {
         prevDepth += 1;
-        nodes.push("  ".repeat(prevDepth));
-        nodes.push(brace("{", `so-${block.id}-${rowIdx}-${prevDepth}`));
-        nodes.push("\n");
+        lines.push("  ".repeat(prevDepth) + "{");
       }
       while (prevDepth > depth) {
-        nodes.push("  ".repeat(prevDepth));
-        nodes.push(brace("}", `sc-${block.id}-${rowIdx}-${prevDepth}`));
-        nodes.push("\n");
+        lines.push("  ".repeat(prevDepth) + "}");
         prevDepth -= 1;
       }
-      /* Titled blocks (if/then) hide their first row's connector —
-       * the heading fills that slot. Subset openers (first row at a
-       * new depth) also drop their connector to match the visual
-       * builder. */
       const isSubsetOpener =
         rowIdx > 0 && depth > (rows[rowIdx - 1][0]?.depth ?? 0);
       const hideConnector =
         (rowIdx === 0 && block.title !== undefined) || isSubsetOpener;
-
-      const parts: ReactNode[] = [];
-      const push = (n: ReactNode) => {
-        if (parts.length > 0) parts.push(" ");
-        parts.push(n);
-      };
-      if (!hideConnector && connector?.value) {
-        push(token(connector.value, "operator", `t-op-${connector.id}`));
-      }
-      if (field?.value) {
-        push(token(field.value, "condition", `t-fd-${field.id}`));
-      }
-      if (cond?.value) {
-        push(token(cond.value, "conditional", `t-cd-${cond.id}`));
-      }
-      if (value?.value) {
-        push(token(value.value, "value", `t-vl-${value.id}`));
-      }
+      const parts: string[] = [];
+      if (!hideConnector && connector?.value) parts.push(connector.value);
+      if (field?.value) parts.push(field.value);
+      if (cond?.value) parts.push(cond.value);
+      if (value?.value) parts.push(value.value);
       if (parts.length > 0) {
-        nodes.push("  ".repeat(depth + 1));
-        nodes.push(
-          <span key={`row-${block.id}-${rowIdx}`}>{parts}</span>
-        );
-        nodes.push("\n");
+        lines.push("  ".repeat(depth + 1) + parts.join(" "));
       }
     });
-
-    /* Close any subset braces still open at end-of-block. */
     while (prevDepth > 0) {
-      nodes.push("  ".repeat(prevDepth));
-      nodes.push(brace("}", `endclose-${block.id}-${prevDepth}`));
-      nodes.push("\n");
+      lines.push("  ".repeat(prevDepth) + "}");
       prevDepth -= 1;
     }
-    nodes.push(brace("}", `close-${block.id}`));
+    lines.push("}");
+    chunks.push(lines.join("\n"));
   });
-  return <>{nodes}</>;
+  return chunks.join("\n\n");
+}
+
+type ParseError = { line: number; message: string };
+
+/** Round-trip the code view's textarea back into a block tree.
+ *  Line-oriented: block headings look like `if {` / `then {` /
+ *  `and {`; `{` opens a subset, `}` closes the current subset (or
+ *  block if none open); other lines are content rows made of an
+ *  optional connector (and/or) + Field + Operator + Value. Field
+ *  and Operator use greedy multi-word matching so "Really long
+ *  field value" and "is not" parse as single tokens. Returns either
+ *  the parsed blocks or a first-error snapshot the UI can surface
+ *  inline. */
+function parseRuleText(
+  text: string
+): { blocks: RuleBlock[] } | { error: ParseError } {
+  const lines = text.split("\n");
+  const blocks: RuleBlock[] = [];
+  let current: RuleBlock | null = null;
+  let depth = 0;
+  /* Per-depth bookkeeping. `openerAt` marks the row that opened
+   * this depth (its connector isn't printed, so its value gets
+   * back-filled from the first sibling that shows one). `hasOpener`
+   * flips off once the opener row is placed. */
+  let openerAt: (number | null)[] = [null];
+  let hasOpener: boolean[] = [true];
+  let subsetOp: string[] = ["and"];
+
+  const resetForNewBlock = (isTitled: boolean, heading: string) => {
+    depth = 0;
+    openerAt = [null];
+    hasOpener = [true];
+    subsetOp = [isTitled ? "and" : heading];
+  };
+
+  const greedy = (rest: string, options: string[]): string | null => {
+    /* Longest match first so "Really long field value" wins over
+     * a shorter prefix, and "is not" wins over "is". */
+    const sorted = [...options].sort((a, b) => b.length - a.length);
+    for (const opt of sorted) {
+      if (rest === opt || rest.startsWith(opt + " ")) return opt;
+    }
+    return null;
+  };
+
+  for (let ln = 0; ln < lines.length; ln += 1) {
+    const line = lines[ln].trim();
+    if (!line) continue;
+
+    /* Just `}` — close a subset or the block. */
+    if (line === "}") {
+      if (depth > 0) {
+        depth -= 1;
+        continue;
+      }
+      if (!current) return { error: { line: ln, message: "Unexpected }" } };
+      blocks.push(current);
+      current = null;
+      continue;
+    }
+
+    /* Just `{` — open a subset. */
+    if (line === "{") {
+      if (!current) {
+        return { error: { line: ln, message: "Subset opened before block" } };
+      }
+      depth += 1;
+      openerAt[depth] = null;
+      hasOpener[depth] = true;
+      subsetOp[depth] = "and";
+      continue;
+    }
+
+    /* Heading + `{` on the same line — starts a new block. */
+    const heading = line.match(/^(\w+)\s*\{$/);
+    if (heading && !current) {
+      const h = heading[1];
+      const isTitled = h === "if" || h === "then";
+      current = {
+        id: uid(),
+        tags: [makeTag("operator", isTitled ? "" : h, 0)],
+      };
+      if (isTitled) current.title = h;
+      resetForNewBlock(isTitled, h);
+      continue;
+    }
+    if (heading && current) {
+      return {
+        error: { line: ln, message: "Block heading inside another block" },
+      };
+    }
+
+    /* Content row. Needs an open block. */
+    if (!current) {
+      return { error: { line: ln, message: "Row outside a block" } };
+    }
+
+    let rest = line;
+    let connector: string;
+    if (hasOpener[depth]) {
+      /* Opener row — connector isn't printed; use the subset's
+       * shared operator, and remember this row's index so a later
+       * sibling can back-fill it. */
+      connector = subsetOp[depth];
+      hasOpener[depth] = false;
+      openerAt[depth] = current.tags.length;
+    } else {
+      const first = rest.split(/\s+/)[0].toLowerCase();
+      if (first !== "and" && first !== "or") {
+        return {
+          error: {
+            line: ln,
+            message: `Expected "and" or "or", got "${first}"`,
+          },
+        };
+      }
+      connector = first;
+      rest = rest.slice(first.length).trim();
+      /* Update the subset's shared op and back-fill the opener row
+       * so all rows in a subset agree on their connector. */
+      subsetOp[depth] = first;
+      const oi = openerAt[depth];
+      if (oi !== null && oi < current.tags.length) {
+        const t = current.tags[oi];
+        if (t && t.type === "operator") t.value = first;
+      }
+    }
+
+    const field = greedy(rest, CONDITION_OPTIONS);
+    if (!field) {
+      return { error: { line: ln, message: `Unknown field: "${rest}"` } };
+    }
+    rest = rest.slice(field.length).trim();
+
+    const cond = greedy(rest, CONDITIONAL_OPTIONS);
+    if (!cond) {
+      return { error: { line: ln, message: `Unknown operator: "${rest}"` } };
+    }
+    rest = rest.slice(cond.length).trim();
+
+    const value = rest;
+
+    current.tags.push(
+      makeTag("operator", connector, depth),
+      makeTag("condition", field),
+      makeTag("conditional", cond),
+      makeTag("value", value)
+    );
+  }
+
+  /* Trailing unclosed block — auto-close so a partial edit still
+   * commits instead of erroring on missing `}`. */
+  if (current) blocks.push(current);
+  return { blocks };
 }
 
 /** Side-by-side diff view. Two aligned columns render below the
