@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import type { RuleBlock, Tag, TagType } from "./types";
 import {
   CONDITION_OPTIONS,
@@ -311,6 +311,8 @@ export function RuleEditor({
   const [codeView, setCodeView] = useState(false);
   const [codeText, setCodeText] = useState("");
   const [codeError, setCodeError] = useState<string | null>(null);
+  const codeTaRef = useRef<HTMLTextAreaElement>(null);
+  const codePreRef = useRef<HTMLPreElement>(null);
 
   const openCodeView = () => {
     setCodeText(serializeRuleText(blocks));
@@ -354,23 +356,47 @@ export function RuleEditor({
     <div className="rules">
       {codeView ? (
         <div className="rules-code-editor">
-          <textarea
-            className="rules-code rules-code-textarea"
-            value={codeText}
-            onChange={(e) => {
-              setCodeText(e.target.value);
-              if (codeError) setCodeError(null);
-            }}
-            onBlur={applyCodeText}
-            onKeyDown={(e) => {
-              if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
-                e.preventDefault();
-                applyCodeText();
-              }
-            }}
-            spellCheck={false}
-            aria-label="Rule as text"
-          />
+          <div className="rules-code-wrap">
+            {/* Colored highlight layer, drawn behind the textarea. */}
+            <pre
+              ref={codePreRef}
+              className="rules-code rules-code-highlight"
+              aria-hidden
+            >
+              {highlightRuleCode(codeText)}
+              {/* Trailing newline so a caret at the last line still
+               * has a matching row of highlight underneath. */}
+              {"\n"}
+            </pre>
+            <textarea
+              ref={codeTaRef}
+              className="rules-code rules-code-textarea"
+              value={codeText}
+              onChange={(e) => {
+                setCodeText(e.target.value);
+                if (codeError) setCodeError(null);
+              }}
+              onScroll={() => {
+                /* Keep the coloured underlay locked to the
+                 * textarea's scroll position. */
+                if (codePreRef.current && codeTaRef.current) {
+                  codePreRef.current.scrollTop =
+                    codeTaRef.current.scrollTop;
+                  codePreRef.current.scrollLeft =
+                    codeTaRef.current.scrollLeft;
+                }
+              }}
+              onBlur={applyCodeText}
+              onKeyDown={(e) => {
+                if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+                  e.preventDefault();
+                  applyCodeText();
+                }
+              }}
+              spellCheck={false}
+              aria-label="Rule as text"
+            />
+          </div>
           {codeError ? (
             <div className="rules-code-error" role="alert">
               {codeError}
@@ -399,7 +425,26 @@ export function RuleEditor({
           type="button"
           className={`rules-randomize ${codeView ? "is-on" : ""}`}
           aria-pressed={codeView}
-          onClick={() => (codeView ? setCodeView(false) : openCodeView())}
+          onClick={() => {
+            if (codeView) {
+              /* Commit any pending code edits before flipping back
+               * to the visual builder. If the parse fails, stay in
+               * code view so the reader sees the inline error and
+               * doesn't lose their work. */
+              const r = parseRuleText(codeText);
+              if ("error" in r) {
+                setCodeError(
+                  `Line ${r.error.line + 1}: ${r.error.message}`
+                );
+                return;
+              }
+              setBlocks(r.blocks);
+              setCodeError(null);
+              setCodeView(false);
+            } else {
+              openCodeView();
+            }
+          }}
         >
           {codeView ? "Show visual" : "Show code"}
         </button>
@@ -479,6 +524,117 @@ function serializeRuleText(blocks: RuleBlock[]): string {
   return chunks.join("\n\n");
 }
 
+/** Longest-first prefix match — matches multi-word tokens like
+ *  "Really long field value" and "is not" before shorter prefixes.
+ *  Shared between the parser and the code-view syntax highlighter. */
+function greedyMatch(rest: string, options: string[]): string | null {
+  const sorted = [...options].sort((a, b) => b.length - a.length);
+  for (const opt of sorted) {
+    if (rest === opt || rest.startsWith(opt + " ")) return opt;
+  }
+  return null;
+}
+
+/** Line-by-line syntax highlighting for the code-view textarea's
+ *  underlay pre. Uses the same colour palette as the pill tree and
+ *  the same greedy multi-word matcher as the parser. Best-effort:
+ *  unrecognised tokens render as plain text so partial / mid-edit
+ *  content still shows something readable. */
+function highlightRuleCode(text: string): ReactNode {
+  const lines = text.split("\n");
+  return lines.map((line, i) => (
+    <span key={i}>
+      {highlightRuleLine(line)}
+      {i < lines.length - 1 ? "\n" : ""}
+    </span>
+  ));
+}
+
+function highlightRuleLine(line: string): ReactNode {
+  const trimmed = line.trim();
+  const leading = line.slice(0, line.length - line.trimStart().length);
+  if (!trimmed) return line;
+  const nodes: ReactNode[] = [];
+  if (leading) nodes.push(leading);
+  const brace = (b: string, k: string) => (
+    <span key={k} className="rules-code-brace">
+      {b}
+    </span>
+  );
+  const heading = (h: string, k: string) => (
+    <span key={k} className="rules-code-heading">
+      {h}
+    </span>
+  );
+  const tok = (
+    v: string,
+    t: "operator" | "condition" | "conditional" | "value",
+    k: string
+  ) => (
+    <span key={k} className="rules-code-tag" data-type={t}>
+      {v}
+    </span>
+  );
+  /* Just a brace on its own line. */
+  if (trimmed === "{" || trimmed === "}") {
+    nodes.push(brace(trimmed, "b0"));
+    /* Any trailing whitespace after the brace (shouldn't be any). */
+    const trailing = line.slice(leading.length + trimmed.length);
+    if (trailing) nodes.push(trailing);
+    return nodes;
+  }
+  /* Block heading + `{` on the same line: `if {`, `then {`, `and {`. */
+  const head = trimmed.match(/^(\w+)(\s+)(\{)$/);
+  if (head) {
+    nodes.push(heading(head[1], "h"));
+    nodes.push(head[2]);
+    nodes.push(brace("{", "hb"));
+    return nodes;
+  }
+  /* Content row — try connector + Field + Operator + Value in
+   * order, emitting a coloured span for each recognised segment
+   * and plain text for anything that fails to match. */
+  let rest = trimmed;
+  let ki = 0;
+  const first = rest.split(/\s+/)[0].toLowerCase();
+  if (first === "and" || first === "or") {
+    nodes.push(tok(first, "operator", `t${ki++}`));
+    rest = rest.slice(first.length);
+    /* Preserve the space after the connector so the token spacing
+     * matches the textarea exactly. */
+    const ws = rest.match(/^\s+/);
+    if (ws) {
+      nodes.push(ws[0]);
+      rest = rest.slice(ws[0].length);
+    }
+  }
+  const field = greedyMatch(rest, CONDITION_OPTIONS);
+  if (field) {
+    nodes.push(tok(field, "condition", `t${ki++}`));
+    rest = rest.slice(field.length);
+    const ws = rest.match(/^\s+/);
+    if (ws) {
+      nodes.push(ws[0]);
+      rest = rest.slice(ws[0].length);
+    }
+  }
+  const cond = greedyMatch(rest, CONDITIONAL_OPTIONS);
+  if (cond) {
+    nodes.push(tok(cond, "conditional", `t${ki++}`));
+    rest = rest.slice(cond.length);
+    const ws = rest.match(/^\s+/);
+    if (ws) {
+      nodes.push(ws[0]);
+      rest = rest.slice(ws[0].length);
+    }
+  }
+  if (rest) {
+    /* Anything left after Field + Operator is the Value. */
+    nodes.push(tok(rest, "value", `t${ki++}`));
+  }
+  return nodes;
+}
+
 type ParseError = { line: number; message: string };
 
 /** Round-trip the code view's textarea back into a block tree.
@@ -512,15 +668,6 @@ function parseRuleText(
     subsetOp = [isTitled ? "and" : heading];
   };
 
-  const greedy = (rest: string, options: string[]): string | null => {
-    /* Longest match first so "Really long field value" wins over
-     * a shorter prefix, and "is not" wins over "is". */
-    const sorted = [...options].sort((a, b) => b.length - a.length);
-    for (const opt of sorted) {
-      if (rest === opt || rest.startsWith(opt + " ")) return opt;
-    }
-    return null;
-  };
 
   for (let ln = 0; ln < lines.length; ln += 1) {
     const line = lines[ln].trim();
@@ -605,13 +752,13 @@ function parseRuleText(
       }
     }
 
-    const field = greedy(rest, CONDITION_OPTIONS);
+    const field = greedyMatch(rest, CONDITION_OPTIONS);
     if (!field) {
       return { error: { line: ln, message: `Unknown field: "${rest}"` } };
     }
     rest = rest.slice(field.length).trim();
 
-    const cond = greedy(rest, CONDITIONAL_OPTIONS);
+    const cond = greedyMatch(rest, CONDITIONAL_OPTIONS);
     if (!cond) {
       return { error: { line: ln, message: `Unknown operator: "${rest}"` } };
     }

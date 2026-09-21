@@ -318,28 +318,65 @@
   tab-size: 2;
 }
 
-/* Editable code view. Textarea variant of .rules-code: same paint,
- * plus a min height so short rules still get a comfortable canvas,
- * a focus ring so the reader sees the edit surface, and a red
- * error box under it when the last blur couldn't parse. */
+/* Editable code view. A colored underlay <pre> sits behind a
+ * transparent-text <textarea> so the user gets syntax highlighting
+ * that follows every keystroke. Both layers share the same font,
+ * padding, border, and white-space rules so tokens line up
+ * pixel-perfect with the textarea's caret. */
 .rules-code-editor {
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
-.rules-code.rules-code-textarea {
-  width: 100%;
+.rules-code-wrap {
+  position: relative;
   min-height: 200px;
-  resize: vertical;
+}
+.rules-code.rules-code-highlight,
+.rules-code.rules-code-textarea {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 14px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, "Roboto Mono", monospace;
+  font-size: 13px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  word-break: break-word;
+  tab-size: 2;
+  box-sizing: border-box;
+}
+.rules-code.rules-code-highlight {
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.85);
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 0;
+}
+.rules-code.rules-code-textarea {
+  background: transparent;
+  color: transparent;
+  caret-color: #ffffff;
   outline: none;
-  transition: background var(--dur-1) var(--ease),
-    border-color var(--dur-1) var(--ease),
+  resize: vertical;
+  overflow: auto;
+  z-index: 1;
+  transition: border-color var(--dur-1) var(--ease),
     box-shadow var(--dur-1) var(--ease);
 }
 .rules-code.rules-code-textarea:focus {
-  background: rgba(255, 255, 255, 0.06);
   border-color: rgba(255, 255, 255, 0.18);
   box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.06);
+}
+/* Selection paints under the transparent-text textarea; use a
+ * visible highlight tint so the selected range reads. */
+.rules-code.rules-code-textarea::selection {
+  background: rgba(120, 170, 255, 0.32);
+  color: transparent;
 }
 .rules-code-error {
   color: #ff9090;
