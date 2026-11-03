@@ -28,6 +28,20 @@ export const CONDITION_OPTIONS = [
   "Really long field value",
   "input",
 ];
+
+/** The data type a Field holds. Drives which Operators the Conditional
+ *  picker offers for that Field. `any` opts out of filtering — used
+ *  for runtime values like `input` where the compatible operators
+ *  can't be known until eval time. */
+export type FieldType = "string" | "number" | "any";
+
+export const FIELD_TYPES: Record<string, FieldType> = {
+  String: "string",
+  Number: "number",
+  "Really long field value": "string",
+  input: "any",
+};
+
 export const CONDITIONAL_OPTIONS = [
   "is",
   "is not",
@@ -41,6 +55,26 @@ export const CONDITIONAL_OPTIONS = [
   "with",
   "contains",
 ];
+
+/** Which Conditional operators make sense for each FieldType. The
+ *  picker filters its options through this map so a String Field
+ *  can't be compared with `>` and a Number Field can't be used with
+ *  `contains`. */
+export const OPERATORS_BY_TYPE: Record<FieldType, string[]> = {
+  string: ["is", "is not", "in", "not in", "with", "contains"],
+  number: ["is", "is not", "in", "not in", ">", ">=", "<", "<=", "between"],
+  any: CONDITIONAL_OPTIONS,
+};
+
+/** Resolve a Field value (name string) to the list of Conditional
+ *  operators valid for its type. Unknown or missing names fall back
+ *  to the full list so a half-built row doesn't lock the user out. */
+export function operatorsForField(fieldName: string | undefined): string[] {
+  if (!fieldName) return CONDITIONAL_OPTIONS;
+  const type = FIELD_TYPES[fieldName];
+  if (!type) return CONDITIONAL_OPTIONS;
+  return OPERATORS_BY_TYPE[type];
+}
 /** Suggestions shown for Value tags — the input itself is freeform so
  *  the user can type any custom value, but these seed the dropdown. */
 export const VALUE_SUGGESTIONS = ["one", "two", "three", "four", "five"];

@@ -3,8 +3,8 @@ import type { Tag } from "./types";
 import {
   OPERATOR_OPTIONS,
   CONDITION_OPTIONS,
-  CONDITIONAL_OPTIONS,
   VALUE_SUGGESTIONS,
+  operatorsForField,
   parseValueList,
   serializeValueList,
 } from "./types";
@@ -75,7 +75,9 @@ export function TagPill({ tag, autoOpen, fieldValue, onChange }: TagPillProps) {
       : tag.type === "condition"
       ? CONDITION_OPTIONS
       : tag.type === "conditional"
-      ? CONDITIONAL_OPTIONS
+      ? /* Filter Conditional (Operator) options by the row's Field
+         * type so changing the Field re-narrows the dropdown. */
+        operatorsForField(fieldValue)
       : VALUE_SUGGESTIONS;
 
   /* Single-select — commits and closes. Used for the three

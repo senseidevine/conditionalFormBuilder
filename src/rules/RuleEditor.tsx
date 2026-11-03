@@ -9,6 +9,7 @@ import {
   makeTag,
   nextCtaLabel,
   nextTagType,
+  operatorsForField,
   serializeValueList,
   uid,
 } from "./types";
@@ -956,7 +957,10 @@ function generateRandomTags(): Tag[] {
     depth = newDepth;
     const op = ops[depth];
     const field = pick(CONDITION_OPTIONS);
-    const cond = pick(CONDITIONAL_OPTIONS);
+    /* Pick a Conditional (Operator) that's valid for the chosen
+     * Field's type so the generated rules match what the filtered
+     * picker would allow. */
+    const cond = pick(operatorsForField(field));
     const nValues = 1 + Math.floor(Math.random() * 3);
     const values: string[] = [];
     for (let v = 0; v < nValues; v += 1) {
@@ -1389,8 +1393,13 @@ function FullCta({
   const isValue = type === "value";
 
   if (!isValue) {
+    /* Conditional (Operator) picker filters by the row's Field
+     * type so e.g. a String Field doesn't offer `>` or `between`.
+     * Field picker still shows the full catalog. */
     const options =
-      type === "condition" ? CONDITION_OPTIONS : CONDITIONAL_OPTIONS;
+      type === "condition"
+        ? CONDITION_OPTIONS
+        : operatorsForField(fieldValue);
     return <PickerCta label={label} options={options} onPick={onAdd} />;
   }
 
