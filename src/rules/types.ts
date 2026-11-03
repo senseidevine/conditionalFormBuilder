@@ -76,8 +76,28 @@ export function operatorsForField(fieldName: string | undefined): string[] {
   return OPERATORS_BY_TYPE[type];
 }
 /** Suggestions shown for Value tags — the input itself is freeform so
- *  the user can type any custom value, but these seed the dropdown. */
+ *  the user can type any custom value, but these seed the dropdown.
+ *  Kept for compat; prefer `valueSuggestionsForField` so the picker
+ *  shows numbers for a Number Field, strings for a String Field. */
 export const VALUE_SUGGESTIONS = ["one", "two", "three", "four", "five"];
+
+/** Per-type value suggestion lists. The Value picker surfaces these
+ *  seed options; the text input next to them still accepts any
+ *  custom string the user types. */
+export const VALUE_SUGGESTIONS_BY_TYPE: Record<FieldType, string[]> = {
+  string: ["one", "two", "three", "four", "five"],
+  number: ["0", "1", "5", "10", "100", "1000"],
+  any: ["one", "two", "three", "four", "five"],
+};
+
+export function valueSuggestionsForField(
+  fieldName: string | undefined
+): string[] {
+  if (!fieldName) return VALUE_SUGGESTIONS;
+  const type = FIELD_TYPES[fieldName];
+  if (!type) return VALUE_SUGGESTIONS;
+  return VALUE_SUGGESTIONS_BY_TYPE[type];
+}
 
 let __id = 0;
 export const uid = () => `t${++__id}`;

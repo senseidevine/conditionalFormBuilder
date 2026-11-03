@@ -12,6 +12,7 @@ import {
   operatorsForField,
   serializeValueList,
   uid,
+  valueSuggestionsForField,
 } from "./types";
 import { TagPill } from "./TagPill";
 import { IconTrash } from "../components/Icons";
@@ -1467,7 +1468,10 @@ function ValueCta({
     };
   }, [open, picks, draft, isInputMode, onAdd]);
 
-  const options = VALUE_SUGGESTIONS;
+  /* Suggestions keyed off the row's Field type — numbers for a
+   * Number Field, strings otherwise. The input next to them still
+   * accepts any custom value the user types. */
+  const options = valueSuggestionsForField(fieldValue);
 
   const togglePick = (v: string) => {
     setPicks((ps) => (ps.includes(v) ? ps.filter((x) => x !== v) : [...ps, v]));
